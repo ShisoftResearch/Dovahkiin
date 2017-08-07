@@ -11,7 +11,7 @@ lazy_static! {
 }
 
 pub trait Symbol: Sync + Debug {
-    fn eval(values: Vec<Value>) -> Result<Value, String> where Self: Sized;
+    fn eval(env: &mut Envorinment, values: Vec<Value>) -> Result<Value, String> where Self: Sized;
 }
 
 macro_rules! defsymbols {
@@ -20,8 +20,8 @@ macro_rules! defsymbols {
             #[derive(Debug)]
             pub struct $name;
             impl Symbol for $name {
-                fn eval(values: Vec<Value>) -> Result<Value, String> where Self: Sized {
-                    $eval(values)
+                fn eval(env: &mut Envorinment, values: Vec<Value>) -> Result<Value, String> where Self: Sized {
+                    $eval(env, values)
                 }
             }
         )*
@@ -45,43 +45,43 @@ fn check_params_not_empty(params: &Vec<Value>) -> Result<(), String> {
 }
 
 defsymbols! {
-    "+" => Add, |vals| {
+    "+" => Add, |env, vals| {
         check_params_not_empty(&vals)?;
         arithmetic::add(vals)
     };
-    "-" => Subtract, |vals| {
+    "-" => Subtract, |env, vals| {
         check_params_not_empty(&vals)?;
         arithmetic::subtract(vals)
     };
-    "*" => Multiply, |vals| {
+    "*" => Multiply, |env, vals| {
         check_params_not_empty(&vals)?;
         arithmetic::multiply(vals)
     };
-    "/" => Divide, |vals| {
+    "/" => Divide, |env, vals| {
         check_params_not_empty(&vals)?;
         arithmetic::divide(vals)
     };
-    "u8" => U8, |vals| {
+    "u8" => U8, |env, vals| {
         check_num_params(1, &vals)?;
         num_types::u8(vals.get(0).cloned().unwrap())
     };
-    "u16" => U16, |vals| {
+    "u16" => U16, |env, vals| {
         check_num_params(1, &vals)?;
         num_types::u16(vals.get(0).cloned().unwrap())
     };
-    "u32" => U32, |vals| {
+    "u32" => U32, |env, vals| {
         check_num_params(1, &vals)?;
         num_types::u32(vals.get(0).cloned().unwrap())
     };
-    "u64" => U64, |vals| {
+    "u64" => U64, |env, vals| {
         check_num_params(1, &vals)?;
         num_types::u64(vals.get(0).cloned().unwrap())
     };
-    "f32" => F32, |vals| {
+    "f32" => F32, |env, vals| {
         check_num_params(1, &vals)?;
         num_types::f32(vals.get(0).cloned().unwrap())
     };
-    "f64" => F64, |vals| {
+    "f64" => F64, |env, vals| {
         check_num_params(1, &vals)?;
         num_types::f64(vals.get(0).cloned().unwrap())
     }
