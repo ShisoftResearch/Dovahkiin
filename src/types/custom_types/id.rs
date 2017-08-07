@@ -16,16 +16,6 @@ impl Id {
             lower: lower,
         }
     }
-    // pub fn rand() -> Id { // TODO: use trait in neb
-    //     let (hi, lw) = rand::next_two();
-    //     Id::new(hi, lw)
-    // }
-    // pub fn from_header(header: &Header) -> Id { // TODO: use trait in neb
-    //     Id {
-    //         higher: header.partition,
-    //         lower: header.hash
-    //     }
-    // }
     pub fn from_obj<T>(obj: &T) -> Id where T: serde::Serialize {
         let vec = serialize(obj);
         let bin = vec.as_slice();
