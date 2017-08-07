@@ -1,6 +1,18 @@
 [package]
 name = "dovahkiin"
 version = "0.1.0"
-authors = ["Jack Shi <shisoftgenius@gmail.com>"]
+authors = ["Hao Shi <shisoftgenius@gmail.com>"]
+
+[lib]
+name = "dovahkiin"
 
 [dependencies]
+serde = "*"
+serde_derive = "*"
+bincode = "*"
+byteorder = "1"
+bifrost = { git = "https://github.com/shisoft/bifrost", branch = "develop" }
+bifrost_plugins = { git = "https://github.com/shisoft/bifrost", branch = "develop" }
+bifrost_hasher = { git = "https://github.com/shisoft/bifrost", branch = "develop" }
+lazy_static = "*"
+log = "0.3"
