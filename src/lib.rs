@@ -1,5 +1,6 @@
 #![feature(exact_size_is_empty)]
 
+#[macro_use]
 pub mod types;
 
 extern crate bincode;
