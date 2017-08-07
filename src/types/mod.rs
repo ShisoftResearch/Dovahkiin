@@ -233,3 +233,5 @@ macro_rules! data_map_value {
 }
 
 pub static NULL_VALUE: Value = Value::Null;
+pub const ARRAY_LEN_TYPE_ID: u32 = 9; //u32
+pub const NULL_TYPE_ID: u32 = 7; //u8
