@@ -45,43 +45,43 @@ fn check_params_not_empty(params: &Vec<Value>) -> Result<(), String> {
 }
 
 defsymbols! {
-    "+" => Add, |env, vals| {
+    "+" => Add, |_, vals| {
         check_params_not_empty(&vals)?;
         arithmetic::add(vals)
     };
-    "-" => Subtract, |env, vals| {
+    "-" => Subtract, |_, vals| {
         check_params_not_empty(&vals)?;
         arithmetic::subtract(vals)
     };
-    "*" => Multiply, |env, vals| {
+    "*" => Multiply, |_, vals| {
         check_params_not_empty(&vals)?;
         arithmetic::multiply(vals)
     };
-    "/" => Divide, |env, vals| {
+    "/" => Divide, |_, vals| {
         check_params_not_empty(&vals)?;
         arithmetic::divide(vals)
     };
-    "u8" => U8, |env, vals| {
+    "u8" => U8, |_, vals| {
         check_num_params(1, &vals)?;
         num_types::u8(vals.get(0).cloned().unwrap())
     };
-    "u16" => U16, |env, vals| {
+    "u16" => U16, |_, vals| {
         check_num_params(1, &vals)?;
         num_types::u16(vals.get(0).cloned().unwrap())
     };
-    "u32" => U32, |env, vals| {
+    "u32" => U32, |_, vals| {
         check_num_params(1, &vals)?;
         num_types::u32(vals.get(0).cloned().unwrap())
     };
-    "u64" => U64, |env, vals| {
+    "u64" => U64, |_, vals| {
         check_num_params(1, &vals)?;
         num_types::u64(vals.get(0).cloned().unwrap())
     };
-    "f32" => F32, |env, vals| {
+    "f32" => F32, |_, vals| {
         check_num_params(1, &vals)?;
         num_types::f32(vals.get(0).cloned().unwrap())
     };
-    "f64" => F64, |env, vals| {
+    "f64" => F64, |_, vals| {
         check_num_params(1, &vals)?;
         num_types::f64(vals.get(0).cloned().unwrap())
     }

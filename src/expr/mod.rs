@@ -7,8 +7,8 @@ pub mod interpreter;
 #[derive(Debug)]
 pub enum SExpr {
     Symbol (String),
-    ISymbol (Box<symbols::Symbol>),
     Value(Value),
-    List(Vec<SExpr>)
+    List(Vec<SExpr>),
+    Vec(Vec<SExpr>)
 }
 
