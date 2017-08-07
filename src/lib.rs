@@ -2,6 +2,7 @@
 
 #[macro_use]
 pub mod types;
+pub mod expr;
 
 extern crate bincode;
 extern crate serde;
