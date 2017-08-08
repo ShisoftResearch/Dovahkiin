@@ -2,7 +2,7 @@ use super::*;
 use types::Value;
 
 pub fn u64(value: SExpr) -> Result<SExpr, String> {
-    match value.eval()? {
+    match value {
         SExpr::Value(Value::U8(num)) =>  Ok(SExpr::Value(Value::U64(num as u64))),
         SExpr::Value(Value::U16(num)) => Ok(SExpr::Value(Value::U64(num as u64))),
         SExpr::Value(Value::U32(num)) => Ok(SExpr::Value(Value::U64(num as u64))),
@@ -18,7 +18,7 @@ pub fn u64(value: SExpr) -> Result<SExpr, String> {
 }
 
 pub fn u32(value: SExpr) -> Result<SExpr, String> {
-    match value.eval()? {
+    match value {
         SExpr::Value(Value::U8(num)) =>  Ok(SExpr::Value(Value::U32(num as u32))),
         SExpr::Value(Value::U16(num)) => Ok(SExpr::Value(Value::U32(num as u32))),
         SExpr::Value(Value::U32(num)) => Ok(SExpr::Value(Value::U32(num as u32))),
@@ -34,7 +34,7 @@ pub fn u32(value: SExpr) -> Result<SExpr, String> {
 }
 
 pub fn u16(value: SExpr) -> Result<SExpr, String> {
-    match value.eval()? {
+    match value {
         SExpr::Value(Value::U8(num)) =>  Ok(SExpr::Value(Value::U16(num as u16))),
         SExpr::Value(Value::U16(num)) => Ok(SExpr::Value(Value::U16(num as u16))),
         SExpr::Value(Value::U32(num)) => Ok(SExpr::Value(Value::U16(num as u16))),
@@ -50,7 +50,7 @@ pub fn u16(value: SExpr) -> Result<SExpr, String> {
 }
 
 pub fn u8(value: SExpr) -> Result<SExpr, String> {
-    match value.eval()? {
+    match value {
         SExpr::Value(Value::U8(num)) =>  Ok(SExpr::Value(Value::U8(num as u8))),
         SExpr::Value(Value::U16(num)) => Ok(SExpr::Value(Value::U8(num as u8))),
         SExpr::Value(Value::U32(num)) => Ok(SExpr::Value(Value::U8(num as u8))),
@@ -66,7 +66,7 @@ pub fn u8(value: SExpr) -> Result<SExpr, String> {
 }
 
 pub fn f32(value: SExpr) -> Result<SExpr, String> {
-    match value.eval()? {
+    match value {
         SExpr::Value(Value::U8(num)) =>  Ok(SExpr::Value(Value::F32(num as f32))),
         SExpr::Value(Value::U16(num)) => Ok(SExpr::Value(Value::F32(num as f32))),
         SExpr::Value(Value::U32(num)) => Ok(SExpr::Value(Value::F32(num as f32))),
@@ -82,7 +82,7 @@ pub fn f32(value: SExpr) -> Result<SExpr, String> {
 }
 
 pub fn f64(value: SExpr) -> Result<SExpr, String> {
-    match value.eval()? {
+    match value {
         SExpr::Value(Value::U8(num)) =>  Ok(SExpr::Value(Value::F64(num as f64))),
         SExpr::Value(Value::U16(num)) => Ok(SExpr::Value(Value::F64(num as f64))),
         SExpr::Value(Value::U32(num)) => Ok(SExpr::Value(Value::F64(num as f64))),

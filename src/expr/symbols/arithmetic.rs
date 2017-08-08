@@ -1,5 +1,4 @@
 use super::*;
-use super::super::interpreter::eval_all;
 use types::Value;
 
 macro_rules! reduce {
@@ -50,8 +49,7 @@ macro_rules! divide_ {
     })
 }
 
-pub fn add(exprs: Vec<SExpr>) -> Result<SExpr, String> {
-    let values = eval_all(exprs)?;
+pub fn add(values: Vec<SExpr>) -> Result<SExpr, String> {
     match values.get(0).unwrap() {
         &SExpr::Value(Value::U8(_)) =>  add_!(U8,  values),
         &SExpr::Value(Value::U16(_)) => add_!(U16, values),
@@ -69,8 +67,7 @@ pub fn add(exprs: Vec<SExpr>) -> Result<SExpr, String> {
     }
 }
 
-pub fn subtract(exprs: Vec<SExpr>) -> Result<SExpr, String> {
-    let values = eval_all(exprs)?;
+pub fn subtract(values: Vec<SExpr>) -> Result<SExpr, String> {
     match values.get(0).unwrap() {
         &SExpr::Value(Value::U8(_)) =>  subtract_!(U8,  values),
         &SExpr::Value(Value::U16(_)) => subtract_!(U16, values),
@@ -88,8 +85,7 @@ pub fn subtract(exprs: Vec<SExpr>) -> Result<SExpr, String> {
     }
 }
 
-pub fn multiply(exprs: Vec<SExpr>) -> Result<SExpr, String> {
-    let values = eval_all(exprs)?;
+pub fn multiply(values: Vec<SExpr>) -> Result<SExpr, String> {
     match values.get(0).unwrap() {
         &SExpr::Value(Value::U8(_)) =>  multiply_!(U8,  values),
         &SExpr::Value(Value::U16(_)) => multiply_!(U16, values),
@@ -107,8 +103,7 @@ pub fn multiply(exprs: Vec<SExpr>) -> Result<SExpr, String> {
     }
 }
 
-pub fn divide(exprs: Vec<SExpr>) -> Result<SExpr, String> {
-    let values = eval_all(exprs)?;
+pub fn divide(values: Vec<SExpr>) -> Result<SExpr, String> {
     match values.get(0).unwrap() {
         &SExpr::Value(Value::U8(_)) =>  divide_!(U8,  values),
         &SExpr::Value(Value::U16(_)) => divide_!(U16, values),

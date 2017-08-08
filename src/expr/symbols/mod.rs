@@ -1,6 +1,6 @@
 use expr::interpreter::Envorinment;
 use expr::SExpr;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::cell::RefCell;
 use std::fmt::Debug;
 use bifrost_hasher::hash_str;
@@ -8,14 +8,12 @@ use bifrost_hasher::hash_str;
 mod num_types;
 mod arithmetic;
 
-
-
 pub trait Symbol: Sync + Debug {
     fn eval(exprs: Vec<SExpr>) -> Result<SExpr, String> where Self: Sized;
 }
 
 macro_rules! defsymbols {
-    ($($sym: expr => $name: ident, $eval: expr);*) => {
+    ($($sym: expr => $name: ident, $is_macro: expr, $eval: expr);*) => {
         $(
             #[derive(Debug)]
             pub struct $name;
@@ -32,6 +30,15 @@ macro_rules! defsymbols {
                     symbol_map.insert(hash_str(stringify!($sym)), Box::new($name));
                 )*
                 symbol_map
+            };
+            pub static ref MACRO_SYMBOLS: HashSet<u64> = {
+                let mut macro_set = HashSet::new();
+                $(
+                    if $is_macro {
+                        macro_set.insert(hash_str(stringify!($sym)));
+                    }
+                )*
+                macro_set
             };
         }
     };
@@ -54,43 +61,43 @@ fn check_params_not_empty(params: &Vec<SExpr>) -> Result<(), String> {
 }
 
 defsymbols! {
-    "+" => Add, |exprs| {
+    "+" => Add, false, |exprs| {
         check_params_not_empty(&exprs)?;
         arithmetic::add(exprs)
     };
-    "-" => Subtract, |exprs| {
+    "-" => Subtract, false, |exprs| {
         check_params_not_empty(&exprs)?;
         arithmetic::subtract(exprs)
     };
-    "*" => Multiply, |exprs| {
+    "*" => Multiply, false, |exprs| {
         check_params_not_empty(&exprs)?;
         arithmetic::multiply(exprs)
     };
-    "/" => Divide, |exprs| {
+    "/" => Divide, false, |exprs| {
         check_params_not_empty(&exprs)?;
         arithmetic::divide(exprs)
     };
-    "u8" => U8, |exprs| {
+    "u8" => U8, false, |exprs| {
         check_num_params(1, &exprs)?;
         num_types::u8(exprs.get(0).cloned().unwrap())
     };
-    "u16" => U16, |exprs| {
+    "u16" => U16, false, |exprs| {
         check_num_params(1, &exprs)?;
         num_types::u16(exprs.get(0).cloned().unwrap())
     };
-    "u32" => U32, |exprs| {
+    "u32" => U32, false, |exprs| {
         check_num_params(1, &exprs)?;
         num_types::u32(exprs.get(0).cloned().unwrap())
     };
-    "u64" => U64, |exprs| {
+    "u64" => U64, false, |exprs| {
         check_num_params(1, &exprs)?;
         num_types::u64(exprs.get(0).cloned().unwrap())
     };
-    "f32" => F32, |exprs| {
+    "f32" => F32, false, |exprs| {
         check_num_params(1, &exprs)?;
         num_types::f32(exprs.get(0).cloned().unwrap())
     };
-    "f64" => F64, |exprs| {
+    "f64" => F64, false, |exprs| {
         check_num_params(1, &exprs)?;
         num_types::f64(exprs.get(0).cloned().unwrap())
     }
