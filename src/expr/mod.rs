@@ -4,7 +4,7 @@ use types::Value;
 pub mod symbols;
 pub mod interpreter;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum SExpr {
     Symbol (String),
     Value(Value),
@@ -12,3 +12,9 @@ pub enum SExpr {
     Vec(Vec<SExpr>)
 }
 
+impl SExpr {
+    pub fn eval(self) -> Result<SExpr, String> {
+        // unimplemented!();
+        Ok(self)
+    }
+}
