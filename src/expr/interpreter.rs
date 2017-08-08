@@ -1,6 +1,5 @@
 use std::collections::{HashMap, LinkedList};
 use std::cell::RefCell;
-use types::Value;
 use expr::SExpr;
 
 thread_local!(static ENV: RefCell<Envorinment> = RefCell::new(Envorinment::new()));
