@@ -57,6 +57,10 @@ pub fn add(exprs: Vec<SExpr>) -> Result<SExpr, String> {
         &SExpr::Value(Value::U16(_)) => add_!(U16, values),
         &SExpr::Value(Value::U32(_)) => add_!(U32, values),
         &SExpr::Value(Value::U64(_)) => add_!(U64, values),
+        &SExpr::Value(Value::I8(_)) =>  add_!(I8,  values),
+        &SExpr::Value(Value::I16(_)) => add_!(I16, values),
+        &SExpr::Value(Value::I32(_)) => add_!(I32, values),
+        &SExpr::Value(Value::I64(_)) => add_!(I64, values),
         &SExpr::Value(Value::F32(_)) => add_!(F32, values),
         &SExpr::Value(Value::F64(_)) => add_!(F64, values),
         _ => {
@@ -72,6 +76,10 @@ pub fn subtract(exprs: Vec<SExpr>) -> Result<SExpr, String> {
         &SExpr::Value(Value::U16(_)) => subtract_!(U16, values),
         &SExpr::Value(Value::U32(_)) => subtract_!(U32, values),
         &SExpr::Value(Value::U64(_)) => subtract_!(U64, values),
+        &SExpr::Value(Value::I8(_)) =>  subtract_!(I8,  values),
+        &SExpr::Value(Value::I16(_)) => subtract_!(I16, values),
+        &SExpr::Value(Value::I32(_)) => subtract_!(I32, values),
+        &SExpr::Value(Value::I64(_)) => subtract_!(I64, values),
         &SExpr::Value(Value::F32(_)) => subtract_!(F32, values),
         &SExpr::Value(Value::F64(_)) => subtract_!(F64, values),
         _ => {
@@ -87,6 +95,10 @@ pub fn multiply(exprs: Vec<SExpr>) -> Result<SExpr, String> {
         &SExpr::Value(Value::U16(_)) => multiply_!(U16, values),
         &SExpr::Value(Value::U32(_)) => multiply_!(U32, values),
         &SExpr::Value(Value::U64(_)) => multiply_!(U64, values),
+        &SExpr::Value(Value::I8(_)) =>  multiply_!(I8,  values),
+        &SExpr::Value(Value::I16(_)) => multiply_!(I16, values),
+        &SExpr::Value(Value::I32(_)) => multiply_!(I32, values),
+        &SExpr::Value(Value::I64(_)) => multiply_!(I64, values),
         &SExpr::Value(Value::F32(_)) => multiply_!(F32, values),
         &SExpr::Value(Value::F64(_)) => multiply_!(F64, values),
         _ => {
@@ -102,6 +114,10 @@ pub fn divide(exprs: Vec<SExpr>) -> Result<SExpr, String> {
         &SExpr::Value(Value::U16(_)) => divide_!(U16, values),
         &SExpr::Value(Value::U32(_)) => divide_!(U32, values),
         &SExpr::Value(Value::U64(_)) => divide_!(U64, values),
+        &SExpr::Value(Value::I8(_)) =>  divide_!(I8,  values),
+        &SExpr::Value(Value::I16(_)) => divide_!(I16, values),
+        &SExpr::Value(Value::I32(_)) => divide_!(I32, values),
+        &SExpr::Value(Value::I64(_)) => divide_!(I64, values),
         &SExpr::Value(Value::F32(_)) => divide_!(F32, values),
         &SExpr::Value(Value::F64(_)) => divide_!(F64, values),
         _ => {
