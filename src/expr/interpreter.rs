@@ -2,11 +2,11 @@ use std::collections::{HashMap, LinkedList};
 use std::cell::RefCell;
 use expr::SExpr;
 
-thread_local!(static ENV: RefCell<Envorinment> = RefCell::new(Envorinment::new()));
+thread_local!(pub static ENV: RefCell<Envorinment> = RefCell::new(Envorinment::new()));
 
 #[derive(Debug)]
 pub struct Envorinment {
-    bindings: HashMap<u64, LinkedList<SExpr>>
+    pub bindings: HashMap<u64, LinkedList<SExpr>>
 }
 
 impl Envorinment {

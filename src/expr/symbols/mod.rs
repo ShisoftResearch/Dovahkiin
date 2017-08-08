@@ -7,6 +7,7 @@ use bifrost_hasher::hash_str;
 
 mod num_types;
 mod arithmetic;
+mod bindings;
 
 pub trait Symbol: Sync + Debug {
     fn eval(exprs: Vec<SExpr>) -> Result<SExpr, String> where Self: Sized;
@@ -76,6 +77,9 @@ defsymbols! {
     "/" => Divide, false, |exprs| {
         check_params_not_empty(&exprs)?;
         arithmetic::divide(exprs)
+    };
+    "let" => Let, true, |exprs| {
+        bindings::let_binding(exprs)
     };
     "u8" => U8, false, |exprs| {
         check_num_params(1, &exprs)?;
