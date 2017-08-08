@@ -1,14 +1,14 @@
 use expr::interpreter::Envorinment;
 use expr::SExpr;
 use std::collections::HashMap;
+use std::cell::RefCell;
 use std::fmt::Debug;
+use bifrost_hasher::hash_str;
 
 mod num_types;
 mod arithmetic;
 
-lazy_static! {
-    pub static ref ISYMBOL_MAP: HashMap<u64, Box<Symbol>> = HashMap::new();
-}
+
 
 pub trait Symbol: Sync + Debug {
     fn eval(exprs: Vec<SExpr>) -> Result<SExpr, String> where Self: Sized;
@@ -25,6 +25,15 @@ macro_rules! defsymbols {
                 }
             }
         )*
+        lazy_static! {
+            pub static ref ISYMBOL_MAP: HashMap<u64, Box<Symbol>> = {
+                let mut symbol_map: HashMap<u64, Box<Symbol>> = HashMap::new();
+                $(
+                    symbol_map.insert(hash_str(stringify!($sym)), Box::new($name));
+                )*
+                symbol_map
+            };
+        }
     };
 }
 
