@@ -11,7 +11,7 @@ lazy_static! {
 }
 
 pub trait Symbol: Sync + Debug {
-    fn eval(env: &mut Envorinment, exprs: Vec<SExpr>) -> Result<SExpr, String> where Self: Sized;
+    fn eval(exprs: Vec<SExpr>) -> Result<SExpr, String> where Self: Sized;
 }
 
 macro_rules! defsymbols {
@@ -20,8 +20,8 @@ macro_rules! defsymbols {
             #[derive(Debug)]
             pub struct $name;
             impl Symbol for $name {
-                fn eval(env: &mut Envorinment, exprs: Vec<SExpr>) -> Result<SExpr, String> where Self: Sized {
-                    $eval(env, exprs)
+                fn eval(exprs: Vec<SExpr>) -> Result<SExpr, String> where Self: Sized {
+                    $eval(exprs)
                 }
             }
         )*
@@ -45,43 +45,43 @@ fn check_params_not_empty(params: &Vec<SExpr>) -> Result<(), String> {
 }
 
 defsymbols! {
-    "+" => Add, |_, exprs| {
+    "+" => Add, |exprs| {
         check_params_not_empty(&exprs)?;
         arithmetic::add(exprs)
     };
-    "-" => Subtract, |_, exprs| {
+    "-" => Subtract, |exprs| {
         check_params_not_empty(&exprs)?;
         arithmetic::subtract(exprs)
     };
-    "*" => Multiply, |_, exprs| {
+    "*" => Multiply, |exprs| {
         check_params_not_empty(&exprs)?;
         arithmetic::multiply(exprs)
     };
-    "/" => Divide, |_, exprs| {
+    "/" => Divide, |exprs| {
         check_params_not_empty(&exprs)?;
         arithmetic::divide(exprs)
     };
-    "u8" => U8, |_, exprs| {
+    "u8" => U8, |exprs| {
         check_num_params(1, &exprs)?;
         num_types::u8(exprs.get(0).cloned().unwrap())
     };
-    "u16" => U16, |_, exprs| {
+    "u16" => U16, |exprs| {
         check_num_params(1, &exprs)?;
         num_types::u16(exprs.get(0).cloned().unwrap())
     };
-    "u32" => U32, |_, exprs| {
+    "u32" => U32, |exprs| {
         check_num_params(1, &exprs)?;
         num_types::u32(exprs.get(0).cloned().unwrap())
     };
-    "u64" => U64, |_, exprs| {
+    "u64" => U64, |exprs| {
         check_num_params(1, &exprs)?;
         num_types::u64(exprs.get(0).cloned().unwrap())
     };
-    "f32" => F32, |_, exprs| {
+    "f32" => F32, |exprs| {
         check_num_params(1, &exprs)?;
         num_types::f32(exprs.get(0).cloned().unwrap())
     };
-    "f64" => F64, |_, exprs| {
+    "f64" => F64, |exprs| {
         check_num_params(1, &exprs)?;
         num_types::f64(exprs.get(0).cloned().unwrap())
     }
