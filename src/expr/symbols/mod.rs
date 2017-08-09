@@ -1,13 +1,12 @@
-use expr::interpreter::Envorinment;
 use expr::SExpr;
 use std::collections::{HashMap, HashSet};
-use std::cell::RefCell;
 use std::fmt::Debug;
 use bifrost_hasher::hash_str;
 
 mod num_types;
 mod arithmetic;
 mod bindings;
+mod lambda;
 
 pub trait Symbol: Sync + Debug {
     fn eval(exprs: Vec<SExpr>) -> Result<SExpr, String> where Self: Sized;
@@ -80,6 +79,9 @@ defsymbols! {
     };
     "let" => Let, true, |exprs| {
         bindings::let_binding(exprs)
+    };
+    "lambda" => Lambda, true, |exprs| {
+        unimplemented!();
     };
     "u8" => U8, false, |exprs| {
         check_num_params(1, &exprs)?;

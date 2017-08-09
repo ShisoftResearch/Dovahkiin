@@ -1,4 +1,5 @@
 use super::*;
+use super::super::Value;
 use std::collections::LinkedList;
 use expr::interpreter::ENV;
 
@@ -46,7 +47,7 @@ pub fn let_binding (mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
             }
         }
     }
-    let mut body_result = SExpr::Nil;
+    let mut body_result = SExpr::Value(Value::Null);
     for body_line in exprs {
         body_result = body_line.eval()?;
     }

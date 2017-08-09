@@ -10,8 +10,7 @@ pub enum SExpr {
     ISymbol (u64),
     Value(Value),
     List(Vec<SExpr>),
-    Vec(Vec<SExpr>),
-    Nil
+    Vec(Vec<SExpr>)
 }
 
 impl SExpr {
