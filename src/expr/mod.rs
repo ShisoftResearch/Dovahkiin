@@ -7,9 +7,11 @@ pub mod interpreter;
 #[derive(Debug, Clone)]
 pub enum SExpr {
     Symbol (String),
+    ISymbol (u64),
     Value(Value),
     List(Vec<SExpr>),
-    Vec(Vec<SExpr>)
+    Vec(Vec<SExpr>),
+    Nil
 }
 
 impl SExpr {
