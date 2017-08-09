@@ -54,7 +54,15 @@ fn check_num_params(num: usize, params: &Vec<SExpr>) -> Result<(), String> {
 
 fn check_params_not_empty(params: &Vec<SExpr>) -> Result<(), String> {
     if params.len() == 0 {
-        Err(format!("Parameter number not match, Expected some but found empty"))
+        Err(format!("Parameter number not match. Expected some but found empty"))
+    } else {
+        Ok(())
+    }
+}
+
+fn check_params_not_least_than(num: usize, params: &Vec<SExpr>) -> Result<(), String> {
+    if params.len() < num {
+        Err(format!("Parameter number not match, Expected at least {} but found {}", num, params.len()))
     } else {
         Ok(())
     }
@@ -81,7 +89,8 @@ defsymbols! {
         bindings::let_binding(exprs)
     };
     "lambda" => Lambda, true, |exprs| {
-        unimplemented!();
+        check_params_not_least_than(2, &exprs)?;
+        lambda::lambda_placeholder(exprs)
     };
     "u8" => U8, false, |exprs| {
         check_num_params(1, &exprs)?;

@@ -1,4 +1,6 @@
 #![feature(exact_size_is_empty)]
+#![feature(plugin)]
+#![plugin(bifrost_plugins)]
 
 #[macro_use]
 pub mod types;
