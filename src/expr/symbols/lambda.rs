@@ -1,7 +1,5 @@
 use super::*;
 use super::bindings::*;
-use std::collections::LinkedList;
-use expr::interpreter::ENV;
 use types::Value;
 
 pub static LAMBDA_TAG_ID: u64 = hash_ident!(LAMBDA) as u64;
@@ -44,7 +42,7 @@ pub fn eval_lambda(placeholder: &SExpr, params: Vec<SExpr>) -> Result<SExpr, Str
     if params_list.len() != params.len() {
         return Err(format!("Parameter number does not match. Expected {} for lambda but found {}", params_list.len(), params.len()));
     }
-    {
+    { // bind parameters
         let mut param_pos = 0;
         for param in params {
             let lambda_param = params_list.get(param_pos).unwrap();
@@ -58,10 +56,10 @@ pub fn eval_lambda(placeholder: &SExpr, params: Vec<SExpr>) -> Result<SExpr, Str
         return Err(String::from("Lambda expression should have a body"));
     }
     let mut last_result = SExpr::Value(Value::Null);
-    for body_idx in 2..lambda_expr_list.len() {
+    for body_idx in 2..lambda_expr_list.len() { // eval function body by cloning expression
         last_result = lambda_expr_list.get(body_idx).cloned().unwrap().eval()?;
     }
-    for lambda_param in params_list {
+    for lambda_param in params_list { // unbind parameters
         if let &SExpr::ISymbol(id) = lambda_param {
                 unbind(id);
         }
