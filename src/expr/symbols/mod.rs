@@ -7,7 +7,8 @@ mod num_types;
 mod arithmetic;
 mod bindings;
 mod lambda;
-mod collections;
+mod functions;
+mod stream;
 
 pub trait Symbol: Sync + Debug {
     fn eval(exprs: Vec<SExpr>) -> Result<SExpr, String> where Self: Sized;
@@ -95,7 +96,7 @@ defsymbols! {
     };
     "map" => Map, false, |exprs| {
         check_num_params(2, &exprs)?;
-        collections::map(exprs)
+        stream::map(exprs)
     };
     "u8" => U8, false, |exprs| {
         check_num_params(1, &exprs)?;
