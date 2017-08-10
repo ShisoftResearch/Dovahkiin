@@ -2,18 +2,41 @@ use super::*;
 use super::functions::eval_function;
 use types::Value;
 
-pub fn map(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
-    let func = exprs.pop().unwrap();
-    let data = exprs.pop().unwrap();
+pub fn to_array(expr: SExpr) -> Result<SExpr, String> {
+    match expr {
+        SExpr::Vec(vec) => {
+            let mut array = Vec::new();
+            for expr in vec {
+                if let SExpr::Value(val) = expr {
+                    array.push(val)
+                } else {
+                    return Err(format!("Data {:?} cannot be value", expr))
+                }
+            }
+            return Ok(SExpr::Value(Value::Array(array)));
+        },
+        _ => {
+            return Err(format!("Only Vector can convert into array, found {:?}", expr))
+        }
+    }
+}
+
+pub fn to_vec(expr: SExpr) -> Result<SExpr, String> {
+    match expr {
+        SExpr::Value(Value::Array(array)) => {
+            return Ok(SExpr::Vec(array.into_iter().map(|val| SExpr::Value(val)).collect()));
+        },
+        _ => {
+            return Err(format!("Only array value can convert into vector, found {:?}", expr))
+        }
+    }
+}
+
+pub fn map(func: SExpr, data: SExpr) -> Result<SExpr, String> {
     let mut result;
     match data {
-        SExpr::Value(Value::Array(arr)) => {
-            result = Vec::with_capacity(arr.len());
-            for val in arr {
-                result.push(eval_function(
-                    &func,
-                    vec![SExpr::Value(val)])?);
-            }
+        SExpr::Value(Value::Array(_)) => {
+            return map(func, to_vec(data)?)
         },
         SExpr::Vec(expr_list) => {
             result = Vec::with_capacity(expr_list.len());

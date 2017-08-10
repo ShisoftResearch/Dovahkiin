@@ -70,6 +70,10 @@ fn check_params_not_least_than(num: usize, params: &Vec<SExpr>) -> Result<(), St
     }
 }
 
+fn split_pair(mut exprs: Vec<SExpr>) -> (SExpr, SExpr) {
+    (exprs.pop().unwrap(), exprs.pop().unwrap())
+}
+
 defsymbols! {
     "+" => Add, false, |exprs| {
         check_params_not_empty(&exprs)?;
@@ -96,7 +100,16 @@ defsymbols! {
     };
     "map" => Map, false, |exprs| {
         check_num_params(2, &exprs)?;
-        stream::map(exprs)
+        let (func, data) = split_pair(exprs);
+        stream::map(func, data)
+    };
+    "to_vec" => ToVec, false, |mut exprs| {
+        check_num_params(1, &exprs)?;
+        stream::to_vec(exprs.pop().unwrap())
+    };
+    "to_array" => ToArray, false, |mut exprs| {
+        check_num_params(1, &exprs)?;
+        stream::to_array(exprs.pop().unwrap())
     };
     "u8" => U8, false, |exprs| {
         check_num_params(1, &exprs)?;
