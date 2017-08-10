@@ -62,6 +62,23 @@ pub fn eval_function(func_expr: &SExpr, params: Vec<SExpr>) -> Result<SExpr, Str
                     return Err(format!("Data type not accepted for {:?}", params))
                 }
             }
+        },
+        &SExpr::Value(Value::Map(ref m)) => {
+            if params.len() > 1 {
+                return Err(format!("get map can only take one parameter, found {}", params.len()))
+            }
+            match params.get(0) {
+                Some(&SExpr::Value(Value::String(ref str_key))) => {
+                    return Ok(SExpr::Value(m.get(str_key).clone()))
+                },
+                Some(&SExpr::Value(Value::U64(key_id))) => {
+                    return Ok(SExpr::Value(m.get_by_key_id(key_id).clone()))
+                },
+                _ => {
+                    return Err(format!("Key format not accepted, expect one string or u64\
+                    Found {:?}", params));
+                }
+            }
         }
         _ => return Err(format!("{:?} is not a function", func_expr))
     }
