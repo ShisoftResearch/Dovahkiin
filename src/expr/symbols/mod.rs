@@ -11,7 +11,7 @@ mod functions;
 mod stream;
 
 pub trait Symbol: Sync + Debug {
-    fn eval(exprs: Vec<SExpr>) -> Result<SExpr, String> where Self: Sized;
+    fn eval(&self, exprs: Vec<SExpr>) -> Result<SExpr, String>;
 }
 
 macro_rules! defsymbols {
@@ -20,7 +20,7 @@ macro_rules! defsymbols {
             #[derive(Debug)]
             pub struct $name;
             impl Symbol for $name {
-                fn eval(exprs: Vec<SExpr>) -> Result<SExpr, String> where Self: Sized {
+                fn eval(&self, exprs: Vec<SExpr>) -> Result<SExpr, String> where Self: Sized {
                     $eval(exprs)
                 }
             }
