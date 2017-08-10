@@ -79,6 +79,22 @@ pub fn eval_function(func_expr: &SExpr, params: Vec<SExpr>) -> Result<SExpr, Str
                     Found {:?}", params));
                 }
             }
+        },
+        &SExpr::Value(Value::Array(ref array)) => {
+            if params.len() > 1 {
+                return Err(format!("get map can only take one parameter, found {}", params.len()))
+            }
+            match params.get(0) {
+                Some(&SExpr::Value(Value::U64(key_id))) => {
+                    return Ok(SExpr::Value(array.get(key_id as usize)
+                        .cloned()
+                        .unwrap_or(Value::Null)))
+                },
+                _ => {
+                    return Err(format!("Index format not accepted, expect u64\
+                    Found {:?}", params));
+                }
+            }
         }
         _ => return Err(format!("{:?} is not a function", func_expr))
     }
