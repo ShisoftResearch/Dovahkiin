@@ -71,7 +71,7 @@ pub fn filter(func: SExpr, data: SExpr) -> Result<SExpr, String> {
                     })
                     .collect();
                 SExpr::Vec(exprs)
-            }).map_err(|e| format!("Cannot filter, for exception {:?}", e))
+            }).map_err(|e| format!("Cannot filter, found exception {:?}", e))
         },
         _ => return Err(format!("Cannot map function on {:?}", data))
     }
