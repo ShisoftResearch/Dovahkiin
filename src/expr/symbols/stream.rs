@@ -67,7 +67,7 @@ pub fn filter(func: SExpr, data: SExpr) -> Result<SExpr, String> {
                         let val = expr.clone().eval().unwrap();
                         is_true(eval_function(
                             &func,
-                            vec![val.clone()]).unwrap())
+                            vec![val]).unwrap())
                     })
                     .collect();
                 SExpr::Vec(exprs)
