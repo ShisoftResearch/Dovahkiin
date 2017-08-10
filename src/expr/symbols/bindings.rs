@@ -1,13 +1,14 @@
 use super::*;
 use super::super::Value;
 use std::collections::LinkedList;
+use std::rc::Rc;
 use expr::interpreter::ENV;
 
 pub fn bind(id: u64, val: SExpr) {
     ENV.with(|env| {
         let mut env_borrowed = env.borrow_mut();
         let mut binding_map = &mut env_borrowed.bindings;
-        binding_map.entry(id).or_insert_with(|| LinkedList::new()).push_front(val);
+        binding_map.entry(id).or_insert_with(|| LinkedList::new()).push_front(Rc::new(val));
     });
 }
 
