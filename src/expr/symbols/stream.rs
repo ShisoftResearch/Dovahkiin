@@ -54,25 +54,23 @@ pub fn map(func: SExpr, data: SExpr) -> Result<SExpr, String> {
 }
 
 pub fn filter(func: SExpr, data: SExpr) -> Result<SExpr, String> {
+    let mut result;
     match data {
         SExpr::Value(Value::Array(_)) => {
             return filter(func, to_vec(data)?)
         },
         SExpr::Vec(expr_list) => {
-            panic::catch_unwind(|| {
-                let exprs: Vec<SExpr> = expr_list
-                    .into_iter()
-                    .filter(|expr| {
-                        // let it panic
-                        let val = expr.clone().eval().unwrap();
-                        is_true(eval_function(
-                            &func,
-                            vec![val]).unwrap())
-                    })
-                    .collect();
-                SExpr::Vec(exprs)
-            }).map_err(|e| format!("Cannot filter, found exception {:?}", e))
+            result = Vec::with_capacity(expr_list.len());
+            for expr in expr_list {
+                let val = expr.eval()?;
+                if is_true(eval_function(
+                    &func,
+                    vec![val.clone()])?) {
+                    result.push(val)
+                }
+            }
         },
         _ => return Err(format!("Cannot map function on {:?}", data))
     }
+    Ok(SExpr::Vec(result))
 }
