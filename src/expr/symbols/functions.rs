@@ -44,6 +44,25 @@ pub fn eval_function(func_expr: &SExpr, params: Vec<SExpr>) -> Result<SExpr, Str
                 only one map parameter is accepted, found {:?}", params))
             }
         },
+        &SExpr::Value(Value::U64(index)) => {
+            // get element by index from vec or by key_id form map
+            if params.len() > 1 {
+                return Err(format!("get by index/id can only take one parameter, found {}", params.len()))
+            }
+            match params.get(0) {
+                Some(&SExpr::Value(Value::Map(ref m))) => {
+                    return Ok(SExpr::Value(m.get_by_key_id(index).clone()));
+                },
+                Some(&SExpr::Value(Value::Array(ref arr))) => {
+                    return Ok(SExpr::Value(arr.get(index as usize)
+                        .cloned()
+                        .unwrap_or(Value::Null)))
+                },
+                _ => {
+                    return Err(format!("Data type not accepted for {:?}", params))
+                }
+            }
+        }
         _ => return Err(format!("{:?} is not a function", func_expr))
     }
 }
