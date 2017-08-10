@@ -2,6 +2,8 @@ use super::*;
 use super::Symbol;
 use super::lambda::eval_lambda;
 use super::super::interpreter::ENV;
+use types::Value;
+use types::custom_types::map::*;
 use std::rc::Rc;
 use std::borrow::Borrow;
 
@@ -30,6 +32,18 @@ pub fn eval_function(func_expr: &SExpr, params: Vec<SExpr>) -> Result<SExpr, Str
         },
         &SExpr::Symbol(ref symbol_name) =>
             return eval_function(&SExpr::ISymbol(hash_str(symbol_name)), params),
+        &SExpr::Value(Value::String(ref str_key)) => {
+            // same as clojure (:key map)
+            if params.len() > 1 {
+                return Err(format!("get from map can only take one parameter, found {}", params.len()))
+            }
+            if let Some(&SExpr::Value(Value::Map(ref m))) = params.get(0) {
+                return Ok(SExpr::Value(m.get(str_key).clone()));
+            } else {
+                return Err(format!("When use string value as function, \
+                only one map parameter is accepted, found {:?}", params))
+            }
+        },
         _ => return Err(format!("{:?} is not a function", func_expr))
     }
 }
