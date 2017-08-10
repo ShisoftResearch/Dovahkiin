@@ -35,32 +35,30 @@ pub fn to_vec(expr: SExpr) -> Result<SExpr, String> {
 }
 
 pub fn map(func: SExpr, data: SExpr) -> Result<SExpr, String> {
-    let mut result;
     match data {
         SExpr::Value(Value::Array(_)) => {
             return map(func, to_vec(data)?)
         },
         SExpr::Vec(expr_list) => {
-            result = Vec::with_capacity(expr_list.len());
+            let mut result = Vec::with_capacity(expr_list.len());
             for expr in expr_list {
                 result.push(eval_function(
                     &func,
                     vec![expr.eval()?])?)
             }
+            return Ok(SExpr::Vec(result))
         },
         _ => return Err(format!("Cannot map function on {:?}", data))
     }
-    Ok(SExpr::Vec(result))
 }
 
 pub fn filter(func: SExpr, data: SExpr) -> Result<SExpr, String> {
-    let mut result;
     match data {
         SExpr::Value(Value::Array(_)) => {
             return filter(func, to_vec(data)?)
         },
         SExpr::Vec(expr_list) => {
-            result = Vec::with_capacity(expr_list.len());
+            let mut result = Vec::with_capacity(expr_list.len());
             for expr in expr_list {
                 let val = expr.eval()?;
                 if is_true(eval_function(
@@ -69,8 +67,8 @@ pub fn filter(func: SExpr, data: SExpr) -> Result<SExpr, String> {
                     result.push(val)
                 }
             }
+            return Ok(SExpr::Vec(result))
         },
         _ => return Err(format!("Cannot map function on {:?}", data))
     }
-    Ok(SExpr::Vec(result))
 }
