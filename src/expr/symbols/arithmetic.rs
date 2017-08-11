@@ -62,7 +62,7 @@ pub fn add(values: Vec<SExpr>) -> Result<SExpr, String> {
         &SExpr::Value(Value::F32(_)) => add_!(F32, values),
         &SExpr::Value(Value::F64(_)) => add_!(F64, values),
         _ => {
-            Err("Type cannot be added".to_string())
+            Err(format!("Type cannot be added {:?}", values))
         }
     }
 }
@@ -80,7 +80,7 @@ pub fn subtract(values: Vec<SExpr>) -> Result<SExpr, String> {
         &SExpr::Value(Value::F32(_)) => subtract_!(F32, values),
         &SExpr::Value(Value::F64(_)) => subtract_!(F64, values),
         _ => {
-            Err("Type cannot be subtracted".to_string())
+            Err(format!("Type cannot be subtracted: {:?}", values))
         }
     }
 }
@@ -98,7 +98,7 @@ pub fn multiply(values: Vec<SExpr>) -> Result<SExpr, String> {
         &SExpr::Value(Value::F32(_)) => multiply_!(F32, values),
         &SExpr::Value(Value::F64(_)) => multiply_!(F64, values),
         _ => {
-            Err("Type cannot be multiplied".to_string())
+            Err(format!("Type cannot be multiplied: {:?}", values))
         }
     }
 }
@@ -116,7 +116,7 @@ pub fn divide(values: Vec<SExpr>) -> Result<SExpr, String> {
         &SExpr::Value(Value::F32(_)) => divide_!(F32, values),
         &SExpr::Value(Value::F64(_)) => divide_!(F64, values),
         _ => {
-            Err("Type cannot be divided".to_string())
+            Err(format!("Type cannot be divided: {:?}", values))
         }
     }
 }

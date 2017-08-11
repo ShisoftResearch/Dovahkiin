@@ -82,7 +82,7 @@ pub fn lt(values: Vec<SExpr>) -> Result<SExpr, String> {
         &SExpr::Value(Value::F32(_)) => lt_!(F32, values),
         &SExpr::Value(Value::F64(_)) => lt_!(F64, values),
         _ => {
-            Err("Type cannot be compared".to_string())
+            Err(format!("Type cannot be compared: {:?}", values))
         }
     }
 }
@@ -100,7 +100,7 @@ pub fn lte(values: Vec<SExpr>) -> Result<SExpr, String> {
         &SExpr::Value(Value::F32(_)) => lte_!(F32, values),
         &SExpr::Value(Value::F64(_)) => lte_!(F64, values),
         _ => {
-            Err("Type cannot be compared".to_string())
+            Err(format!("Type cannot be compared: {:?}", values))
         }
     }
 }
@@ -118,7 +118,7 @@ pub fn gt(values: Vec<SExpr>) -> Result<SExpr, String> {
         &SExpr::Value(Value::F32(_)) => gt_!(F32, values),
         &SExpr::Value(Value::F64(_)) => gt_!(F64, values),
         _ => {
-            Err("Type cannot be compared".to_string())
+            Err(format!("Type cannot be compared: {:?}", values))
         }
     }
 }
@@ -136,7 +136,7 @@ pub fn gte(values: Vec<SExpr>) -> Result<SExpr, String> {
         &SExpr::Value(Value::F32(_)) => gte_!(F32, values),
         &SExpr::Value(Value::F64(_)) => gte_!(F64, values),
         _ => {
-            Err("Type cannot be compared".to_string())
+            Err(format!("Type cannot be compared: {:?}", values))
         }
     }
 }
