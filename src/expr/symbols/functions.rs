@@ -1,9 +1,7 @@
 use super::*;
-use super::Symbol;
 use super::lambda::eval_lambda;
 use super::super::interpreter::ENV;
 use types::Value;
-use types::custom_types::map::*;
 use std::rc::Rc;
 use std::borrow::Borrow;
 
@@ -12,7 +10,7 @@ pub fn eval_function(func_expr: &SExpr, params: Vec<SExpr>) -> Result<SExpr, Str
         &SExpr::ISymbol(symbol_id) => {
             let mut env_bind_ref: Option<Rc<SExpr>> = None;
             ENV.with(|env| {
-                let mut env_borrowed = env.borrow();
+                let env_borrowed = env.borrow();
                 env_bind_ref = if let Some(binding_list) = env_borrowed.bindings.get(&symbol_id) {
                     binding_list.front().cloned()
                 } else { None }

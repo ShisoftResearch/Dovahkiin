@@ -2,8 +2,6 @@ use super::*;
 use super::bindings::*;
 use types::Value;
 
-pub static LAMBDA_TAG_ID: u64 = hash_ident!(LAMBDA) as u64;
-
 pub fn lambda_placeholder(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
     let params = exprs.remove(0);
     let params_list = if let SExpr::Vec(symbols) = params {

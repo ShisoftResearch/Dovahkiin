@@ -1,7 +1,6 @@
 use super::*;
 use super::utils::is_true;
 use super::functions::eval_function;
-use std::panic;
 use types::Value;
 
 pub fn to_array(expr: SExpr) -> Result<SExpr, String> {
