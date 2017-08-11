@@ -10,6 +10,7 @@ mod lambda;
 mod functions;
 mod stream;
 mod utils;
+mod branching;
 
 pub trait Symbol: Sync + Debug {
     fn eval(&self, exprs: Vec<SExpr>) -> Result<SExpr, String>;
@@ -71,11 +72,37 @@ fn check_params_not_least_than(num: usize, params: &Vec<SExpr>) -> Result<(), St
     }
 }
 
+fn check_params_not_greater_than(num: usize, params: &Vec<SExpr>) -> Result<(), String> {
+    if params.len() > num {
+        Err(format!("Parameter number not match, Expected at most {} but found {}", num, params.len()))
+    } else {
+        Ok(())
+    }
+}
+
 fn split_pair(mut exprs: Vec<SExpr>) -> (SExpr, SExpr) {
     (exprs.pop().unwrap(), exprs.pop().unwrap())
 }
 
 defsymbols! {
+    "if" => If, true, |exprs| {
+        check_params_not_least_than(2, &exprs)?;
+        check_params_not_greater_than(3, &exprs)?;
+        branching::if_(exprs)
+    };
+    "if-not" => IfNot, true, |exprs| {
+        check_params_not_least_than(2, &exprs)?;
+        check_params_not_greater_than(3, &exprs)?;
+        branching::if_not(exprs)
+    };
+    "when" => When, true, |exprs| {
+        check_num_params(2, &exprs)?;
+        branching::when(exprs)
+    };
+    "when-not" => WhenNot, true, |exprs| {
+        check_num_params(2, &exprs)?;
+        branching::when_not(exprs)
+    };
     "+" => Add, false, |exprs| {
         check_params_not_empty(&exprs)?;
         arithmetic::add(exprs)
