@@ -2,10 +2,11 @@ use super::*;
 use types::Value;
 use super::utils::is_true;
 
-pub fn if_(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
-    let tester = exprs.pop().unwrap();
-    let then_expr = exprs.pop().unwrap();
-    let else_expr = exprs.pop();
+pub fn if_(exprs: Vec<SExpr>) -> Result<SExpr, String> {
+    let mut iter = exprs.into_iter();
+    let tester = iter.next().unwrap();
+    let then_expr = iter.next().unwrap();
+    let else_expr = iter.next();
     if is_true(tester.eval()?) {
         return then_expr.eval();
     } else if let Some(else_expr) = else_expr {
@@ -15,10 +16,11 @@ pub fn if_(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
     }
 }
 
-pub fn if_not(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
-    let tester = exprs.pop().unwrap();
-    let then_expr = exprs.pop().unwrap();
-    let else_expr = exprs.pop();
+pub fn if_not(exprs: Vec<SExpr>) -> Result<SExpr, String> {
+    let mut iter = exprs.into_iter();
+    let tester = iter.next().unwrap();
+    let then_expr = iter.next().unwrap();
+    let else_expr = iter.next();
     if !is_true(tester.eval()?) {
         return then_expr.eval();
     } else if let Some(else_expr) = else_expr {
@@ -28,9 +30,10 @@ pub fn if_not(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
     }
 }
 
-pub fn when(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
-    let tester = exprs.pop().unwrap();
-    let then_expr = exprs.pop().unwrap();
+pub fn when(exprs: Vec<SExpr>) -> Result<SExpr, String> {
+    let mut iter = exprs.into_iter();
+    let tester = iter.next().unwrap();
+    let then_expr = iter.next().unwrap();
     if is_true(tester.eval()?) {
         return then_expr.eval();
     } else {
@@ -38,9 +41,10 @@ pub fn when(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
     }
 }
 
-pub fn when_not(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
-    let tester = exprs.pop().unwrap();
-    let then_expr = exprs.pop().unwrap();
+pub fn when_not(exprs: Vec<SExpr>) -> Result<SExpr, String> {
+    let mut iter = exprs.into_iter();
+    let tester = iter.next().unwrap();
+    let then_expr = iter.next().unwrap();
     if !is_true(tester.eval()?) {
         return then_expr.eval();
     } else {

@@ -11,6 +11,7 @@ mod functions;
 mod stream;
 mod utils;
 mod branching;
+mod comparators;
 
 pub trait Symbol: Sync + Debug {
     fn eval(&self, exprs: Vec<SExpr>) -> Result<SExpr, String>;
@@ -81,7 +82,9 @@ fn check_params_not_greater_than(num: usize, params: &Vec<SExpr>) -> Result<(), 
 }
 
 fn split_pair(mut exprs: Vec<SExpr>) -> (SExpr, SExpr) {
-    (exprs.pop().unwrap(), exprs.pop().unwrap())
+    let e2 = exprs.pop().unwrap();
+    let e1 = exprs.pop().unwrap();
+    (e1, e2)
 }
 
 defsymbols! {

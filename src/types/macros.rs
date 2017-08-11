@@ -143,8 +143,6 @@ macro_rules! define_types {
             Null
         }
 
-        impl Eq for Value {}
-
         impl Value {
             $(
                 get_from_val_fn!($r, $e, $t);

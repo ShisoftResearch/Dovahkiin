@@ -82,3 +82,7 @@ impl IndexMut<u64> for Value {
         }
     }
 }
+
+impl Eq for Value {
+    // TODO: elaborate it
+}

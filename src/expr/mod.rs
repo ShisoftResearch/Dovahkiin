@@ -4,7 +4,7 @@ use types::Value;
 pub mod symbols;
 pub mod interpreter;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SExpr {
     Symbol (String),
     ISymbol (u64),
