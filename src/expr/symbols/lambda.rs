@@ -45,6 +45,6 @@ pub fn eval_lambda(lambda_expr: &SExpr, params: Vec<SExpr>) -> Result<SExpr, Str
         }
         Ok(last_result)
     } else {
-        return Err(format!("Except lambda expression, found {:?}", lambda_expr));
+        return Err(format!("Expect lambda expression, found {:?}", lambda_expr));
     }
 }
