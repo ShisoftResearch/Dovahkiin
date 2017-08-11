@@ -3,11 +3,11 @@ use std::collections::{HashMap, HashSet};
 use std::fmt::Debug;
 use bifrost_hasher::hash_str;
 
+pub mod functions;
 mod num_types;
 mod arithmetic;
 mod bindings;
 mod lambda;
-mod functions;
 mod stream;
 mod utils;
 mod branching;
@@ -15,6 +15,7 @@ mod comparators;
 
 pub trait Symbol: Sync + Debug {
     fn eval(&self, exprs: Vec<SExpr>) -> Result<SExpr, String>;
+    fn is_macro(&self) -> bool;
 }
 
 macro_rules! defsymbols {
@@ -26,6 +27,9 @@ macro_rules! defsymbols {
                 fn eval(&self, exprs: Vec<SExpr>) -> Result<SExpr, String> where Self: Sized {
                     $eval(exprs)
                 }
+                fn is_macro(&self) -> bool {
+                    return $is_macro;
+                }
             }
         )*
         lazy_static! {
@@ -35,15 +39,6 @@ macro_rules! defsymbols {
                     symbol_map.insert(hash_str(stringify!($sym)), Box::new($name));
                 )*
                 symbol_map
-            };
-            pub static ref MACRO_SYMBOLS: HashSet<u64> = {
-                let mut macro_set = HashSet::new();
-                $(
-                    if $is_macro {
-                        macro_set.insert(hash_str(stringify!($sym)));
-                    }
-                )*
-                macro_set
             };
         }
     };

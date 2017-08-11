@@ -16,7 +16,17 @@ pub enum SExpr {
 
 impl SExpr {
     pub fn eval(self) -> Result<SExpr, String> {
-        // unimplemented!();
-        Ok(self)
+        match self {
+            SExpr::List(exprs) => {
+                if exprs.len() == 0 {
+                    Ok(SExpr::Value(Value::Null))
+                } else {
+                    let mut iter = exprs.into_iter();
+                    let func = iter.next().unwrap().eval()?;
+                    Ok(symbols::functions::eval_function(&func, iter.collect())?)
+                }
+            },
+            _ => Ok(self)
+        }
     }
 }

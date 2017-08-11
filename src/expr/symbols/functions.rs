@@ -21,7 +21,16 @@ pub fn eval_function(func_expr: &SExpr, params: Vec<SExpr>) -> Result<SExpr, Str
                 // internal functions
                 match ISYMBOL_MAP.get(&symbol_id) {
                     Some(symbol) => {
-                        return symbol.eval(params)
+                        // if the symbol is not a macro, parameters will all be evaled here. Or passthrough those expressions.
+                        return symbol.eval(if symbol.is_macro() {
+                            params
+                        } else {
+                            let mut evaled_params = Vec::with_capacity(params.len());
+                            for param in params {
+                                evaled_params.push(param.eval()?);
+                            }
+                            evaled_params
+                        })
                     },
                     _ =>
                         return Err(format!("Cannot find symbol {}", symbol_id))
