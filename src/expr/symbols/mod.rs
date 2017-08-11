@@ -106,6 +106,30 @@ defsymbols! {
         check_num_params(2, &exprs)?;
         branching::when_not(exprs)
     };
+    "=" => Equals, false, |exprs| {
+        check_params_not_least_than(2, &exprs)?;
+        comparators::equals(exprs)
+    };
+    "!=" => NotEquals, false, |exprs| {
+        check_num_params(2, &exprs)?;
+        comparators::not_equals(exprs)
+    };
+    ">" => GreaterThan, false, |exprs| {
+        check_params_not_least_than(2, &exprs)?;
+        comparators::gt(exprs)
+    };
+    ">=" => GreaterThanEquals, false, |exprs| {
+        check_params_not_least_than(2, &exprs)?;
+        comparators::gte(exprs)
+    };
+    "<" => LessThan, false, |exprs| {
+        check_params_not_least_than(2, &exprs)?;
+        comparators::lt(exprs)
+    };
+    "<=" => LessThanEquals, false, |exprs| {
+        check_params_not_least_than(2, &exprs)?;
+        comparators::lte(exprs)
+    };
     "+" => Add, false, |exprs| {
         check_params_not_empty(&exprs)?;
         arithmetic::add(exprs)
