@@ -1,5 +1,5 @@
 use std::cmp::Ordering;
-use bifrost::utils::bincode::{serialize, deserialize};
+use bifrost::utils::bincode::{serialize};
 use bifrost_hasher::{hash_bytes, hash_bytes_secondary};
 use serde;
 
