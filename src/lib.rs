@@ -5,6 +5,7 @@
 #[macro_use]
 pub mod types;
 pub mod expr;
+pub mod lexer;
 
 extern crate bincode;
 extern crate serde;
