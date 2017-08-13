@@ -139,7 +139,7 @@ fn read_escaped_char(iter: &mut Peekable<Chars>)-> Result<char, String> {
     while let Some(c) = iter.next() {
         match c {
             'u' | 'U' => {
-                // read 4 digit hex number as unicode
+                // read 6 digit hex number as unicode
                 let mut hex_chars: Vec<char> = Vec::new();
                 for _ in 0..6 {
                     if let Some(c) = iter.next() {
