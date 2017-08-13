@@ -24,9 +24,13 @@ static RIGHT_PARENTHESES: char = ')';
 static QUOTE: char = '\'';
 
 lazy_static!{
-    static ref NUM_TYPES: HashSet<String> = vec![
+    static ref INT_NUM_TYPES: HashSet<String> = vec![
         "u8", "u16", "u32", "u64",
-        "i8", "i16", "i32", "i64",
+        "i8", "i16", "i32", "i64"]
+        .into_iter()
+        .map(|str| str.to_string())
+        .collect();
+    static ref FLOAT_NUM_TYPES: HashSet<String> = vec![
         "f32", "f64"]
         .into_iter()
         .map(|str| str.to_string())
@@ -117,18 +121,20 @@ fn read_number(first: char, iter: &mut Peekable<Chars>) -> Result<Token, String>
     }
     let digit_part: String = digit_chars.into_iter().collect();
     let unit_part: String = unit_chars.into_iter().collect();
-    // verify
-    if !NUM_TYPES.contains(&unit_part) {
-        return Err(format!("Invaild number unit {}", unit_part));
-    }
     if is_float_number {
+        if !FLOAT_NUM_TYPES.contains(&unit_part) {
+            return Err(format!("Invalid float number {}{}", digit_part, unit_part))
+        }
         return Ok(Token::FloatNumber(digit_part, unit_part));
     } else {
+        if !INT_NUM_TYPES.contains(&unit_part) {
+            return Err(format!("Invalid integer number {}{}", digit_part, unit_part))
+        }
         return Ok(Token::IntNumber(digit_part, unit_part));
     }
 }
 
-pub fn chars_iter_to_sexpr(iter: &mut Peekable<Chars>) -> Result<SExpr, String> {
+pub fn tokenize_chars_iter(iter: &mut Peekable<Chars>) -> Result<Vec<Token>, String> {
     let mut tokens = Vec::new();
     while let Some(c) = iter.peek().cloned() {
         match c {
@@ -153,7 +159,7 @@ pub fn chars_iter_to_sexpr(iter: &mut Peekable<Chars>) -> Result<SExpr, String> 
                 iter.next();
             },
             NUMBER_PATTERN!() => {
-
+                tokens.push(read_number(c, iter)?);
             },
             '\'' => { // quote
                 tokens.push(Token::Quote);
@@ -167,10 +173,10 @@ pub fn chars_iter_to_sexpr(iter: &mut Peekable<Chars>) -> Result<SExpr, String> 
             }
         }
     }
-    unimplemented!()
+    return Ok(tokens)
 }
 
-pub fn str_to_sexpr<'a>(str: &'a str) -> Result<SExpr, String> {
+pub fn tokenize_str<'a>(str: &'a str) -> Result<Vec<Token>, String> {
     let mut iter = str.chars().peekable();
-    chars_iter_to_sexpr(&mut iter)
+    tokenize_chars_iter(&mut iter)
 }
