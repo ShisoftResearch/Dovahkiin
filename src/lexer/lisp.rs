@@ -2,6 +2,7 @@ use expr::SExpr;
 use std::str::Chars;
 use std::iter::Peekable;
 use std::collections::HashSet;
+use std::ascii::AsciiExt;
 
 pub enum Token {
     LeftParentheses,
@@ -134,6 +135,78 @@ fn read_number(first: char, iter: &mut Peekable<Chars>) -> Result<Token, String>
     }
 }
 
+fn read_escaped_char(iter: &mut Peekable<Chars>)-> Result<char, String> {
+    while let Some(c) = iter.next() {
+        match c {
+            'u' | 'U' => {
+                // read 4 digit hex number as unicode
+                let mut hex_chars: Vec<char> = Vec::new();
+                for _ in 0..6 {
+                    if let Some(c) = iter.next() {
+                        let c = c.to_ascii_lowercase();
+                        match c {
+                            NUMBER_PATTERN!() | 'a'...'f' => {
+                                hex_chars.push(c);
+                            },
+                            _ => break
+                        }
+                    } else {
+                        break
+                    }
+                }
+                let unicode_hex: String = hex_chars.into_iter().collect();
+                let unicode = u32::from_str_radix(&unicode_hex, 16)
+                    .map_err(|_ |format!(
+                        "Cannot parse hex for escape character 0x{}", unicode_hex))?;
+                return ::std::char::from_u32(unicode).ok_or(format!(
+                    "Cannot escape character \\u{}", unicode_hex));
+            },
+            't' => return Ok('\t'),
+            'n' => return Ok('\n'),
+            'r' => return Ok('\r'),
+            '\'' => return Ok('\''),
+            '"' => return Ok('"'),
+            '\\' => return Ok('\''),
+            _ => return Err(format!("Unknown escape character {}", c))
+        }
+    }
+    return Err("Unexpected EOF".to_string());
+}
+
+fn read_string(iter: &mut Peekable<Chars>) -> Result<Token, String> {
+    let mut chars = Vec::new();
+    while let Some(c) = iter.next() {
+        match c {
+            '\\' => {
+                // escaping
+                chars.push(read_escaped_char(iter)?);
+            },
+            '"' => {
+                break;
+            },
+            _ => {
+                chars.push(c);
+            }
+        }
+    }
+    return Ok(Token::String(chars.into_iter().collect()));
+}
+
+fn read_symbol(iter: &mut Peekable<Chars>) -> Result<Token, String> {
+    let mut chars = Vec::new();
+    while let Some(c) = iter.next() {
+        match c {
+            ' '|'\t'|'\r'|'\n'|'('|')'|'['|']'|'\'' => {
+                break;
+            }
+            _ => {
+                chars.push(c);
+            }
+        }
+    }
+    return Ok(Token::Symbol(chars.into_iter().collect()));
+}
+
 pub fn tokenize_chars_iter(iter: &mut Peekable<Chars>) -> Result<Vec<Token>, String> {
     let mut tokens = Vec::new();
     while let Some(c) = iter.peek().cloned() {
@@ -158,7 +231,7 @@ pub fn tokenize_chars_iter(iter: &mut Peekable<Chars>) -> Result<Vec<Token>, Str
                 tokens.push(Token::RightVecParentheses);
                 iter.next();
             },
-            NUMBER_PATTERN!() => {
+            NUMBER_PATTERN!() | '-' => {
                 tokens.push(read_number(c, iter)?);
             },
             '\'' => { // quote
@@ -166,10 +239,10 @@ pub fn tokenize_chars_iter(iter: &mut Peekable<Chars>) -> Result<Vec<Token>, Str
                 iter.next();
             },
             '"' => { // string
-
+                tokens.push(read_string(iter)?);
             },
             _ => { // symbol with utf8 chars including emojis
-
+                tokens.push(read_symbol(iter)?);
             }
         }
     }
