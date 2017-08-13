@@ -17,13 +17,6 @@ pub enum Token {
     Quote
 }
 
-static WHITESPACE_CHARSET: &'static str = " \t\r\n";
-static NEGATIVE_CHAR: char = '-';
-static POINT_CHAR: char = '.';
-static LEFT_PARENTHESES: char = '(';
-static RIGHT_PARENTHESES: char = ')';
-static QUOTE: char = '\'';
-
 lazy_static!{
     static ref INT_NUM_TYPES: HashSet<String> = vec![
         "u8", "u16", "u32", "u64",
