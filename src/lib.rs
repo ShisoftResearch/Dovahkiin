@@ -6,6 +6,7 @@
 pub mod types;
 pub mod expr;
 pub mod lexer;
+pub mod parser;
 
 extern crate bincode;
 extern crate serde;
