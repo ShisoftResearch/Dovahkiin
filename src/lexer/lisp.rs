@@ -4,17 +4,17 @@ use std::iter::Peekable;
 use std::collections::HashSet;
 use std::ascii::AsciiExt;
 
+#[derive(Debug)]
 pub enum Token {
     LeftParentheses,
     RightParentheses,
-    WhiteSpace,
     Symbol(String),
     IntNumber(String, String),
     FloatNumber(String, String),
     String(String),
     LeftVecParentheses,
     RightVecParentheses,
-    Quote
+    // Quote
 }
 
 lazy_static!{
@@ -205,7 +205,7 @@ pub fn tokenize_chars_iter(iter: &mut Peekable<Chars>) -> Result<Vec<Token>, Str
     while let Some(c) = iter.peek().cloned() {
         match c {
             ' '|'\t'|'\r'|'\n' => { // whitespaces
-                tokens.push(Token::WhiteSpace);
+                // will do nothing
                 readout_whitespaces(iter);
             },
             '(' => {
@@ -227,10 +227,10 @@ pub fn tokenize_chars_iter(iter: &mut Peekable<Chars>) -> Result<Vec<Token>, Str
             NUMBER_PATTERN!() | '-' => {
                 tokens.push(read_number(c, iter)?);
             },
-            '\'' => { // quote
-                tokens.push(Token::Quote);
-                iter.next();
-            },
+            // '\'' => { // quote
+            //     tokens.push(Token::Quote);
+            //     iter.next();
+            // },
             '"' => { // string
                 tokens.push(read_string(iter)?);
             },
