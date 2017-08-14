@@ -12,6 +12,7 @@ mod stream;
 mod utils;
 mod branching;
 mod comparators;
+mod misc;
 
 pub trait Symbol: Sync + Debug {
     fn eval(&self, exprs: Vec<SExpr>) -> Result<SExpr, String>;
@@ -157,6 +158,9 @@ defsymbols! {
         check_num_params(2, &exprs)?;
         let (func, data) = split_pair(exprs);
         stream::filter(func, data)
+    };
+    "do" => Do, false, |exprs| {
+        misc::do_(exprs)
     };
     "to_vec" => ToVec, false, |mut exprs| {
         check_num_params(1, &exprs)?;
