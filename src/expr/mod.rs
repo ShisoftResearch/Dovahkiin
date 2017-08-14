@@ -1,4 +1,7 @@
 use types::Value;
+use expr::interpreter::ENV;
+use std::rc::Rc;
+use std::borrow::Borrow;
 
 #[macro_use]
 pub mod symbols;
@@ -26,6 +29,22 @@ impl SExpr {
                     Ok(symbols::functions::eval_function(&func, iter.collect())?)
                 }
             },
+            SExpr::ISymbol(symbol_id, _) => {
+                let mut env_bind_ref: Option<Rc<SExpr>> = None;
+                ENV.with(|env| {
+                    let env_borrowed = env.borrow();
+                    let mut bindings = env_borrowed.get_mut_bindings();
+                    env_bind_ref = if let Some(binding_list) = bindings.get(&symbol_id) {
+                        binding_list.front().cloned()
+                    } else { None }
+                });
+                if let Some(binding) = env_bind_ref {
+                    let bind_expr: &SExpr = binding.borrow();
+                    Ok(bind_expr.clone())
+                } else {
+                    Ok(self)
+                }
+            }
             _ => Ok(self)
         }
     }
