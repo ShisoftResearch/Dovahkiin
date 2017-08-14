@@ -182,6 +182,22 @@ defsymbols! {
         check_num_params(1, &exprs)?;
         num_types::u64(exprs.get(0).cloned().unwrap())
     };
+    "i8" => I8, false, |exprs| {
+        check_num_params(1, &exprs)?;
+        num_types::i8(exprs.get(0).cloned().unwrap())
+    };
+    "i16" => I16, false, |exprs| {
+        check_num_params(1, &exprs)?;
+        num_types::i16(exprs.get(0).cloned().unwrap())
+    };
+    "i32" => I32, false, |exprs| {
+        check_num_params(1, &exprs)?;
+        num_types::i32(exprs.get(0).cloned().unwrap())
+    };
+    "i64" => I64, false, |exprs| {
+        check_num_params(1, &exprs)?;
+        num_types::i64(exprs.get(0).cloned().unwrap())
+    };
     "f32" => F32, false, |exprs| {
         check_num_params(1, &exprs)?;
         num_types::f32(exprs.get(0).cloned().unwrap())
