@@ -11,7 +11,8 @@ pub fn eval_function(func_expr: &SExpr, params: Vec<SExpr>) -> Result<SExpr, Str
             let mut env_bind_ref: Option<Rc<SExpr>> = None;
             ENV.with(|env| {
                 let env_borrowed = env.borrow();
-                env_bind_ref = if let Some(binding_list) = env_borrowed.bindings.get(&symbol_id) {
+                let mut bindings = env_borrowed.get_mut_bindings();
+                env_bind_ref = if let Some(binding_list) = bindings.get(&symbol_id) {
                     binding_list.front().cloned()
                 } else { None }
             });

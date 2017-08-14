@@ -1,4 +1,3 @@
-use expr::SExpr;
 use std::str::Chars;
 use std::iter::Peekable;
 use std::collections::HashSet;
@@ -67,12 +66,8 @@ fn readout_whitespaces(iter: &mut Peekable<Chars>) {
 fn read_number(first: char, iter: &mut Peekable<Chars>) -> Result<Token, String> {
     let mut digit_chars = vec![first];
     let mut unit_chars = Vec::new();
-    let mut terminated = false;
     let mut is_float_number = false;
     while let Some(c) = iter.next() {
-        if terminated {
-            return Err(format!("Unexpected token {}, number reader should be terminated", c));
-        }
         match c {
             NUMBER_PATTERN!() => {
                 match (unit_chars.first(), unit_chars.get(1), c) {
@@ -89,7 +84,7 @@ fn read_number(first: char, iter: &mut Peekable<Chars>) -> Result<Token, String>
                     (Some(&'f'), Some(&'6'), '4')   // f64
                     => {
                         unit_chars.push(c);
-                        terminated = true;
+                        break;
                     }
                     // mid states
                     (Some(&'u'), None, '1') | // u16

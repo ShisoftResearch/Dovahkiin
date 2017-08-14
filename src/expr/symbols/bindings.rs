@@ -2,20 +2,21 @@ use super::*;
 use super::super::Value;
 use std::collections::LinkedList;
 use std::rc::Rc;
+use std::borrow::BorrowMut;
 use expr::interpreter::ENV;
 
 pub fn bind(id: u64, val: SExpr) {
     ENV.with(|env| {
-        let mut env_borrowed = env.borrow_mut();
-        let mut binding_map = &mut env_borrowed.bindings;
+        let mut env_borrow = env.borrow_mut();
+        let mut binding_map = &mut env_borrow.bindings.borrow_mut();
         binding_map.entry(id).or_insert_with(|| LinkedList::new()).push_front(Rc::new(val));
     });
 }
 
 pub fn unbind(id: u64) {
     ENV.with(|env| {
-        let mut env_borrowed = env.borrow_mut();
-        let mut binding_map = &mut env_borrowed.bindings;
+        let mut env_borrow = env.borrow_mut();
+        let mut binding_map = &mut env_borrow.bindings.borrow_mut();
         binding_map.entry(id).or_insert_with(|| LinkedList::new()).pop_front();
     });
 }

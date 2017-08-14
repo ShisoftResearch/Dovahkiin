@@ -1,12 +1,14 @@
 #![feature(exact_size_is_empty)]
 #![feature(plugin)]
 #![plugin(bifrost_plugins)]
+#![crate_type = "lib"]
 
 #[macro_use]
 pub mod types;
 pub mod expr;
 pub mod lexer;
 pub mod parser;
+pub mod integrated;
 
 extern crate bincode;
 extern crate serde;

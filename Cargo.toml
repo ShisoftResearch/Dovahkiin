@@ -6,6 +6,9 @@ authors = ["Hao Shi <shisoftgenius@gmail.com>"]
 [lib]
 name = "dovahkiin"
 
+[[test]]
+name = "tests"
+
 [dependencies]
 serde = "*"
 serde_derive = "*"

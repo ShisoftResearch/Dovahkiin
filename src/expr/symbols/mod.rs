@@ -4,6 +4,7 @@ use std::fmt::Debug;
 use bifrost_hasher::hash_str;
 
 pub mod functions;
+pub mod misc;
 mod num_types;
 mod arithmetic;
 mod bindings;
@@ -12,7 +13,6 @@ mod stream;
 mod utils;
 mod branching;
 mod comparators;
-mod misc;
 
 pub trait Symbol: Sync + Debug {
     fn eval(&self, exprs: Vec<SExpr>) -> Result<SExpr, String>;
