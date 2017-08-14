@@ -41,3 +41,12 @@ pub fn lisp_integrated_lambda() {
     assert_eq!(lisp::eval_string(&interpreter, inc_function).unwrap(),
                SExpr::Value(Value::U32(6)));
 }
+
+#[test]
+pub fn lisp_integrated_lambda_2() {
+    let interpreter = lisp::get_interpreter();
+    let inc_function = " ((lambda [x y] (* x y)) 5u32 4u32)";
+    let tokens = lisp_lexer::tokenize_str(inc_function).unwrap();
+    assert_eq!(lisp::eval_string(&interpreter, inc_function).unwrap(),
+               SExpr::Value(Value::U32(20)));
+}
