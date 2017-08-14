@@ -37,7 +37,7 @@ macro_rules! defsymbols {
             pub static ref ISYMBOL_MAP: HashMap<u64, Box<Symbol>> = {
                 let mut symbol_map: HashMap<u64, Box<Symbol>> = HashMap::new();
                 $(
-                    symbol_map.insert(hash_str(stringify!($sym)), Box::new($name));
+                    symbol_map.insert(hash_str($sym), Box::new($name));
                 )*
                 symbol_map
             };
