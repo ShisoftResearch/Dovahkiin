@@ -4,7 +4,33 @@ use types::Value;
 use std::vec::IntoIter;
 
 fn parse_list(iter: &mut IntoIter<Token>) -> Result<SExpr, String> {
-    unimplemented!();
+    let mut contents = Vec::new();
+    while let Some(token) = iter.next() {
+        match token {
+            Token::RightParentheses => {
+                return Ok(SExpr::List(contents));
+            },
+            _ => {
+                contents.push(parse_token(token, iter)?);
+            }
+        }
+    }
+    Err(String::from("Unexpected EOF, expect ')'"))
+}
+
+fn parse_vec(iter: &mut IntoIter<Token>) -> Result<SExpr, String> {
+    let mut contents = Vec::new();
+    while let Some(token) = iter.next() {
+        match token {
+            Token::RightVecParentheses => {
+                return Ok(SExpr::Vec(contents));
+            },
+            _ => {
+                contents.push(parse_token(token, iter)?);
+            }
+        }
+    }
+    Err(String::from("Unexpected EOF, expect ']'"))
 }
 
 fn parse_symbol(name: String) -> SExpr {
@@ -41,10 +67,6 @@ fn parse_string(str: String) -> SExpr {
     SExpr::Value(Value::String(str))
 }
 
-fn parse_vec(iter: &mut IntoIter<Token>) -> Result<SExpr, String> {
-    unimplemented!();
-}
-
 fn parse_token(token: Token, iter: &mut IntoIter<Token>) -> Result<SExpr, String> {
     match token {
         Token::LeftParentheses => Ok(parse_list(iter)?), // list
@@ -53,7 +75,7 @@ fn parse_token(token: Token, iter: &mut IntoIter<Token>) -> Result<SExpr, String
         Token::FloatNumber(num, unit) => Ok(parse_float(num, unit)?),
         Token::String(str) => Ok(parse_string(str)),
         Token::LeftVecParentheses => Ok(parse_vec(iter)?),
-        _ => Err(format!("Unexpected start token {:?}", token))
+        _ => Err(format!("Unexpected start token {}", token.to_string()))
     }
 }
 

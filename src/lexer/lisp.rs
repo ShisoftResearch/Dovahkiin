@@ -17,6 +17,21 @@ pub enum Token {
     // Quote
 }
 
+impl ToString for Token {
+    fn to_string(&self) -> String {
+        match self {
+            &Token::LeftParentheses => String::from("("),
+            &Token::RightParentheses => String::from(")"),
+            &Token::Symbol(ref s) => s.clone(),
+            &Token::IntNumber(ref n,ref u) => format!("{}{}", n, u),
+            &Token::FloatNumber(ref n,ref u) => format!("{}{}", n, u),
+            &Token::String(ref s) => format!("\"{}\"", s),
+            &Token::LeftVecParentheses => String::from("["),
+            &Token::RightVecParentheses => String::from("]"),
+        }
+    }
+}
+
 lazy_static!{
     static ref INT_NUM_TYPES: HashSet<String> = vec![
         "u8", "u16", "u32", "u64",
