@@ -44,6 +44,7 @@ pub fn eval_function(func_expr: &SExpr, params: Vec<SExpr>) -> Result<SExpr, Str
                     hash_str(symbol_name),
                     symbol_name.clone()),
                 params),
+        &SExpr::LAMBDA(_, _) => return eval_lambda(func_expr, params),
         &SExpr::Value(Value::String(ref str_key)) => {
             // same as clojure (:key map)
             if params.len() > 1 {
