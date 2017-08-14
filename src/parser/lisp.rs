@@ -2,6 +2,7 @@ use expr::SExpr;
 use lexer::lisp::Token;
 use types::Value;
 use std::vec::IntoIter;
+use bifrost_hasher::hash_str;
 
 fn parse_list(iter: &mut IntoIter<Token>) -> Result<SExpr, String> {
     let mut contents = Vec::new();
@@ -34,7 +35,7 @@ fn parse_vec(iter: &mut IntoIter<Token>) -> Result<SExpr, String> {
 }
 
 fn parse_symbol(name: String) -> SExpr {
-    SExpr::Symbol(name)
+    SExpr::ISymbol(hash_str(&name), name)
 }
 
 fn parse_int(num_str: String, unit: String) -> Result<SExpr, String> {

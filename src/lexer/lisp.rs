@@ -31,6 +31,32 @@ impl ToString for Token {
     }
 }
 
+pub struct CharIter {
+    chars: Vec<char>,
+    current_pos: usize
+}
+
+impl CharIter {
+    pub fn new(data: Vec<char>) -> CharIter {
+        CharIter {
+            chars: data,
+            current_pos: 0
+        }
+    }
+    pub fn next(&mut self) -> Option<char> {
+        self.current_pos += 1;
+        if let Some(c) = self.chars.get(self.current_pos) {
+            return Some(*c)
+        } else {
+            return None
+        }
+    }
+
+    pub fn current(&mut self) -> Option<char> {
+        self.chars.get(self.current_pos).cloned()
+    }
+}
+
 lazy_static!{
     static ref INT_NUM_TYPES: HashSet<String> = vec![
         "u8", "u16", "u32", "u64",
@@ -54,7 +80,7 @@ macro_rules! defpattern {
 defpattern!(NUMBER_PATTERN: '0'...'9');
 // defpattern!(WHITESPACE_PATTERN: ' '|'\t'|'\r'|'\n'); // unreliable
 
-fn readout_whitespaces(iter: &mut Peekable<Chars>) {
+fn readout_whitespaces(iter: &mut CharIter) {
     while let Some(c) = iter.next() {
         match c {
             ' '|'\t'|'\r'|'\n' => {}
@@ -63,7 +89,7 @@ fn readout_whitespaces(iter: &mut Peekable<Chars>) {
     }
 }
 
-fn read_number(first: char, iter: &mut Peekable<Chars>) -> Result<Token, String> {
+fn read_number(first: char, iter: &mut CharIter) -> Result<Token, String> {
     let mut digit_chars = vec![first];
     let mut unit_chars = Vec::new();
     let mut is_float_number = false;
@@ -102,7 +128,7 @@ fn read_number(first: char, iter: &mut Peekable<Chars>) -> Result<Token, String>
                         digit_chars.push(c);
                     }
                     _ => {
-                        return Err(format!("Unexpected token {} for number unit", c))
+                        return Err(format!("Unexpected token '{}' for number unit", c))
                     }
                 }
             },
@@ -120,25 +146,26 @@ fn read_number(first: char, iter: &mut Peekable<Chars>) -> Result<Token, String>
             ' '|'\t'|'\r'|'\n' => {
                 break;
             }
-            _ => return Err(format!("Unexpected token {} for number", c))
+            _ => return Err(format!("Unexpected token '{}' for number", c))
         }
     }
     let digit_part: String = digit_chars.into_iter().collect();
     let unit_part: String = unit_chars.into_iter().collect();
+    iter.next();
     if is_float_number {
         if !FLOAT_NUM_TYPES.contains(&unit_part) {
-            return Err(format!("Invalid float number {}{}", digit_part, unit_part))
+            return Err(format!("Invalid float number '{}{}'", digit_part, unit_part))
         }
         return Ok(Token::FloatNumber(digit_part, unit_part));
     } else {
         if !INT_NUM_TYPES.contains(&unit_part) {
-            return Err(format!("Invalid integer number {}{}", digit_part, unit_part))
+            return Err(format!("Invalid integer number '{}{}'", digit_part, unit_part))
         }
         return Ok(Token::IntNumber(digit_part, unit_part));
     }
 }
 
-fn read_escaped_char(iter: &mut Peekable<Chars>)-> Result<char, String> {
+fn read_escaped_char(iter: &mut CharIter)-> Result<char, String> {
     while let Some(c) = iter.next() {
         match c {
             'u' | 'U' => {
@@ -170,13 +197,13 @@ fn read_escaped_char(iter: &mut Peekable<Chars>)-> Result<char, String> {
             '\'' => return Ok('\''),
             '"' => return Ok('"'),
             '\\' => return Ok('\''),
-            _ => return Err(format!("Unknown escape character {}", c))
+            _ => return Err(format!("Unknown escape character '{}'", c))
         }
     }
     return Err("Unexpected EOF".to_string());
 }
 
-fn read_string(iter: &mut Peekable<Chars>) -> Result<Token, String> {
+fn read_string(iter: &mut CharIter) -> Result<Token, String> {
     let mut chars = Vec::new();
     while let Some(c) = iter.next() {
         match c {
@@ -195,8 +222,8 @@ fn read_string(iter: &mut Peekable<Chars>) -> Result<Token, String> {
     return Ok(Token::String(chars.into_iter().collect()));
 }
 
-fn read_symbol(iter: &mut Peekable<Chars>) -> Result<Token, String> {
-    let mut chars = Vec::new();
+fn read_symbol(first: char, iter: &mut CharIter) -> Result<Token, String> {
+    let mut chars = vec![first];
     while let Some(c) = iter.next() {
         match c {
             ' '|'\t'|'\r'|'\n'|'('|')'|'['|']'|'\'' => {
@@ -210,9 +237,9 @@ fn read_symbol(iter: &mut Peekable<Chars>) -> Result<Token, String> {
     return Ok(Token::Symbol(chars.into_iter().collect()));
 }
 
-pub fn tokenize_chars_iter(iter: &mut Peekable<Chars>) -> Result<Vec<Token>, String> {
+pub fn tokenize_chars_iter(iter: &mut CharIter) -> Result<Vec<Token>, String> {
     let mut tokens = Vec::new();
-    while let Some(c) = iter.peek().cloned() {
+    while let Some(c) = iter.current() {
         match c {
             ' '|'\t'|'\r'|'\n' => { // whitespaces
                 // will do nothing
@@ -245,7 +272,7 @@ pub fn tokenize_chars_iter(iter: &mut Peekable<Chars>) -> Result<Vec<Token>, Str
                 tokens.push(read_string(iter)?);
             },
             _ => { // symbol with utf8 chars including emojis
-                tokens.push(read_symbol(iter)?);
+                tokens.push(read_symbol(c, iter)?);
             }
         }
     }
@@ -253,6 +280,6 @@ pub fn tokenize_chars_iter(iter: &mut Peekable<Chars>) -> Result<Vec<Token>, Str
 }
 
 pub fn tokenize_str<'a>(str: &'a str) -> Result<Vec<Token>, String> {
-    let mut iter = str.chars().peekable();
+    let mut iter = CharIter::new(str.chars().collect());
     tokenize_chars_iter(&mut iter)
 }

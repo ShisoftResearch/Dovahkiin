@@ -8,8 +8,8 @@ pub fn lambda_placeholder(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
         let mut list = Vec::new();
         for symbol in symbols {
             list.push(match symbol {
-                SExpr::Symbol(name) => SExpr::ISymbol(hash_str(&name)),
-                SExpr::ISymbol(id) => SExpr::ISymbol(id),
+                SExpr::Symbol(name) => SExpr::ISymbol(hash_str(&name), name),
+                SExpr::ISymbol(id, name) => SExpr::ISymbol(id, name),
                 _ => return Err(format!("lambda can only bind to symbols, found {:?}", symbol))
             });
         }
@@ -26,7 +26,7 @@ pub fn eval_lambda(lambda_expr: &SExpr, params: Vec<SExpr>) -> Result<SExpr, Str
             let mut param_pos = 0;
             for param in params {
                 let lambda_param = params_list.get(param_pos).unwrap();
-                if let &SExpr::ISymbol(id) = lambda_param {
+                if let &SExpr::ISymbol(id, _) = lambda_param {
                     bind(id, param);
                 } else {
                     return Err(format!("Expect ISymbol for lambda form, found {:?}", lambda_param));
@@ -39,7 +39,7 @@ pub fn eval_lambda(lambda_expr: &SExpr, params: Vec<SExpr>) -> Result<SExpr, Str
             last_result = body_line.clone().eval()?;
         }
         for lambda_param in params_list { // unbind parameters
-            if let &SExpr::ISymbol(id) = lambda_param {
+            if let &SExpr::ISymbol(id, _) = lambda_param {
                 unbind(id);
             }
         }

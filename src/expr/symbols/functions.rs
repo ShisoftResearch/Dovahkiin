@@ -7,7 +7,7 @@ use std::borrow::Borrow;
 
 pub fn eval_function(func_expr: &SExpr, params: Vec<SExpr>) -> Result<SExpr, String> {
     match func_expr {
-        &SExpr::ISymbol(symbol_id) => {
+        &SExpr::ISymbol(symbol_id, ref name) => {
             let mut env_bind_ref: Option<Rc<SExpr>> = None;
             ENV.with(|env| {
                 let env_borrowed = env.borrow();
@@ -34,12 +34,16 @@ pub fn eval_function(func_expr: &SExpr, params: Vec<SExpr>) -> Result<SExpr, Str
                         })
                     },
                     _ =>
-                        return Err(format!("Cannot find symbol {}", symbol_id))
+                        return Err(format!("Cannot find symbol \'{}\', id: {}", name, symbol_id))
                 }
             }
         },
         &SExpr::Symbol(ref symbol_name) =>
-            return eval_function(&SExpr::ISymbol(hash_str(symbol_name)), params),
+            return eval_function(
+                &SExpr::ISymbol(
+                    hash_str(symbol_name),
+                    symbol_name.clone()),
+                params),
         &SExpr::Value(Value::String(ref str_key)) => {
             // same as clojure (:key map)
             if params.len() > 1 {

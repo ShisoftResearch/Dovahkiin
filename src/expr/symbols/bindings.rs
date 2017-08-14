@@ -38,7 +38,7 @@ pub fn let_binding (mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
         while let Some(symbol) = form_iter.next() {
             let symbol_id = match symbol {
                 SExpr::Symbol(ref sym_str) => hash_str(sym_str),
-                SExpr::ISymbol(id) => id,
+                SExpr::ISymbol(id, _) => id,
                 _ => return Err(format!("Cannot bind to {:?}, need symbol", symbol))
             };
             if let Some(expr) = form_iter.next() {
