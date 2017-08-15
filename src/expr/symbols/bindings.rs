@@ -58,3 +58,16 @@ pub fn let_binding (mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
     }
     return Ok(body_result);
 }
+
+pub fn define(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
+    let name = exprs.remove(0);
+    let val = exprs.remove(0).eval()?;
+    if let SExpr::Symbol(name) = name {
+        bind(hash_str(&name), val);
+    } else if let SExpr::ISymbol(id, _) = name {
+        bind(id, val)
+    } else {
+        return Err(format!("Cannot bind to {:?}", name))
+    }
+    return Ok(SExpr::Value(Value::Null));
+}

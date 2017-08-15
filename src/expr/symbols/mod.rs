@@ -149,9 +149,13 @@ defsymbols! {
         check_params_not_least_than(2, &exprs)?;
         lambda::lambda_placeholder(exprs)
     };
-    "defunc" => DeFunc, true, |exprs| {
+    "defunc" => DefineFunc, true, |exprs| {
         check_params_not_least_than(3, &exprs)?;
         functions::defn(exprs)
+    };
+    "def" => Define, true, |exprs| {
+        check_num_params(2, &exprs)?;
+        bindings::define(exprs)
     };
     "map" => Map, false, |exprs| {
         check_num_params(2, &exprs)?;

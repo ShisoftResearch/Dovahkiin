@@ -34,6 +34,15 @@ pub fn lisp_integrated_binding_2() {
 }
 
 #[test]
+pub fn lisp_integrated_binding_def() {
+    let interpreter = lisp::get_interpreter();
+    let str_function = "(def x 1u32) (let [y 2u32] (+ x y))";
+    let tokens = lisp_lexer::tokenize_str(str_function).unwrap();
+    assert_eq!(lisp::eval_string(&interpreter, str_function).unwrap(),
+               SExpr::Value(Value::U32(3)));
+}
+
+#[test]
 pub fn lisp_integrated_lambda() {
     let interpreter = lisp::get_interpreter();
     let str_function = " ((lambda [x] (+ 1u32 x)) 5u32)";
