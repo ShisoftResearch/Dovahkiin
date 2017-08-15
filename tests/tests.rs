@@ -50,3 +50,14 @@ pub fn lisp_integrated_lambda_2() {
     assert_eq!(lisp::eval_string(&interpreter, str_function).unwrap(),
                SExpr::Value(Value::U32(20)));
 }
+
+#[test]
+pub fn lisp_integrated_functional() {
+    let interpreter = lisp::get_interpreter();
+    let str_function = " (map (lambda [x] (+ x 1u32)) [1u32 2u32 3u32 4u32 5u32 6u32])";
+    let tokens = lisp_lexer::tokenize_str(str_function).unwrap();
+    assert_eq!(lisp::eval_string(&interpreter, str_function).unwrap(),
+               SExpr::Vec(vec![SExpr::Value(Value::U32(2)), SExpr::Value(Value::U32(3)),
+                               SExpr::Value(Value::U32(4)), SExpr::Value(Value::U32(5)),
+                               SExpr::Value(Value::U32(6)), SExpr::Value(Value::U32(7))]));
+}
