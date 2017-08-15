@@ -45,11 +45,10 @@ impl CharIter {
     }
     pub fn next(&mut self) -> Option<char> {
         self.current_pos += 1;
-        if let Some(c) = self.chars.get(self.current_pos) {
-            return Some(*c)
-        } else {
-            return None
-        }
+        self.chars.get(self.current_pos).cloned()
+    }
+    pub fn peek_next(&self) -> Option<char> {
+        self.chars.get(self.current_pos + 1).cloned()
     }
 
     pub fn current(&mut self) -> Option<char> {
@@ -261,7 +260,12 @@ pub fn tokenize_chars_iter(iter: &mut CharIter) -> Result<Vec<Token>, String> {
                 tokens.push(Token::RightVecParentheses);
                 iter.next();
             },
-            NUMBER_PATTERN!() | '-' => {
+            NUMBER_PATTERN!() => {
+                tokens.push(read_number(c, iter)?);
+            },
+            '-' if match iter.peek_next() {
+                Some('0'...'9') => true, _ => false
+            } => {
                 tokens.push(read_number(c, iter)?);
             },
             // '\'' => { // quote

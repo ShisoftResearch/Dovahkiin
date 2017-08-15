@@ -149,6 +149,10 @@ defsymbols! {
         check_params_not_least_than(2, &exprs)?;
         lambda::lambda_placeholder(exprs)
     };
+    "defunc" => DeFunc, true, |exprs| {
+        check_params_not_least_than(3, &exprs)?;
+        functions::defn(exprs)
+    };
     "map" => Map, false, |exprs| {
         check_num_params(2, &exprs)?;
         let (func, data) = split_pair(exprs);
@@ -169,6 +173,10 @@ defsymbols! {
     "to_array" => ToArray, false, |mut exprs| {
         check_num_params(1, &exprs)?;
         stream::to_array(exprs.pop().unwrap())
+    };
+    "inc" => Inc, false, |mut exprs| {
+        check_num_params(1, &exprs)?;
+        arithmetic::inc(exprs.pop().unwrap())
     };
     "u8" => U8, false, |exprs| {
         check_num_params(1, &exprs)?;

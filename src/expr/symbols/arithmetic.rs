@@ -120,3 +120,20 @@ pub fn divide(values: Vec<SExpr>) -> Result<SExpr, String> {
         }
     }
 }
+
+pub fn inc(value: SExpr) -> Result<SExpr, String> {
+    let value = match value {
+        SExpr::Value(Value::U8(v)) =>  SExpr::Value(Value::U8(v + 1)),
+        SExpr::Value(Value::U16(v)) => SExpr::Value(Value::U16(v + 1)),
+        SExpr::Value(Value::U32(v)) => SExpr::Value(Value::U32(v + 1)),
+        SExpr::Value(Value::U64(v)) => SExpr::Value(Value::U64(v + 1)),
+        SExpr::Value(Value::I8(v)) =>  SExpr::Value(Value::I8(v + 1)),
+        SExpr::Value(Value::I16(v)) => SExpr::Value(Value::I16(v + 1)),
+        SExpr::Value(Value::I32(v)) => SExpr::Value(Value::I32(v + 1)),
+        SExpr::Value(Value::I64(v)) => SExpr::Value(Value::I64(v + 1)),
+        _ => {
+            return Err(format!("Type cannot be increased: {:?}", value))
+        }
+    };
+    Ok(value)
+}

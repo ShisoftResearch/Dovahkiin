@@ -1,5 +1,6 @@
 use super::*;
-use super::lambda::eval_lambda;
+use super::lambda::{eval_lambda, lambda_placeholder};
+use super::bindings::{bind, unbind};
 use super::super::interpreter::ENV;
 use types::Value;
 use std::rc::Rc;
@@ -111,4 +112,17 @@ pub fn eval_function(func_expr: &SExpr, params: Vec<SExpr>) -> Result<SExpr, Str
         }
         _ => return Err(format!("{:?} is not a function", func_expr))
     }
+}
+
+pub fn defn(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
+    let name = exprs.remove(0);
+    let lambda = lambda_placeholder(exprs)?;
+    if let SExpr::Symbol(name) = name {
+        bind(hash_str(&name), lambda);
+    } else if let SExpr::ISymbol(id, _) = name {
+        bind(id, lambda);
+    } else {
+        return Err(format!("Function name should be a symbol, found {:?}", name));
+    }
+    return Ok(SExpr::Value(Value::Null));
 }
