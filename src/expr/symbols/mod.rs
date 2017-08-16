@@ -13,6 +13,7 @@ mod stream;
 mod utils;
 mod branching;
 mod comparators;
+mod collections;
 
 pub trait Symbol: Sync + Debug {
     fn eval(&self, exprs: Vec<SExpr>) -> Result<SExpr, String>;
@@ -181,6 +182,12 @@ defsymbols! {
     "inc" => Inc, false, |mut exprs| {
         check_num_params(1, &exprs)?;
         arithmetic::inc(exprs.pop().unwrap())
+    };
+    "concat" => Concat, false, |exprs| {
+        collections::concat(exprs)
+    };
+    "size" => Size, false, |exprs| {
+        collections::size(exprs)  
     };
     "u8" => U8, false, |exprs| {
         check_num_params(1, &exprs)?;

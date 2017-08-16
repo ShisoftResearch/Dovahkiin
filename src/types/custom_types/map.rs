@@ -138,6 +138,9 @@ impl Map {
             .map(|(field, value)| (field.unwrap(), value))
             .collect()
     }
+    pub fn len(&self) -> usize {
+        self.map.len()
+    }
 }
 
 pub fn key_hash<'a>(key: &'a str) -> u64 {

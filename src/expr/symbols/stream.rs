@@ -16,6 +16,7 @@ pub fn to_array(expr: SExpr) -> Result<SExpr, String> {
             }
             return Ok(SExpr::Value(Value::Array(array)));
         },
+        SExpr::Value(Value::Array(_)) => Ok(expr),
         _ => {
             return Err(format!("Only Vector can convert into array, found {:?}", expr))
         }
@@ -27,6 +28,7 @@ pub fn to_vec(expr: SExpr) -> Result<SExpr, String> {
         SExpr::Value(Value::Array(array)) => {
             return Ok(SExpr::Vec(array.into_iter().map(|val| SExpr::Value(val)).collect()));
         },
+        SExpr::Vec(_) => Ok(expr),
         _ => {
             return Err(format!("Only array value can convert into vector, found {:?}", expr))
         }
