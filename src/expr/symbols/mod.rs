@@ -192,6 +192,9 @@ defsymbols! {
     "hash-map" => GenHashMap, false, |exprs| {
         collections::hashmap(exprs)
     };
+    "merge" => MergeHashMap, false, |exprs| {
+        collections::merge(exprs)
+    };
     "u8" => U8, false, |exprs| {
         check_num_params(1, &exprs)?;
         num_types::u8(exprs.get(0).cloned().unwrap())

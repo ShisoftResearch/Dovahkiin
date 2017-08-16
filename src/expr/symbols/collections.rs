@@ -51,3 +51,27 @@ pub fn hashmap(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
     }
     return Ok(SExpr::Value(Value::Map(Map::from_hash_map(hashmap))))
 }
+
+pub fn merge(exprs: Vec<SExpr>) -> Result<SExpr, String> {
+    let mut value_map = HashMap::new();
+    let mut field_names = HashSet::new();
+    for expr in exprs {
+        match expr {
+            SExpr::Value(Value::Map(m)) => {
+                let mut map = m.map;
+                let mut fields = m.fields;
+                for (k, v) in map.into_iter() {
+                    value_map.insert(k, v);
+                }
+                for field in fields {
+                    field_names.insert(field);
+                }
+            },
+            _ => return Err(format!("Only map value can be merged. Found {:?}", expr))
+        }
+    }
+    let mut map = Map::new();
+    map.map = value_map;
+    map.fields = field_names;
+    return Ok(SExpr::Value(Value::Map(map)));
+}

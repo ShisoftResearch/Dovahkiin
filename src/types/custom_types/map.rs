@@ -1,4 +1,4 @@
-use std::collections::hash_map;
+use std::collections::{HashMap, HashSet};
 use bifrost_hasher::hash_str;
 use super::super::*;
 use std::slice::Iter;
@@ -6,18 +6,18 @@ use std::iter::Iterator;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct Map {
-    pub map: hash_map::HashMap<u64, Value>,
-    pub fields: Vec<String>
+    pub map: HashMap<u64, Value>,
+    pub fields: HashSet<String>
 }
 impl Map {
     pub fn new() -> Map {
         Map {
-            map: hash_map::HashMap::new(),
-            fields: Vec::new()
+            map: HashMap::new(),
+            fields: HashSet::new()
         }
     }
-    pub fn from_hash_map(map: hash_map::HashMap<String, Value>) -> Map {
-        let mut target_map = hash_map::HashMap::new();
+    pub fn from_hash_map(map: HashMap<String, Value>) -> Map {
+        let mut target_map = HashMap::new();
         let fields = map.keys().cloned().collect();
         for (key, value) in map {
             target_map.insert(key_hash(&key), value);
@@ -28,7 +28,7 @@ impl Map {
         }
     }
     pub fn insert<'a>(&mut self, key: & 'a str, value: Value) -> Option<Value> {
-        self.fields.push(key.to_string());
+        self.fields.insert(key.to_string());
         self.insert_key_id(key_hash(key), value)
     }
     pub fn insert_key_id(&mut self, key: u64, value: Value) -> Option<Value> {
@@ -125,8 +125,8 @@ impl Map {
     pub fn set_in(&mut self, keys: &[&'static str], value: Value) -> Option<()> {
         self.set_in_by_key_ids(Map::strs_to_ids(keys).iter(), value)
     }
-    pub fn into_string_map(self) -> hash_map::HashMap<String, Value> {
-        let mut id_map: hash_map::HashMap<u64, String> =
+    pub fn into_string_map(self) -> HashMap<String, Value> {
+        let mut id_map: HashMap<u64, String> =
             self.fields
                 .into_iter()
                 .map(|field| (key_hash(&field), field))
