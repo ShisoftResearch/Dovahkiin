@@ -70,8 +70,8 @@ pub fn merge(exprs: Vec<SExpr>) -> Result<SExpr, String> {
             _ => return Err(format!("Only map value can be merged. Found {:?}", expr))
         }
     }
-    let mut map = Map::new();
-    map.map = value_map;
-    map.fields = field_names;
-    return Ok(SExpr::Value(Value::Map(map)));
+    Ok(SExpr::Value(Value::Map(Map {
+        map: value_map,
+        fields: field_names
+    })))
 }
