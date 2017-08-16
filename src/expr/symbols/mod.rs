@@ -14,6 +14,7 @@ mod utils;
 mod branching;
 mod comparators;
 mod collections;
+mod logic;
 
 pub trait Symbol: Sync + Debug {
     fn eval(&self, exprs: Vec<SExpr>) -> Result<SExpr, String>;
@@ -197,6 +198,15 @@ defsymbols! {
     };
     "conj" => Conjuction, false, |exprs| {
         collections::conj(exprs)
+    };
+    "or" => Or, true, |exprs| {
+        logic::or(exprs)
+    };
+    "and" => And, true, |exprs| {
+        logic::and(exprs)
+    };
+    "cond" => Conditional, true, |exprs| {
+        logic::cond(exprs)
     };
     "u8" => U8, false, |exprs| {
         check_num_params(1, &exprs)?;
