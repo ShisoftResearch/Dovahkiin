@@ -1,5 +1,7 @@
 use super::*;
 use types::Value;
+use std::collections::HashMap;
+use types::custom_types::map::Map;
 
 pub fn size_(vals: &Vec<SExpr>) -> Result<u64, String> {
     let mut result: u64 = 0;
@@ -32,4 +34,20 @@ pub fn concat(lists: Vec<SExpr>) -> Result<SExpr, String> {
         result.append(&mut vec);
     }
     return Ok(SExpr::Vec(result));
+}
+
+pub fn hashmap(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
+    if exprs.len() & 2 == 0 {
+        return Err(format!("Map require even number of parameters. Found {}", exprs.len()));
+    }
+    let mut exprs = exprs.into_iter();
+    let mut hashmap = HashMap::new();
+    while let (Some(k), Some(v)) = (exprs.next(), exprs.next()) {
+        if let (SExpr::Value(Value::String(k_str)), SExpr::Value(value)) = (k , v) {
+            hashmap.insert(k_str, value);
+        } else {
+            return Err(format!("Wrong hashmap key value data type. Key should be a string and value should be a value"));
+        }
+    }
+    return Ok(SExpr::Value(Value::Map(Map::from_hash_map(hashmap))))
 }
