@@ -75,3 +75,13 @@ pub fn merge(exprs: Vec<SExpr>) -> Result<SExpr, String> {
         fields: field_names
     })))
 }
+
+pub fn conj(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
+    let mut list = stream::to_vec(exprs.remove(0));
+    if let Ok(SExpr::Vec(mut vec)) = list {
+        vec.append(&mut exprs);
+        return Ok(SExpr::Vec(vec));
+    } else {
+        return Err(format!("Cannot concat. {:?}", list));
+    }
+}
