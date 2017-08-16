@@ -265,7 +265,7 @@ pub fn tokenize_chars_iter(iter: &mut CharIter) -> Result<Vec<Token>, String> {
             },
             // match negative number need next char to be a digit
             '-' if match iter.peek_next() {
-                Some('0'...'9') => true, _ => false
+                Some(NUMBER_PATTERN!()) => true, _ => false
             } => {
                 tokens.push(read_number(c, iter)?);
             },
