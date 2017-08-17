@@ -5,12 +5,16 @@ use std::rc::Rc;
 use std::borrow::BorrowMut;
 use expr::interpreter::ENV;
 
-pub fn bind(id: u64, val: SExpr) {
+pub fn bind_rc(id: u64, val_rc: Rc<SExpr>) {
     ENV.with(|env| {
         let mut env_borrow = env.borrow_mut();
         let mut binding_map = &mut env_borrow.bindings.borrow_mut();
-        binding_map.entry(id).or_insert_with(|| LinkedList::new()).push_front(Rc::new(val));
+        binding_map.entry(id).or_insert_with(|| LinkedList::new()).push_front(val_rc);
     });
+}
+
+pub fn bind(id: u64, val: SExpr) {
+    bind_rc(id, Rc::new(val))
 }
 
 pub fn unbind(id: u64) {
