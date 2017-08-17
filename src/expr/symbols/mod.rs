@@ -5,12 +5,12 @@ use bifrost_hasher::hash_str;
 
 pub mod functions;
 pub mod misc;
+pub mod utils;
 mod num_types;
 mod arithmetic;
 mod bindings;
 mod lambda;
 mod stream;
-mod utils;
 mod branching;
 mod comparators;
 mod collections;
