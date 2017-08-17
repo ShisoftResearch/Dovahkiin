@@ -46,11 +46,14 @@ impl Interpreter {
             env: Rc::new(Envorinment::new())
         }
     }
-    pub fn eval(&self, exprs: Vec<SExpr>) -> Result<SExpr, String> {
+    pub fn set_env(&self) {
         ENV.with(|env| {
             let mut env_borrowed = env.borrow_mut();
             *env_borrowed = self.env.clone();
         });
+    }
+    pub fn eval(&self, exprs: Vec<SExpr>) -> Result<SExpr, String> {
+        self.set_env();
         do_eval(exprs)
     }
 }
