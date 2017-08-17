@@ -7,13 +7,13 @@ use std::iter::Iterator;
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct Map {
     pub map: HashMap<u64, Value>,
-    pub fields: HashSet<String>
+    pub fields: Vec<String>
 }
 impl Map {
     pub fn new() -> Map {
         Map {
             map: HashMap::new(),
-            fields: HashSet::new()
+            fields: Vec::new()
         }
     }
     pub fn from_hash_map(map: HashMap<String, Value>) -> Map {
@@ -28,7 +28,7 @@ impl Map {
         }
     }
     pub fn insert<'a>(&mut self, key: & 'a str, value: Value) -> Option<Value> {
-        self.fields.insert(key.to_string());
+        self.fields.push(key.to_string());
         self.insert_key_id(key_hash(key), value)
     }
     pub fn insert_key_id(&mut self, key: u64, value: Value) -> Option<Value> {
