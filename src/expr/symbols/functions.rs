@@ -21,7 +21,8 @@ pub fn eval_function(func_expr: &SExpr, params: Vec<SExpr>) -> Result<SExpr, Str
                 return eval_lambda(env_bind.borrow(), params)
             } else {
                 // internal functions
-                match ISYMBOL_MAP.get(&symbol_id) {
+                let symbols = ISYMBOL_MAP.map.borrow();
+                match symbols.get(&symbol_id) {
                     Some(symbol) => {
                         // if the symbol is not a macro, parameters will all be evaled here. Or passthrough those expressions.
                         return symbol.eval(if symbol.is_macro() {
