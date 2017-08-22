@@ -32,10 +32,10 @@ impl ISymbolMap {
     pub fn new(map: HashMap<u64, Box<Symbol>>) -> ISymbolMap {
         ISymbolMap { map: RefCell::new(map) }
     }
-    pub fn insert(&self, symbol_id: u64, symbol_impl: Box<Symbol>) -> Result<(), ()> {
+    pub fn insert<'a>(&self, symbol_name: &'a str, symbol_impl: Box<Symbol>) -> Result<(), ()> {
         match self.map.try_borrow_mut() {
             Ok(ref mut m) => {
-                m.insert(symbol_id, symbol_impl);
+                m.insert(hash_str(symbol_name), symbol_impl);
                 Ok(())
             },
             Err(_) => Err(())
@@ -69,7 +69,7 @@ macro_rules! defsymbols {
     };
 }
 
-pub fn new_symbol(symbol_id: u64, symbol_impl: Box<Symbol>) -> Result<(), ()> {
+pub fn new_symbol<'a>(symbol_id: &'a str, symbol_impl: Box<Symbol>) -> Result<(), ()> {
     ISYMBOL_MAP.insert(symbol_id, symbol_impl)
 }
 
