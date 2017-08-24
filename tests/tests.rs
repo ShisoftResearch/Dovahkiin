@@ -82,3 +82,10 @@ pub fn lisp_integrated_functional_defunc() {
                                SExpr::Value(Value::U32(2)), SExpr::Value(Value::U32(3)),
                                SExpr::Value(Value::U32(4)), SExpr::Value(Value::U32(5))]));
 }
+
+#[test]
+pub fn lisp_lexer_test_1() {
+    let interpreter = lisp::get_interpreter();
+    let str_function = "(+(+ 1u32 2u32) 3u32)";
+    assert_eq!(lisp::eval_string(&interpreter, str_function).unwrap(), SExpr::Value(Value::U32(6)));
+}
