@@ -1,6 +1,8 @@
 use expr::SExpr;
 use std::collections::{HashMap, HashSet};
 use std::fmt::Debug;
+use std::cell::RefCell;
+use std::sync::Arc;
 use bifrost_hasher::hash_str;
 
 pub mod functions;
@@ -21,6 +23,27 @@ pub trait Symbol: Sync + Debug {
     fn is_macro(&self) -> bool;
 }
 
+pub struct ISymbolMap {
+    pub map: RefCell<HashMap<u64, Box<Symbol>>>
+}
+
+unsafe impl Sync for ISymbolMap {}
+impl ISymbolMap {
+    pub fn new(map: HashMap<u64, Box<Symbol>>) -> ISymbolMap {
+        ISymbolMap { map: RefCell::new(map) }
+    }
+    pub fn insert<'a, S>(&self, symbol_name: &'a str, symbol_impl: S)
+        -> Result<(), ()> where S: Symbol + 'static {
+        match self.map.try_borrow_mut() {
+            Ok(ref mut m) => {
+                m.insert(hash_str(symbol_name), Box::new(symbol_impl));
+                Ok(())
+            },
+            Err(_) => Err(())
+        }
+    }
+}
+
 macro_rules! defsymbols {
     ($($sym: expr => $name: ident, $is_macro: expr, $eval: expr);*) => {
         $(
@@ -36,15 +59,20 @@ macro_rules! defsymbols {
             }
         )*
         lazy_static! {
-            pub static ref ISYMBOL_MAP: HashMap<u64, Box<Symbol>> = {
+            pub static ref ISYMBOL_MAP: ISymbolMap = {
                 let mut symbol_map: HashMap<u64, Box<Symbol>> = HashMap::new();
                 $(
                     symbol_map.insert(hash_str($sym), Box::new($name));
                 )*
-                symbol_map
+                ISymbolMap::new(symbol_map)
             };
         }
     };
+}
+
+pub fn new_symbol<'a, S>(symbol_id: &'a str, symbol_impl: S)
+    -> Result<(), ()> where S: Symbol + 'static {
+    ISYMBOL_MAP.insert(symbol_id, symbol_impl)
 }
 
 fn check_num_params(num: usize, params: &Vec<SExpr>) -> Result<(), String> {
