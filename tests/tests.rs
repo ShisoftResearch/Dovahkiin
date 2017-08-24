@@ -89,3 +89,13 @@ pub fn lisp_lexer_test_1() {
     let str_function = "(+(+ 1u32 2u32) 3u32)";
     assert_eq!(lisp::eval_string(&interpreter, str_function).unwrap(), SExpr::Value(Value::U32(6)));
 }
+
+#[test]
+pub fn scoping() {
+    let interpreter = lisp::get_interpreter();
+    let str_function = "(def x 1u32)\n
+                        (defunc y [] x)\n
+                        (let [x 2u32] (y))";
+    // 2 for dynamic scoping, 1 for lexical scoping. Dovahkiin is dynamic scoping
+    assert_eq!(lisp::eval_string(&interpreter, str_function).unwrap(), SExpr::Value(Value::U32(2)));
+}
