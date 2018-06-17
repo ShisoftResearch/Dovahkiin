@@ -117,7 +117,7 @@ macro_rules! define_types {
     ) => (
 
         #[derive(Copy, Clone)]
-        pub enum TypeId {
+        pub enum Type {
             $(
                 $e = $id,
             )*
