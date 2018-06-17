@@ -116,7 +116,7 @@ macro_rules! define_types {
          );*
     ) => (
 
-        #[derive(Copy, Clone)]
+        #[derive(Copy, Clone, Eq, PartialEq)]
         pub enum Type {
             $(
                 $e = $id,
