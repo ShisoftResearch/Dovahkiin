@@ -1,8 +1,9 @@
 use super::*;
 use std::ops::{Index, IndexMut};
+use std::iter::Iterator;
 use serde;
 
-pub trait ToValue: serde::Serialize{
+pub trait ToValue {
     fn value(self) -> Value;
 }
 impl <'a> ToValue for &'a str {
@@ -13,6 +14,12 @@ impl <'a> ToValue for &'a str {
 impl ToValue for Value {
     fn value(self) -> Value {
         self
+    }
+}
+impl <V> ToValue for Vec<V> where V: ToValue {
+    fn value(self) -> Value {
+        let array_data: Vec<Value> = self.into_iter().map(|v| v.value()).collect();
+        return Value::Array(array_data)
     }
 }
 
