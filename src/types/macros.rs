@@ -201,7 +201,7 @@ macro_rules! define_types {
                     $id => {
                         let val_opt = get_from_val!($r, $e, val);
                         if val_opt.is_none() {
-                            panic!("value does not match type id {}", id);
+                            panic!("value does not match type id {}, actual value {:?}", id, val);
                         } else {
                             $io::val_size(val_opt.unwrap())
                         }
