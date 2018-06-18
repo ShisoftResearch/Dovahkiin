@@ -24,7 +24,7 @@ impl Map {
         }
         Map {
             map: target_map,
-            fields: fields
+            fields
         }
     }
     pub fn insert<'a>(&mut self, key: & 'a str, value: Value) -> Option<Value> {

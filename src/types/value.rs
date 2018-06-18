@@ -1,4 +1,5 @@
 use super::*;
+use std::collections::HashMap;
 use std::ops::{Index, IndexMut};
 use std::iter::Iterator;
 use serde;
@@ -20,6 +21,16 @@ impl <V> ToValue for Vec<V> where V: ToValue {
     fn value(self) -> Value {
         let array_data: Vec<Value> = self.into_iter().map(|v| v.value()).collect();
         return Value::Array(array_data)
+    }
+}
+
+impl <V> ToValue for HashMap<String, V> where V: ToValue {
+    fn value(self) -> Value {
+        let mut map = Map::new();
+        for (k, v) in self {
+            map.insert_value(&k, v);
+        }
+        return Value::Map(map);
     }
 }
 
