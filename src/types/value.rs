@@ -139,6 +139,14 @@ impl <'a> Iterator for ValueIter<'a> {
     }
 }
 
+impl <'a> Iterator for &'a ValueIter<'a> {
+    type Item = &'a Value;
+
+    fn next(&mut self) -> Option<<Self as Iterator>::Item> {
+        self.next()
+    }
+}
+
 impl Eq for Value {
     // TODO: elaborate it
 }
