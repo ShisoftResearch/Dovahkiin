@@ -14,15 +14,22 @@ impl <'a> ToValue for &'a str {
         Value::String(self.to_string())
     }
 }
+
 impl ToValue for Value {
     fn value(self) -> Value {
         self
     }
 }
-impl <V> ToValue for Vec<V> where V: ToValue {
+
+impl ToValue for Vec<Value> where {
     fn value(self) -> Value {
-        let array_data: Vec<Value> = self.into_iter().map(|v| v.value()).collect();
-        return Value::Array(array_data)
+        return Value::Array(self)
+    }
+}
+
+impl <V> ToValue for Vec<HashMap<String, V>> where V: ToValue {
+    fn value(self) -> Value {
+        return Value::Array(self.into_iter().map(|m| m.value()).collect());
     }
 }
 
@@ -150,3 +157,5 @@ impl <'a> Iterator for &'a ValueIter<'a> {
 impl Eq for Value {
     // TODO: elaborate it
 }
+
+pub trait Compound {}

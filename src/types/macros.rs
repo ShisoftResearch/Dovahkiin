@@ -131,6 +131,11 @@ macro_rules! define_types {
                     Value::$e(self)
                 }
             }
+            impl ToValue for Vec<$t> {
+                fn value(self) -> Value {
+                    Value::PrimArray(PrimitiveArray::$e(self))
+                }
+            }
         )*
 
         #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -140,8 +145,16 @@ macro_rules! define_types {
             )*
             Map(Map),
             Array(Vec<Value>),
+            PrimArray(PrimitiveArray),
             NA,
             Null
+        }
+
+        #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+        pub enum PrimitiveArray {
+              $(
+                  $e(Vec<$t>),
+              )*
         }
 
         impl Value {
@@ -160,6 +173,7 @@ macro_rules! define_types {
                 } else { None }
             }
         }
+
         pub fn get_type_id (name: String) -> u32 {
            match name.as_ref() {
                 $(
