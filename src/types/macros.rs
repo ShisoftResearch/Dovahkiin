@@ -154,6 +154,11 @@ macro_rules! define_types {
                     _ => None
                 }
             }
+            pub fn iter(&self) -> Option<ValueIter> {
+                if let Value::Array(ref array) = self {
+                    Some(ValueIter::new(array))
+                } else { None }
+            }
         }
         pub fn get_type_id (name: String) -> u32 {
            match name.as_ref() {

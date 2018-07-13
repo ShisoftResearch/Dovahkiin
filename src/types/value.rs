@@ -3,10 +3,12 @@ use std::collections::HashMap;
 use std::ops::{Index, IndexMut};
 use std::iter::Iterator;
 use serde;
+use std::vec::IntoIter;
 
 pub trait ToValue {
     fn value(self) -> Value;
 }
+
 impl <'a> ToValue for &'a str {
     fn value(self) -> Value {
         Value::String(self.to_string())
@@ -98,6 +100,42 @@ impl IndexMut<u64> for Value {
             &mut Value::Array(ref mut array) => array.get_mut(index as usize).expect(MISSING_ARRAY_ITEM),
             _ => panic!(DATA_TYPE_DONT_SUPPORT_INDEXING)
         }
+    }
+}
+
+impl IntoIterator for Value {
+    type Item = Value;
+    type IntoIter = IntoIter<Value>;
+
+    fn into_iter(self) -> <Self as IntoIterator>::IntoIter {
+        if let Value::Array(array) = self {
+            return array.into_iter()
+        } else { panic!() }
+    }
+}
+
+pub struct ValueIter<'a> {
+    array: &'a Vec<Value>,
+    cursor: usize
+}
+
+impl <'a> ValueIter<'a> {
+    pub fn new(array: &'a Vec<Value>) -> ValueIter<'a> {
+        ValueIter {
+            array, cursor: 0
+        }
+    }
+}
+
+impl <'a> Iterator for ValueIter<'a> {
+    type Item = &'a Value;
+
+    fn next(&mut self) -> Option<<Self as Iterator>::Item> {
+        let val_opt = self.array.get(self.cursor);
+        if let Some(ref val) = val_opt {
+            self.cursor += 1;
+        }
+        return val_opt;
     }
 }
 
