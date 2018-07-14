@@ -217,6 +217,21 @@ macro_rules! define_types {
                  _ => Value::NA,
              }
         }
+        pub fn get_prim_array_val(id:u32, size: usize, mem_ptr: &mut usize) -> Value {
+             match id {
+                 $(
+                     $id => {
+                        let mut vals = Vec::with_capacity(size);
+                        for _ in 0..size {
+                            vals.push($io::read(*mem_ptr));
+                            *mem_ptr += get_size(id, *mem_ptr);
+                        }
+                        Value::PrimArray(PrimitiveArray::$e(vals))
+                     },
+                 )*
+                 _ => Value::NA,
+             }
+        }
         pub fn set_val (id:u32, val: &Value, mem_ptr: usize) {
              match id {
                  $(
