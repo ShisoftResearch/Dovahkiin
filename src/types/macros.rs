@@ -167,7 +167,18 @@ macro_rules! define_types {
                     _ => None
                 }
             }
-            pub fn iter(&self) -> Option<ValueIter> {
+            pub fn cloned_iter_value(&self) -> Option<IntoIter<Value>> {
+                match self {
+                    Value::Array(ref array) => Some(array.clone().into_iter()),
+                    $(Value::PrimArray(PrimitiveArray::$e(ref vec)) => {
+                        let packed_iter = vec.iter().map(|v| v.clone().value());
+                        let packed_vec: Vec<_> = packed_iter.collect();
+                        Some(packed_vec.into_iter())
+                    },)*
+                    _ => None
+                }
+            }
+            pub fn iter_value(&self) -> Option<ValueIter> {
                 if let Value::Array(ref array) = self {
                     Some(ValueIter::new(array))
                 } else { None }

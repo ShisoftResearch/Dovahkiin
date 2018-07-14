@@ -9,6 +9,7 @@ pub use types::custom_types::map::*;
 pub use types::custom_types::pos::*;
 pub use types::value::*;
 use serde::Deserialize;
+use std::vec::IntoIter;
 
 gen_primitive_types_io!(
     bool:   bool_io       ;
