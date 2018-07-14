@@ -37,8 +37,8 @@ gen_compound_types_io! (
         }
     }, {
         |val: &Pos2d32, mem_ptr| {
-            f32_io::write(val.x, mem_ptr);
-            f32_io::write(val.y, mem_ptr + f32_io::size(0));
+            f32_io::write(&val.x, mem_ptr);
+            f32_io::write(&val.y, mem_ptr + f32_io::size(0));
         }
     }, {
         f32_io::size(0) * 2
@@ -52,8 +52,8 @@ gen_compound_types_io! (
         }
     }, {
         |val: &Pos2d64, mem_ptr| {
-            f64_io::write(val.x, mem_ptr);
-            f64_io::write(val.y, mem_ptr + f64_io::size(0));
+            f64_io::write(&val.x, mem_ptr);
+            f64_io::write(&val.y, mem_ptr + f64_io::size(0));
         }
     }, {
         f64_io::size(0) * 2
@@ -70,9 +70,9 @@ gen_compound_types_io! (
         }
     }, {
         |val: &Pos3d32, mem_ptr| {
-            f32_io::write(val.x, mem_ptr);
-            f32_io::write(val.y, mem_ptr + f32_io::size(0));
-            f32_io::write(val.z, mem_ptr + f32_io::size(0) * 2);
+            f32_io::write(&val.x, mem_ptr);
+            f32_io::write(&val.y, mem_ptr + f32_io::size(0));
+            f32_io::write(&val.z, mem_ptr + f32_io::size(0) * 2);
         }
     }, {
         f32_io::size(0) * 3
@@ -87,9 +87,9 @@ gen_compound_types_io! (
         }
     }, {
         |val: &Pos3d64, mem_ptr| {
-            f64_io::write(val.x, mem_ptr);
-            f64_io::write(val.y, mem_ptr + f64_io::size(0));
-            f64_io::write(val.z, mem_ptr + f64_io::size(0) * 2);
+            f64_io::write(&val.x, mem_ptr);
+            f64_io::write(&val.y, mem_ptr + f64_io::size(0));
+            f64_io::write(&val.z, mem_ptr + f64_io::size(0) * 2);
         }
     }, {
         f64_io::size(0) * 3
@@ -105,8 +105,8 @@ gen_compound_types_io! (
         }
     }, {
         |val: &Id, mem_ptr| {
-            u64_io::write(val.higher, mem_ptr);
-            u64_io::write(val.lower,  mem_ptr + u64_io::size(0));
+            u64_io::write(&val.higher, mem_ptr);
+            u64_io::write(&val.lower,  mem_ptr + u64_io::size(0));
         }
     }, {
         u64_io::size(0) * 2
@@ -132,7 +132,7 @@ gen_variable_types_io! (
         |val: &String, mem_ptr| {
             let bytes = val.as_bytes();
             let len = bytes.len();
-            u32_io::write(len as u32, mem_ptr);
+            u32_io::write(&(len as u32), mem_ptr);
             let mut smem_ptr = mem_ptr + u32_io::size(0);
             unsafe {
                 for b in bytes {
@@ -172,7 +172,7 @@ gen_variable_types_io! (
         |val: &Any, mem_ptr| {
             let bytes = &val.data;
             let len = bytes.len();
-            u32_io::write(len as u32, mem_ptr);
+            u32_io::write(&(len as u32), mem_ptr);
             let mut smem_ptr = mem_ptr + u32_io::size(0);
             unsafe {
                 for b in bytes {

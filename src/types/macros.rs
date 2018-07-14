@@ -11,15 +11,15 @@ macro_rules! gen_primitive_types_io {
                             ptr::read(mem_ptr as *mut $t)
                         }
                     }
-                    pub fn write(val: $t, mem_ptr: usize) {
+                    pub fn write(val: &$t, mem_ptr: usize) {
                         unsafe {
-                            ptr::write(mem_ptr as *mut $t, val)
+                            ptr::write(mem_ptr as *mut $t, *val)
                         }
                     }
                     pub fn size(_: usize) -> usize {
                         mem::size_of::<$t>()
                     }
-                    pub fn val_size(_: $t) -> usize {
+                    pub fn val_size(_: &$t) -> usize {
                         size(0)
                     }
                 }
@@ -90,7 +90,7 @@ macro_rules! get_from_val {
     );
     (false, $e:ident, $d:ident) => (
         match $d {
-            &Value::$e(v) => Some(v),
+            &Value::$e(ref v) => Some(v),
             _ => None
         }
     )
@@ -103,7 +103,7 @@ macro_rules! get_from_val_fn {
         }
     );
     (false, $e:ident, $t:ty) => (
-        pub fn $e(&self) -> Option<$t> {
+        pub fn $e(&self) -> Option<&$t> {
             get_from_val!(false, $e, self)
         }
     )
@@ -155,6 +155,27 @@ macro_rules! define_types {
               $(
                   $e(Vec<$t>),
               )*
+        }
+
+        impl PrimitiveArray {
+            pub fn size(&self) -> usize {
+                match self {
+                    $(
+                        PrimitiveArray::$e(vec) => {
+                            return vec.iter().map(|v| $io::val_size(v)).sum()
+                        }
+                    ),*
+                }
+            }
+            pub fn len(&self) -> usize {
+                match self {
+                    $(
+                        PrimitiveArray::$e(vec) => {
+                            return vec.len()
+                        }
+                    ),*
+                }
+            }
         }
 
         impl Value {
