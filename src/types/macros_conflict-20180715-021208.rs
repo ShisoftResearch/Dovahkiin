@@ -253,14 +253,13 @@ macro_rules! define_types {
                  _ => None,
              }
         }
-        pub fn set_val (id:u32, val: &Value, mut mem_ptr: usize) {
+        pub fn set_val (id:u32, val: &Value, mem_ptr: usize) {
              match id {
                  $(
                      $id => {
-                        if let &Value::PrimArray(PrimitiveArray::$e(ref vec)) = val {
+                        if let &Value::PrimArray(PrimitiveArray::$e(vec)) = val {
                             for v in vec {
-                                $io::write(v , mem_ptr);
-                                mem_ptr += $io::val_size(v);
+                                $io::write(&v , mem_ptr);
                             }
                         } else {
                             $io::write(get_from_val!($r, $e, val).unwrap() , mem_ptr);
