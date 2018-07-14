@@ -217,7 +217,7 @@ macro_rules! define_types {
                  _ => Value::NA,
              }
         }
-        pub fn get_prim_array_val(id:u32, size: usize, mem_ptr: &mut usize) -> Value {
+        pub fn get_prim_array_val(id:u32, size: usize, mem_ptr: &mut usize) -> Option<PrimitiveArray> {
              match id {
                  $(
                      $id => {
@@ -226,10 +226,10 @@ macro_rules! define_types {
                             vals.push($io::read(*mem_ptr));
                             *mem_ptr += get_size(id, *mem_ptr);
                         }
-                        Value::PrimArray(PrimitiveArray::$e(vals))
+                        Some(PrimitiveArray::$e(vals))
                      },
                  )*
-                 _ => Value::NA,
+                 _ => None,
              }
         }
         pub fn set_val (id:u32, val: &Value, mem_ptr: usize) {
