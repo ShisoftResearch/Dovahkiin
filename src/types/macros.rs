@@ -204,6 +204,13 @@ macro_rules! define_types {
                     Some(ValueIter::new(array))
                 } else { None }
             }
+            pub fn len(&self) -> Option<usize> {
+                match self {
+                    Value::Array(ref array) => Some(array.len()),
+                    $(Value::PrimArray(PrimitiveArray::$e(ref vec)) => Some(vec.len()),)*
+                    _ => None
+                }
+            }
         }
 
         pub fn get_type_id (name: String) -> u32 {
