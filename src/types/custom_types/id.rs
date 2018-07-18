@@ -1,7 +1,9 @@
 use std::cmp::Ordering;
 use bifrost::utils::bincode::{serialize};
 use bifrost_hasher::{hash_bytes, hash_bytes_secondary};
+use byteorder::{ReadBytesExt, WriteBytesExt, LittleEndian};
 use serde;
+use std::io::{Cursor, Error};
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, Eq, Hash)]
 pub struct Id {
@@ -12,8 +14,8 @@ pub struct Id {
 impl Id {
     pub fn new(higher: u64, lower: u64) -> Id {
         Id {
-            higher: higher,
-            lower: lower,
+            higher,
+            lower,
         }
     }
     pub fn from_obj<T>(obj: &T) -> Id where T: serde::Serialize {
@@ -32,6 +34,22 @@ impl Id {
     }
     pub fn is_unit_id(&self) -> bool {
         self.higher == 0 && self.lower == 0
+    }
+    pub fn to_binary(&self) -> [u8; 16] {
+        let mut slice = [0u8; 16];
+        {
+            let mut cursor = Cursor::new(&mut slice[..]);
+            cursor.write_u64::<LittleEndian>(self.higher);
+            cursor.write_u64::<LittleEndian>(self.lower);
+        }
+        return slice;
+    }
+    pub fn from_binary<T>(cursor: &mut Cursor<T>) -> Result<Id, Error>
+        where Cursor<T>: ReadBytesExt
+    {
+        Ok(Id::new(
+            cursor.read_u64::<LittleEndian>()?,
+            cursor.read_u64::<LittleEndian>()?))
     }
 }
 
