@@ -7,6 +7,7 @@ pub use types::custom_types::any::*;
 pub use types::custom_types::id::*;
 pub use types::custom_types::map::*;
 pub use types::custom_types::pos::*;
+pub use types::custom_types::bytes::*;
 pub use types::value::*;
 use serde::Deserialize;
 use std::vec::IntoIter;
@@ -154,6 +155,84 @@ gen_variable_types_io! (
 );
 
 gen_variable_types_io! (
+    Bytes, bytes_io, {
+        use std::ptr;
+        |mem_ptr| {
+            let len = u32_io::read(mem_ptr) as usize;
+            let smem_ptr = mem_ptr + u32_io::size(0);
+            let mut bytes = Vec::with_capacity(len);
+            for i in 0..len {
+                let ptr = smem_ptr + i;
+                let b = unsafe {ptr::read(ptr as *mut u8)};
+                bytes.push(b);
+            }
+            Bytes::from_vec(bytes)
+        }
+    }, {
+        use std::ptr;
+        |val: &Bytes, mem_ptr| {
+            let bytes = &val.data;
+            let len = bytes.len();
+            u32_io::write(&(len as u32), mem_ptr);
+            let mut smem_ptr = mem_ptr + u32_io::size(0);
+            unsafe {
+                for b in bytes {
+                    ptr::write(smem_ptr as *mut u8, *b);
+                    smem_ptr += 1;
+                }
+            }
+        }
+    }, {
+        |mem_ptr| {
+            u32_io::read(mem_ptr) as usize + u32_io::size(0)
+        }
+    }, {
+        |val: &Bytes| {
+            val.len() + u32_io::size(0)
+        }
+    }
+);
+
+gen_variable_types_io! (
+    SmallBytes, small_bytes_io, {
+        use std::ptr;
+        |mem_ptr| {
+            let len = u8_io::read(mem_ptr) as usize;
+            let smem_ptr = mem_ptr + 1;
+            let mut bytes = Vec::with_capacity(len);
+            for i in 0..len {
+                let ptr = smem_ptr + i;
+                let b = unsafe {ptr::read(ptr as *mut u8)};
+                bytes.push(b);
+            }
+            SmallBytes::from_vec(bytes)
+        }
+    }, {
+        use std::ptr;
+        |val: &SmallBytes, mem_ptr| {
+            let bytes = &val.data;
+            let len = bytes.len();
+            u8_io::write(&(len as u8), mem_ptr);
+            let mut smem_ptr = mem_ptr + 1;
+            unsafe {
+                for b in bytes {
+                    ptr::write(smem_ptr as *mut u8, *b);
+                    smem_ptr += 1;
+                }
+            }
+        }
+    }, {
+        |mem_ptr| {
+            u8_io::read(mem_ptr) as usize + 1
+        }
+    }, {
+        |val: &SmallBytes| {
+            val.len() + 1
+        }
+    }
+);
+
+gen_variable_types_io! (
     Any, any_io, {
         use std::ptr;
         |mem_ptr| {
@@ -214,7 +293,9 @@ define_types!(
     ["pos3d64"], 18, Pos3d64                           ,Pos3d64  ,true  ,  pos3d64_io    ;
     ["id"], 19, Id                                     ,Id       ,true  ,  id_io         ;
     ["string", "str"], 20, String                      ,String   ,true  ,  string_io     ;
-    ["any", "dynamic"], 21, Any                        ,Any      ,true  ,  any_io
+    ["any", "dynamic"], 21, Any                        ,Any      ,true  ,  any_io        ;
+    ["bytes"], 22, Bytes                               ,Bytes         ,true  ,  bytes_io            ;
+    ["small_bytes"], 23, SmallBytes                    ,SmallBytes    ,true  ,  small_bytes_io
 );
 
 
