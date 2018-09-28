@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 use bifrost::utils::bincode::{serialize};
 use bifrost_hasher::{hash_bytes, hash_bytes_secondary};
-use byteorder::{ReadBytesExt, WriteBytesExt, LittleEndian};
+use byteorder::{ReadBytesExt, WriteBytesExt, BigEndian};
 use serde;
 use std::io::{Cursor, Error};
 
@@ -39,8 +39,8 @@ impl Id {
         let mut slice = [0u8; 16];
         {
             let mut cursor = Cursor::new(&mut slice[..]);
-            cursor.write_u64::<LittleEndian>(self.higher);
-            cursor.write_u64::<LittleEndian>(self.lower);
+            cursor.write_u64::<BigEndian>(self.higher);
+            cursor.write_u64::<BigEndian>(self.lower);
         }
         return slice;
     }
@@ -48,8 +48,8 @@ impl Id {
         where Cursor<T>: ReadBytesExt
     {
         Ok(Id::new(
-            cursor.read_u64::<LittleEndian>()?,
-            cursor.read_u64::<LittleEndian>()?))
+            cursor.read_u64::<BigEndian>()?,
+            cursor.read_u64::<BigEndian>()?))
     }
 }
 
