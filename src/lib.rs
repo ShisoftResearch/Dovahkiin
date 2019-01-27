@@ -1,6 +1,5 @@
 #![feature(exact_size_is_empty)]
 #![feature(plugin)]
-#![plugin(bifrost_plugins)]
 #![crate_type = "lib"]
 
 #[macro_use]
