@@ -1,7 +1,7 @@
-use types::Value;
 use expr::interpreter::ENV;
-use std::rc::Rc;
 use std::borrow::Borrow;
+use std::rc::Rc;
+use types::Value;
 
 #[macro_use]
 pub mod symbols;
@@ -9,8 +9,8 @@ pub mod interpreter;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SExpr {
-    Symbol (String),
-    ISymbol (u64, String),
+    Symbol(String),
+    ISymbol(u64, String),
     Value(Value),
     List(Vec<SExpr>),
     Vec(Vec<SExpr>),
@@ -28,7 +28,7 @@ impl SExpr {
                     let func = iter.next().unwrap().eval()?;
                     Ok(symbols::functions::eval_function(&func, iter.collect())?)
                 }
-            },
+            }
             SExpr::ISymbol(symbol_id, _) => {
                 let mut env_bind_ref: Option<Rc<SExpr>> = None;
                 ENV.with(|env| {
@@ -36,7 +36,9 @@ impl SExpr {
                     let mut bindings = env_borrowed.get_mut_bindings();
                     env_bind_ref = if let Some(binding_list) = bindings.get(&symbol_id) {
                         binding_list.front().cloned()
-                    } else { None }
+                    } else {
+                        None
+                    }
                 });
                 if let Some(binding) = env_bind_ref {
                     let bind_expr: &SExpr = binding.borrow();
@@ -45,7 +47,7 @@ impl SExpr {
                     Ok(self)
                 }
             }
-            _ => Ok(self)
+            _ => Ok(self),
         }
     }
 }

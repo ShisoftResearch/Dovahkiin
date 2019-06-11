@@ -3,12 +3,12 @@ use std::ops::DerefMut;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct Bytes {
-    pub data: Vec<u8>
+    pub data: Vec<u8>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct SmallBytes {
-    pub data: Vec<u8>
+    pub data: Vec<u8>,
 }
 
 impl Deref for Bytes {

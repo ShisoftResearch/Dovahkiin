@@ -1,36 +1,39 @@
-use std::cmp::Ordering;
-use bifrost::utils::bincode::{serialize};
+use bifrost::utils::bincode::serialize;
 use bifrost_hasher::{hash_bytes, hash_bytes_secondary};
-use byteorder::{ReadBytesExt, WriteBytesExt, BigEndian};
+use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use serde;
+use std::cmp::Ordering;
 use std::io::{Cursor, Error};
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, Hash, Ord, PartialOrd, PartialEq, Eq)]
 pub struct Id {
     pub higher: u64,
-    pub lower:  u64,
+    pub lower: u64,
 }
 
 impl Id {
     pub fn new(higher: u64, lower: u64) -> Id {
-        Id {
-            higher,
-            lower,
-        }
+        Id { higher, lower }
     }
-    pub fn from_obj<T>(obj: &T) -> Id where T: serde::Serialize {
+    pub fn from_obj<T>(obj: &T) -> Id
+    where
+        T: serde::Serialize,
+    {
         let vec = serialize(obj);
         let bin = vec.as_slice();
         Id {
             higher: hash_bytes(&bin),
-            lower: hash_bytes_secondary(&bin)
+            lower: hash_bytes_secondary(&bin),
         }
     }
     pub fn is_greater_than(&self, other: &Id) -> bool {
         self.higher >= other.higher && self.lower > other.lower
     }
     pub fn unit_id() -> Id {
-        Id {higher: 0, lower: 0}
+        Id {
+            higher: 0,
+            lower: 0,
+        }
     }
     pub fn is_unit_id(&self) -> bool {
         self.higher == 0 && self.lower == 0
@@ -45,20 +48,22 @@ impl Id {
         return slice;
     }
     pub fn from_binary<T>(cursor: &mut Cursor<T>) -> Result<Id, Error>
-        where Cursor<T>: ReadBytesExt
+    where
+        Cursor<T>: ReadBytesExt,
     {
         Ok(Id::new(
             cursor.read_u64::<BigEndian>()?,
-            cursor.read_u64::<BigEndian>()?))
+            cursor.read_u64::<BigEndian>()?,
+        ))
     }
 }
 
 #[cfg(test)]
 mod test {
-    use std::collections::BTreeMap;
-    use types::custom_types::id::Id;
     use std::cmp::Ordering;
+    use std::collections::BTreeMap;
     use std::collections::HashMap;
+    use types::custom_types::id::Id;
 
     #[test]
     fn compare() {

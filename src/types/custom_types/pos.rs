@@ -67,4 +67,3 @@ impl Eq for Pos2d64 {}
 impl Eq for Pos3d32 {}
 
 impl Eq for Pos3d64 {}
-

@@ -1,7 +1,7 @@
-use expr::SExpr;
 use expr::interpreter::Interpreter;
-use lexer::{lisp as lisp_lexer};
-use parser::{lisp as lisp_parser};
+use expr::SExpr;
+use lexer::lisp as lisp_lexer;
+use parser::lisp as lisp_parser;
 
 pub fn parse_to_expr<'a>(code: &'a str) -> Result<Vec<SExpr>, String> {
     let tokens = lisp_lexer::tokenize_str(code)?;

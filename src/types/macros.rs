@@ -82,18 +82,18 @@ macro_rules! gen_variable_types_io {
 }
 
 macro_rules! get_from_val {
-    (true, $e:ident, $d:ident) => (
+    (true, $e:ident, $d:ident) => {
         match $d {
             &Value::$e(ref v) => Some(v),
-            _ => None
+            _ => None,
         }
-    );
-    (false, $e:ident, $d:ident) => (
+    };
+    (false, $e:ident, $d:ident) => {
         match $d {
             &Value::$e(ref v) => Some(v),
-            _ => None
+            _ => None,
         }
-    )
+    };
 }
 
 macro_rules! get_from_val_fn {

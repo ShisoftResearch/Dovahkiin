@@ -1,19 +1,19 @@
-use std::collections::{HashMap, HashSet};
-use bifrost_hasher::hash_str;
 use super::super::*;
-use std::slice::Iter;
+use bifrost_hasher::hash_str;
+use std::collections::{HashMap, HashSet};
 use std::iter::Iterator;
+use std::slice::Iter;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct Map {
     pub map: HashMap<u64, Value>,
-    pub fields: Vec<String>
+    pub fields: Vec<String>,
 }
 impl Map {
     pub fn new() -> Map {
         Map {
             map: HashMap::new(),
-            fields: Vec::new()
+            fields: Vec::new(),
         }
     }
     pub fn from_hash_map(map: HashMap<String, Value>) -> Map {
@@ -24,22 +24,26 @@ impl Map {
         }
         Map {
             map: target_map,
-            fields
+            fields,
         }
     }
-    pub fn insert<'a>(&mut self, key: & 'a str, value: Value) -> Option<Value> {
+    pub fn insert<'a>(&mut self, key: &'a str, value: Value) -> Option<Value> {
         self.fields.push(key.to_string());
         self.insert_key_id(key_hash(key), value)
     }
     pub fn insert_key_id(&mut self, key: u64, value: Value) -> Option<Value> {
         self.map.insert(key, value)
     }
-    pub fn insert_value<'a, V>(&mut self, key: & 'a str, value: V) -> Option<Value>
-        where V: ToValue{
+    pub fn insert_value<'a, V>(&mut self, key: &'a str, value: V) -> Option<Value>
+    where
+        V: ToValue,
+    {
         self.insert(key, value.value())
     }
     pub fn insert_key_id_value<V>(&mut self, key: u64, value: V) -> Option<Value>
-        where V: ToValue{
+    where
+        V: ToValue,
+    {
         self.insert_key_id(key, value.value())
     }
     pub fn get_by_key_id(&self, key: u64) -> &Value {
@@ -62,7 +66,7 @@ impl Map {
         if let Some(key) = current_key {
             let value = self.get_by_key_id(key);
             if key_ids.is_empty() {
-                return value
+                return value;
             } else {
                 match value {
                     &Value::Map(ref map) => return map.get_in_by_ids(key_ids),
@@ -70,7 +74,7 @@ impl Map {
                 }
             }
         }
-        return &NULL_VALUE
+        return &NULL_VALUE;
     }
     pub fn get_in(&self, keys: &[&'static str]) -> &Value {
         self.get_in_by_ids(Map::strs_to_ids(keys).iter())
@@ -83,24 +87,28 @@ impl Map {
                 &mut Value::Null => return None,
                 _ => {
                     if keys_ids.is_empty() {
-                        return Some(value)
+                        return Some(value);
                     } else {
                         match value {
-                            &mut Value::Map(ref mut map) => return map.get_in_mut_by_key_ids(keys_ids),
-                            _ => return None
+                            &mut Value::Map(ref mut map) => {
+                                return map.get_in_mut_by_key_ids(keys_ids)
+                            }
+                            _ => return None,
                         }
                     }
                 }
             }
         } else {
-            return None
+            return None;
         }
     }
     pub fn get_in_mut(&mut self, keys: &[&'static str]) -> Option<&mut Value> {
         self.get_in_mut_by_key_ids(Map::strs_to_ids(keys).iter())
     }
     pub fn update_in_by_key_ids<U>(&mut self, keys: Iter<u64>, update: U) -> Option<()>
-        where U: FnOnce(&mut Value) {
+    where
+        U: FnOnce(&mut Value),
+    {
         let value = self.get_in_mut_by_key_ids(keys);
         if let Some(value) = value {
             update(value);
@@ -110,7 +118,9 @@ impl Map {
         }
     }
     pub fn update_in<U>(&mut self, keys: &[&'static str], update: U) -> Option<()>
-        where U: FnOnce(&mut Value) {
+    where
+        U: FnOnce(&mut Value),
+    {
         self.update_in_by_key_ids(Map::strs_to_ids(keys).iter(), update)
     }
     pub fn set_in_by_key_ids(&mut self, keys: Iter<u64>, value: Value) -> Option<()> {
@@ -126,11 +136,11 @@ impl Map {
         self.set_in_by_key_ids(Map::strs_to_ids(keys).iter(), value)
     }
     pub fn into_string_map(self) -> HashMap<String, Value> {
-        let mut id_map: HashMap<u64, String> =
-            self.fields
-                .into_iter()
-                .map(|field| (key_hash(&field), field))
-                .collect();
+        let mut id_map: HashMap<u64, String> = self
+            .fields
+            .into_iter()
+            .map(|field| (key_hash(&field), field))
+            .collect();
         self.map
             .into_iter()
             .map(|(fid, value)| (id_map.remove(&fid), value))

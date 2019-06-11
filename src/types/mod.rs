@@ -3,14 +3,14 @@ mod macros;
 pub mod custom_types;
 pub mod value;
 
+use serde::Deserialize;
+use std::vec::IntoIter;
 pub use types::custom_types::any::*;
+pub use types::custom_types::bytes::*;
 pub use types::custom_types::id::*;
 pub use types::custom_types::map::*;
 pub use types::custom_types::pos::*;
-pub use types::custom_types::bytes::*;
 pub use types::value::*;
-use serde::Deserialize;
-use std::vec::IntoIter;
 
 gen_primitive_types_io!(
     bool:   bool_io       ;
@@ -114,8 +114,10 @@ gen_compound_types_io! (
     }
 );
 
-gen_variable_types_io! (
-    String, string_io, {
+gen_variable_types_io!(
+    String,
+    string_io,
+    {
         use std::ptr;
         |mem_ptr| {
             let len = u32_io::read(mem_ptr) as usize;
@@ -123,12 +125,13 @@ gen_variable_types_io! (
             let mut bytes = Vec::with_capacity(len);
             for i in 0..len {
                 let ptr = smem_ptr + i;
-                let b = unsafe {ptr::read(ptr as *mut u8)};
+                let b = unsafe { ptr::read(ptr as *mut u8) };
                 bytes.push(b);
             }
             String::from_utf8(bytes).unwrap()
         }
-    }, {
+    },
+    {
         use std::ptr;
         |val: &String, mem_ptr| {
             let bytes = val.as_bytes();
@@ -142,20 +145,20 @@ gen_variable_types_io! (
                 }
             }
         }
-    }, {
+    },
+    {
         |mem_ptr| {
             let str_len = u32_io::read(mem_ptr) as usize;
             str_len + u32_io::size(0)
         }
-    }, {
-        |val: &String| {
-            val.as_bytes().len() + u32_io::size(0)
-        }
-    }
+    },
+    { |val: &String| { val.as_bytes().len() + u32_io::size(0) } }
 );
 
-gen_variable_types_io! (
-    Bytes, bytes_io, {
+gen_variable_types_io!(
+    Bytes,
+    bytes_io,
+    {
         use std::ptr;
         |mem_ptr| {
             let len = u32_io::read(mem_ptr) as usize;
@@ -163,12 +166,13 @@ gen_variable_types_io! (
             let mut bytes = Vec::with_capacity(len);
             for i in 0..len {
                 let ptr = smem_ptr + i;
-                let b = unsafe {ptr::read(ptr as *mut u8)};
+                let b = unsafe { ptr::read(ptr as *mut u8) };
                 bytes.push(b);
             }
             Bytes::from_vec(bytes)
         }
-    }, {
+    },
+    {
         use std::ptr;
         |val: &Bytes, mem_ptr| {
             let bytes = &val.data;
@@ -182,19 +186,15 @@ gen_variable_types_io! (
                 }
             }
         }
-    }, {
-        |mem_ptr| {
-            u32_io::read(mem_ptr) as usize + u32_io::size(0)
-        }
-    }, {
-        |val: &Bytes| {
-            val.len() + u32_io::size(0)
-        }
-    }
+    },
+    { |mem_ptr| { u32_io::read(mem_ptr) as usize + u32_io::size(0) } },
+    { |val: &Bytes| { val.len() + u32_io::size(0) } }
 );
 
-gen_variable_types_io! (
-    SmallBytes, small_bytes_io, {
+gen_variable_types_io!(
+    SmallBytes,
+    small_bytes_io,
+    {
         use std::ptr;
         |mem_ptr| {
             let len = u8_io::read(mem_ptr) as usize;
@@ -202,12 +202,13 @@ gen_variable_types_io! (
             let mut bytes = Vec::with_capacity(len);
             for i in 0..len {
                 let ptr = smem_ptr + i;
-                let b = unsafe {ptr::read(ptr as *mut u8)};
+                let b = unsafe { ptr::read(ptr as *mut u8) };
                 bytes.push(b);
             }
             SmallBytes::from_vec(bytes)
         }
-    }, {
+    },
+    {
         use std::ptr;
         |val: &SmallBytes, mem_ptr| {
             let bytes = &val.data;
@@ -221,19 +222,15 @@ gen_variable_types_io! (
                 }
             }
         }
-    }, {
-        |mem_ptr| {
-            u8_io::read(mem_ptr) as usize + 1
-        }
-    }, {
-        |val: &SmallBytes| {
-            val.len() + 1
-        }
-    }
+    },
+    { |mem_ptr| { u8_io::read(mem_ptr) as usize + 1 } },
+    { |val: &SmallBytes| { val.len() + 1 } }
 );
 
-gen_variable_types_io! (
-    Any, any_io, {
+gen_variable_types_io!(
+    Any,
+    any_io,
+    {
         use std::ptr;
         |mem_ptr| {
             let len = u32_io::read(mem_ptr) as usize;
@@ -241,12 +238,13 @@ gen_variable_types_io! (
             let mut bytes = Vec::with_capacity(len);
             for i in 0..len {
                 let ptr = smem_ptr + i;
-                let b = unsafe {ptr::read(ptr as *mut u8)};
+                let b = unsafe { ptr::read(ptr as *mut u8) };
                 bytes.push(b);
             }
-            Any {data: bytes}
+            Any { data: bytes }
         }
-    }, {
+    },
+    {
         use std::ptr;
         |val: &Any, mem_ptr| {
             let bytes = &val.data;
@@ -260,16 +258,14 @@ gen_variable_types_io! (
                 }
             }
         }
-    }, {
+    },
+    {
         |mem_ptr| {
             let str_len = u32_io::read(mem_ptr) as usize;
             str_len + u32_io::size(0)
         }
-    }, {
-        |val: &Any| {
-            val.data.len() + u32_io::size(0)
-        }
-    }
+    },
+    { |val: &Any| { val.data.len() + u32_io::size(0) } }
 );
 
 define_types!(
@@ -297,7 +293,6 @@ define_types!(
     ["bytes"], 22, Bytes                               ,Bytes         ,true  ,  bytes_io            ;
     ["small_bytes"], 23, SmallBytes                    ,SmallBytes    ,true  ,  small_bytes_io
 );
-
 
 #[macro_export]
 macro_rules! data_map {

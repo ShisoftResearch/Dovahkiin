@@ -1,22 +1,22 @@
+use bifrost_hasher::hash_str;
 use expr::SExpr;
+use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::fmt::Debug;
-use std::cell::RefCell;
 use std::sync::Arc;
-use bifrost_hasher::hash_str;
 
-pub mod functions;
-pub mod misc;
-pub mod utils;
-pub mod bindings;
-mod num_types;
 mod arithmetic;
-mod lambda;
-mod stream;
+pub mod bindings;
 mod branching;
-mod comparators;
 mod collections;
+mod comparators;
+pub mod functions;
+mod lambda;
 mod logic;
+pub mod misc;
+mod num_types;
+mod stream;
+pub mod utils;
 
 pub trait Symbol: Sync + Debug {
     fn eval(&self, exprs: Vec<SExpr>) -> Result<SExpr, String>;
@@ -24,22 +24,26 @@ pub trait Symbol: Sync + Debug {
 }
 
 pub struct ISymbolMap {
-    pub map: RefCell<HashMap<u64, Box<Symbol>>>
+    pub map: RefCell<HashMap<u64, Box<Symbol>>>,
 }
 
 unsafe impl Sync for ISymbolMap {}
 impl ISymbolMap {
     pub fn new(map: HashMap<u64, Box<Symbol>>) -> ISymbolMap {
-        ISymbolMap { map: RefCell::new(map) }
+        ISymbolMap {
+            map: RefCell::new(map),
+        }
     }
-    pub fn insert<'a, S>(&self, symbol_name: &'a str, symbol_impl: S)
-        -> Result<(), ()> where S: Symbol + 'static {
+    pub fn insert<'a, S>(&self, symbol_name: &'a str, symbol_impl: S) -> Result<(), ()>
+    where
+        S: Symbol + 'static,
+    {
         match self.map.try_borrow_mut() {
             Ok(ref mut m) => {
                 m.insert(hash_str(symbol_name), Box::new(symbol_impl));
                 Ok(())
-            },
-            Err(_) => Err(())
+            }
+            Err(_) => Err(()),
         }
     }
 }
@@ -70,14 +74,20 @@ macro_rules! defsymbols {
     };
 }
 
-pub fn new_symbol<'a, S>(symbol_id: &'a str, symbol_impl: S)
-    -> Result<(), ()> where S: Symbol + 'static {
+pub fn new_symbol<'a, S>(symbol_id: &'a str, symbol_impl: S) -> Result<(), ()>
+where
+    S: Symbol + 'static,
+{
     ISYMBOL_MAP.insert(symbol_id, symbol_impl)
 }
 
 fn check_num_params(num: usize, params: &Vec<SExpr>) -> Result<(), String> {
     if num != params.len() {
-        Err(format!("Parameter number not match. Except {} but found {}", num, params.len()))
+        Err(format!(
+            "Parameter number not match. Except {} but found {}",
+            num,
+            params.len()
+        ))
     } else {
         Ok(())
     }
@@ -85,7 +95,9 @@ fn check_num_params(num: usize, params: &Vec<SExpr>) -> Result<(), String> {
 
 fn check_params_not_empty(params: &Vec<SExpr>) -> Result<(), String> {
     if params.len() == 0 {
-        Err(format!("Parameter number not match. Expected some but found empty"))
+        Err(format!(
+            "Parameter number not match. Expected some but found empty"
+        ))
     } else {
         Ok(())
     }
@@ -93,7 +105,11 @@ fn check_params_not_empty(params: &Vec<SExpr>) -> Result<(), String> {
 
 fn check_params_not_least_than(num: usize, params: &Vec<SExpr>) -> Result<(), String> {
     if params.len() < num {
-        Err(format!("Parameter number not match, Expected at least {} but found {}", num, params.len()))
+        Err(format!(
+            "Parameter number not match, Expected at least {} but found {}",
+            num,
+            params.len()
+        ))
     } else {
         Ok(())
     }
@@ -101,7 +117,11 @@ fn check_params_not_least_than(num: usize, params: &Vec<SExpr>) -> Result<(), St
 
 fn check_params_not_greater_than(num: usize, params: &Vec<SExpr>) -> Result<(), String> {
     if params.len() > num {
-        Err(format!("Parameter number not match, Expected at most {} but found {}", num, params.len()))
+        Err(format!(
+            "Parameter number not match, Expected at most {} but found {}",
+            num,
+            params.len()
+        ))
     } else {
         Ok(())
     }
@@ -216,7 +236,7 @@ defsymbols! {
         collections::concat(exprs)
     };
     "size" => Size, false, |exprs| {
-        collections::size(exprs)  
+        collections::size(exprs)
     };
     "hash-map" => GenHashMap, false, |exprs| {
         collections::hashmap(exprs)

@@ -5,9 +5,9 @@
 #[macro_use]
 pub mod types;
 pub mod expr;
+pub mod integrated;
 pub mod lexer;
 pub mod parser;
-pub mod integrated;
 
 extern crate bincode;
 extern crate serde;
