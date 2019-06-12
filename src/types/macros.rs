@@ -1,11 +1,14 @@
 macro_rules! gen_primitive_types_io {
     (
-        $($t:ty: $tmod:ident);*
+        $($t:ty: $tmod:ident $feat_writer: expr);*
     ) => (
             $(
                 pub mod $tmod {
                     use std::ptr;
                     use std::mem;
+                    use byteorder::BigEndian;
+                    use byteorder::WriteBytesExt;
+                    use std::io::Cursor;
                     pub fn read(mem_ptr: usize) -> $t {
                          unsafe {
                             ptr::read(mem_ptr as *mut $t)
@@ -22,9 +25,36 @@ macro_rules! gen_primitive_types_io {
                     pub fn val_size(_: &$t) -> usize {
                         size(0)
                     }
+                    pub fn feature(val: $t) -> [u8; 8] {
+                        $feat_writer(val)
+                    }
                 }
             )*
     );
+}
+
+macro_rules! big_end {
+    (
+        $writer:ident
+    ) => {
+        |n| {
+            let mut key_slice = [0u8; 8];
+            {
+                let mut cursor = Cursor::new(&mut key_slice[..]);
+                cursor.$writer::<BigEndian>(n);
+            };
+            key_slice
+        }
+    }
+}
+
+macro_rules! big_end_cast {
+    () => {
+        |n| {
+            let big_end = big_end!(write_i32);
+            big_end(n as i32)
+        }
+    }
 }
 
 macro_rules! gen_compound_types_io {
@@ -211,6 +241,13 @@ macro_rules! define_types {
                     _ => None
                 }
             }
+//            pub fn feature(&self) -> [u8; 8] {
+//                match self {
+//                    $(
+//                        Value::$e(ref v) =>
+//                    )*
+//                }
+//            }
         }
 
         pub fn get_type_id (name: String) -> u32 {

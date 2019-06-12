@@ -13,20 +13,20 @@ pub use types::custom_types::pos::*;
 pub use types::value::*;
 
 gen_primitive_types_io!(
-    bool:   bool_io       ;
-    char:   char_io       ;
-    i8:     i8_io         ;
-    i16:    i16_io        ;
-    i32:    i32_io        ;
-    i64:    i64_io        ;
-    u8:     u8_io         ;
-    u16:    u16_io        ;
-    u32:    u32_io        ;
-    u64:    u64_io        ;
-    isize:  isize_io      ;
-    usize:  usize_io      ;
-    f32:    f32_io        ;
-    f64:    f64_io
+    bool:   bool_io       big_end_cast!();
+    char:   char_io       big_end_cast!();
+    i8:     i8_io         big_end_cast!();
+    i16:    i16_io        big_end!(write_i16);
+    i32:    i32_io        big_end!(write_i32);
+    i64:    i64_io        big_end!(write_i64);
+    u8:     u8_io         big_end_cast!();
+    u16:    u16_io        big_end!(write_u16);
+    u32:    u32_io        big_end!(write_u32);
+    u64:    u64_io        big_end!(write_u64);
+//    isize:  isize_io      ;
+//    usize:  usize_io      ;
+    f32:    f32_io        big_end!(write_f32);
+    f64:    f64_io        big_end!(write_f64)
 );
 
 gen_compound_types_io! (
@@ -279,8 +279,8 @@ define_types!(
     ["u16"], 8, u16                                    ,U16      ,false ,  u16_io        ;
     ["u32"], 9, u32                                    ,U32      ,false ,  u32_io        ;
     ["u64"], 10, u64                                   ,U64      ,false ,  u64_io        ;
-    ["isize"], 11, isize                               ,Isize    ,false ,  isize_io      ;
-    ["usize"], 12, usize                               ,Usize    ,false ,  usize_io      ;
+//    ["isize"], 11, isize                               ,Isize    ,false ,  isize_io      ;
+//    ["usize"], 12, usize                               ,Usize    ,false ,  usize_io      ;
     ["f32", "float"], 13, f32                          ,F32      ,false ,  f32_io        ;
     ["f64", "double"], 14, f64                         ,F64      ,false ,  f64_io        ;
     ["pos2d32", "pos2d", "pos", "pos32"], 15, Pos2d32  ,Pos2d32  ,true  ,  pos2d32_io    ;

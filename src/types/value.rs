@@ -97,7 +97,7 @@ impl<'a> IndexMut<&'a str> for Value {
 }
 
 impl IndexMut<usize> for Value {
-    fn index_mut<'a>(&'a mut self, index: usize) -> &'a mut Self::Output {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         match self {
             &mut Value::Array(ref mut array) => array.get_mut(index).expect(MISSING_ARRAY_ITEM),
             &mut Value::Map(ref mut map) => map.get_mut_by_key_id(index as u64),
