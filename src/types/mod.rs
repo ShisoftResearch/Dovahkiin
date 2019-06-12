@@ -43,6 +43,8 @@ gen_compound_types_io! (
         }
     }, {
         f32_io::size(0) * 2
+    }, {
+        |_| [0u8; 8]
     };
 
     Pos2d64, pos2d64_io, {
@@ -58,6 +60,8 @@ gen_compound_types_io! (
         }
     }, {
         f64_io::size(0) * 2
+    }, {
+        |_| [0u8; 8]
     };
 
     //////////////////////////////////////////////////////////////
@@ -77,6 +81,8 @@ gen_compound_types_io! (
         }
     }, {
         f32_io::size(0) * 3
+    }, {
+        |_| [0u8; 8]
     };
 
     Pos3d64, pos3d64_io, {
@@ -94,6 +100,8 @@ gen_compound_types_io! (
         }
     }, {
         f64_io::size(0) * 3
+    }, {
+        |_| [0u8; 8]
     };
 
     //////////////////////////////////////////////////////////
@@ -111,6 +119,11 @@ gen_compound_types_io! (
         }
     }, {
         u64_io::size(0) * 2
+    }, {
+        |id: &Id| {
+            let big_end = big_end!(write_u64);
+            big_end(id.higher ^ id.lower)
+        }
     }
 );
 
@@ -152,7 +165,13 @@ gen_variable_types_io!(
             str_len + u32_io::size(0)
         }
     },
-    { |val: &String| { val.as_bytes().len() + u32_io::size(0) } }
+    |val: &String| { val.as_bytes().len() + u32_io::size(0) },
+    |val: &String| {
+        let bytes = val.as_bytes();
+        let mut r = [0u8; 8];
+        for i in 0..::std::cmp::min(r.len(), bytes.len()) { r[i] = bytes[i] }
+        r
+    }
 );
 
 gen_variable_types_io!(
@@ -187,8 +206,14 @@ gen_variable_types_io!(
             }
         }
     },
-    { |mem_ptr| { u32_io::read(mem_ptr) as usize + u32_io::size(0) } },
-    { |val: &Bytes| { val.len() + u32_io::size(0) } }
+    |mem_ptr| { u32_io::read(mem_ptr) as usize + u32_io::size(0) },
+    |val: &Bytes| { val.len() + u32_io::size(0) },
+    |val: &Bytes| {
+        let bytes = &val.data;
+        let mut r = [0u8; 8];
+        for i in 0..::std::cmp::min(r.len(), bytes.len()) { r[i] = bytes[i] }
+        r
+    }
 );
 
 gen_variable_types_io!(
@@ -223,8 +248,14 @@ gen_variable_types_io!(
             }
         }
     },
-    { |mem_ptr| { u8_io::read(mem_ptr) as usize + 1 } },
-    { |val: &SmallBytes| { val.len() + 1 } }
+    |mem_ptr| { u8_io::read(mem_ptr) as usize + 1 },
+    |val: &SmallBytes| { val.len() + 1 },
+    |val: &SmallBytes| {
+        let bytes = &val.data;
+        let mut r = [0u8; 8];
+        for i in 0..::std::cmp::min(r.len(), bytes.len()) { r[i] = bytes[i] }
+        r
+    }
 );
 
 gen_variable_types_io!(
@@ -265,7 +296,8 @@ gen_variable_types_io!(
             str_len + u32_io::size(0)
         }
     },
-    { |val: &Any| { val.data.len() + u32_io::size(0) } }
+    |val: &Any| { val.data.len() + u32_io::size(0) },
+    |val: &Any| [0u8; 8]
 );
 
 define_types!(
