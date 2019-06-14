@@ -46,7 +46,7 @@ macro_rules! big_end {
             };
             key_slice
         }
-    }
+    };
 }
 
 macro_rules! big_end_cast {
@@ -55,7 +55,7 @@ macro_rules! big_end_cast {
             let big_end = big_end!(write_i32);
             big_end(n as i32)
         }
-    }
+    };
 }
 
 macro_rules! gen_compound_types_io {

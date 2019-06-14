@@ -211,12 +211,12 @@ gen_variable_types_io!(
     |val: &String| {
         let bytes = val.as_bytes();
         let mut r = [0u8; 8];
-        for i in 0..::std::cmp::min(r.len(), bytes.len()) { r[i] = bytes[i] }
+        for i in 0..::std::cmp::min(r.len(), bytes.len()) {
+            r[i] = bytes[i]
+        }
         r
     },
-    |val: &String| {
-        u64_io::feature(&::bifrost_hasher::hash_str(val))
-    }
+    |val: &String| { u64_io::feature(&::bifrost_hasher::hash_str(val)) }
 );
 
 gen_variable_types_io!(
@@ -256,7 +256,9 @@ gen_variable_types_io!(
     |val: &Bytes| {
         let bytes = &val.data;
         let mut r = [0u8; 8];
-        for i in 0..::std::cmp::min(r.len(), bytes.len()) { r[i] = bytes[i] }
+        for i in 0..::std::cmp::min(r.len(), bytes.len()) {
+            r[i] = bytes[i]
+        }
         r
     },
     |val: &Bytes| {
@@ -304,7 +306,9 @@ gen_variable_types_io!(
     |val: &SmallBytes| {
         let bytes = &val.data;
         let mut r = [0u8; 8];
-        for i in 0..::std::cmp::min(r.len(), bytes.len()) { r[i] = bytes[i] }
+        for i in 0..::std::cmp::min(r.len(), bytes.len()) {
+            r[i] = bytes[i]
+        }
         r
     },
     |val: &SmallBytes| {
@@ -357,7 +361,9 @@ gen_variable_types_io!(
     |val: &Any| {
         let bytes = &val.data;
         let mut r = [0u8; 8];
-        for i in 0..::std::cmp::min(r.len(), bytes.len()) { r[i] = bytes[i] }
+        for i in 0..::std::cmp::min(r.len(), bytes.len()) {
+            r[i] = bytes[i]
+        }
         r
     },
     |val: &Any| {
