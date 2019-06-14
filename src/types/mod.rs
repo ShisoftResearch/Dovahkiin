@@ -45,6 +45,14 @@ gen_compound_types_io! (
         f32_io::size(0) * 2
     }, {
         |_| [0u8; 8]
+    }, {
+        |val: &Pos2d32| {
+            use std::hash::Hasher;
+            let mut hasher = twox_hash::XxHash::default();
+            hasher.write(&f32_io::feature(&val.x));
+            hasher.write(&f32_io::feature(&val.y));
+            u64_io::feature(&hasher.finish())
+        }
     };
 
     Pos2d64, pos2d64_io, {
@@ -62,6 +70,14 @@ gen_compound_types_io! (
         f64_io::size(0) * 2
     }, {
         |_| [0u8; 8]
+    }, {
+        |val: &Pos2d64| {
+            use std::hash::Hasher;
+            let mut hasher = twox_hash::XxHash::default();
+            hasher.write(&f64_io::feature(&val.x));
+            hasher.write(&f64_io::feature(&val.y));
+            u64_io::feature(&hasher.finish())
+        }
     };
 
     //////////////////////////////////////////////////////////////
@@ -83,6 +99,15 @@ gen_compound_types_io! (
         f32_io::size(0) * 3
     }, {
         |_| [0u8; 8]
+    }, {
+        |val: &Pos3d32| {
+            use std::hash::Hasher;
+            let mut hasher = twox_hash::XxHash::default();
+            hasher.write(&f32_io::feature(&val.x));
+            hasher.write(&f32_io::feature(&val.y));
+            hasher.write(&f32_io::feature(&val.z));
+            u64_io::feature(&hasher.finish())
+        }
     };
 
     Pos3d64, pos3d64_io, {
@@ -102,6 +127,15 @@ gen_compound_types_io! (
         f64_io::size(0) * 3
     }, {
         |_| [0u8; 8]
+    }, {
+        |val: &Pos3d64| {
+            use std::hash::Hasher;
+            let mut hasher = twox_hash::XxHash::default();
+            hasher.write(&f64_io::feature(&val.x));
+            hasher.write(&f64_io::feature(&val.y));
+            hasher.write(&f64_io::feature(&val.z));
+            u64_io::feature(&hasher.finish())
+        }
     };
 
     //////////////////////////////////////////////////////////
@@ -123,6 +157,14 @@ gen_compound_types_io! (
         |id: &Id| {
             let big_end = big_end!(write_u64);
             big_end(id.higher ^ id.lower)
+        }
+    }, {
+        |val: &Id| {
+            use std::hash::Hasher;
+            let mut hasher = twox_hash::XxHash::default();
+            hasher.write(&u64_io::feature(&val.higher));
+            hasher.write(&u64_io::feature(&val.lower));
+            u64_io::feature(&hasher.finish())
         }
     }
 );
@@ -171,6 +213,9 @@ gen_variable_types_io!(
         let mut r = [0u8; 8];
         for i in 0..::std::cmp::min(r.len(), bytes.len()) { r[i] = bytes[i] }
         r
+    },
+    |val: &String| {
+        u64_io::feature(&::bifrost_hasher::hash_str(val))
     }
 );
 
@@ -213,6 +258,12 @@ gen_variable_types_io!(
         let mut r = [0u8; 8];
         for i in 0..::std::cmp::min(r.len(), bytes.len()) { r[i] = bytes[i] }
         r
+    },
+    |val: &Bytes| {
+        use std::hash::Hasher;
+        let mut hasher = twox_hash::XxHash::default();
+        hasher.write(&val.data);
+        u64_io::feature(&hasher.finish())
     }
 );
 
@@ -255,6 +306,12 @@ gen_variable_types_io!(
         let mut r = [0u8; 8];
         for i in 0..::std::cmp::min(r.len(), bytes.len()) { r[i] = bytes[i] }
         r
+    },
+    |val: &SmallBytes| {
+        use std::hash::Hasher;
+        let mut hasher = twox_hash::XxHash::default();
+        hasher.write(&val.data);
+        u64_io::feature(&hasher.finish())
     }
 );
 
@@ -302,6 +359,12 @@ gen_variable_types_io!(
         let mut r = [0u8; 8];
         for i in 0..::std::cmp::min(r.len(), bytes.len()) { r[i] = bytes[i] }
         r
+    },
+    |val: &Any| {
+        use std::hash::Hasher;
+        let mut hasher = twox_hash::XxHash::default();
+        hasher.write(&val.data);
+        u64_io::feature(&hasher.finish())
     }
 );
 

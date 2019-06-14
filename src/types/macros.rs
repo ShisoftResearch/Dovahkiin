@@ -60,7 +60,7 @@ macro_rules! big_end_cast {
 
 macro_rules! gen_compound_types_io {
     (
-        $($t:ident, $tmod:ident, $reader:expr, $writer: expr, $size:expr, $feat: expr);*
+        $($t:ident, $tmod:ident, $reader:expr, $writer: expr, $size:expr, $feat: expr, $hash: expr);*
     ) => (
             $(
                 pub mod $tmod {
@@ -83,6 +83,10 @@ macro_rules! gen_compound_types_io {
                         let feature = $feat;
                         feature(val)
                     }
+                    pub fn hash(val: &$t) -> [u8; 8] {
+                        let hash = $hash;
+                        hash(val)
+                    }
                 }
             )*
     );
@@ -90,7 +94,7 @@ macro_rules! gen_compound_types_io {
 
 macro_rules! gen_variable_types_io {
     (
-        $($t:ident, $tmod:ident, $reader:expr, $writer: expr, $size:expr, $val_size:expr, $feat: expr);*
+        $($t:ident, $tmod:ident, $reader:expr, $writer: expr, $size:expr, $val_size:expr, $feat: expr, $hash: expr);*
     ) => (
             $(
                 pub mod $tmod {
@@ -114,6 +118,10 @@ macro_rules! gen_variable_types_io {
                     pub fn feature(val: &$t) -> [u8; 8] {
                         let feature = $feat;
                         feature(val)
+                    }
+                    pub fn hash(val: &$t) -> [u8; 8] {
+                        let hash = $hash;
+                        hash(val)
                     }
                 }
             )*
