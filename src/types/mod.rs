@@ -297,7 +297,12 @@ gen_variable_types_io!(
         }
     },
     |val: &Any| { val.data.len() + u32_io::size(0) },
-    |val: &Any| [0u8; 8]
+    |val: &Any| {
+        let bytes = &val.data;
+        let mut r = [0u8; 8];
+        for i in 0..::std::cmp::min(r.len(), bytes.len()) { r[i] = bytes[i] }
+        r
+    }
 );
 
 define_types!(
