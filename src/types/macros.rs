@@ -266,6 +266,14 @@ macro_rules! define_types {
                     _ => [0u8; 8]
                 }
             }
+            pub fn hash(&self) -> [u8; 8] {
+                match self {
+                    $(
+                        Value::$e(ref v) => $io::hash(v)
+                    ),*,
+                    _ => [0u8; 8]
+                }
+            }
         }
 
         pub fn get_type_id (name: String) -> u32 {
