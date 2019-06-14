@@ -1,7 +1,7 @@
 use bifrost::utils::bincode::{deserialize, serialize};
 use serde;
 
-#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, Hash)]
 pub struct Any {
     pub data: Vec<u8>,
 }

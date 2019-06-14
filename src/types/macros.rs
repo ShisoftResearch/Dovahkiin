@@ -25,6 +25,9 @@ macro_rules! gen_primitive_types_io {
                     pub fn feature(val: &$t) -> [u8; 8] {
                         $feat_writer(*val)
                     }
+                    pub fn hash(val: &$t) -> [u8; 8] {
+                        feature(val)
+                    }
                 }
             )*
     );
