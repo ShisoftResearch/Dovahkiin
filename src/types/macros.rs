@@ -223,6 +223,32 @@ macro_rules! define_types {
                     ),*
                 }
             }
+            pub fn features(&self) -> Vec<[u8; 8]> {
+                let mut res = vec![];
+                match self {
+                    $(
+                        PrimitiveArray::$e(vec) => {
+                            for v in vec {
+                                res.push($io::feature(v));
+                            }
+                        }
+                    ),*
+                }
+                res
+            }
+            pub fn hashes(&self) -> Vec<[u8; 8]> {
+                let mut res = vec![];
+                match self {
+                    $(
+                        PrimitiveArray::$e(vec) => {
+                            for v in vec {
+                                res.push($io::hash(v));
+                            }
+                        }
+                    ),*
+                }
+                res
+            }
         }
 
         impl Value {
@@ -263,15 +289,50 @@ macro_rules! define_types {
                     $(
                         Value::$e(ref v) => $io::feature(v)
                     ),*,
+                    Value::Map(_) | Value::Array(_) | Value::PrimArray(_) => unreachable!(),
                     _ => [0u8; 8]
                 }
             }
+
+            pub fn features(&self) -> Vec<[u8; 8]> {
+                match self {
+                    Value::Array(ref vec) => {
+                        let mut res = vec![];
+                        for v in vec {
+                            res.push(v.feature());
+                        }
+                        res
+                    },
+                    Value::PrimArray(ref prim_arr) => {
+                        prim_arr.features()
+                    },
+                    _ => unreachable!()
+                }
+            }
+
             pub fn hash(&self) -> [u8; 8] {
                 match self {
                     $(
                         Value::$e(ref v) => $io::hash(v)
                     ),*,
+                    Value::Map(_) | Value::Array(_) | Value::PrimArray(_) => panic!(),
                     _ => [0u8; 8]
+                }
+            }
+
+            pub fn hashes(&self) -> Vec<[u8; 8]> {
+                match self {
+                    Value::Array(ref vec) => {
+                        let mut res = vec![];
+                        for v in vec {
+                            res.push(v.hash());
+                        }
+                        res
+                    },
+                    Value::PrimArray(ref prim_arr) => {
+                        prim_arr.hashes()
+                    },
+                    _ => unreachable!()
                 }
             }
         }
