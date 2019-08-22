@@ -236,6 +236,13 @@ macro_rules! define_types {
                 }
                 res
             }
+            pub fn data_size(&self) -> u8 {
+                match self {
+                   $(
+                        PrimitiveArray::$e(vec) => $io::val_size(v) as u8
+                   ),*
+                }
+            }
             pub fn hashes(&self) -> Vec<[u8; 8]> {
                 let mut res = vec![];
                 match self {
