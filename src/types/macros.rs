@@ -239,7 +239,7 @@ macro_rules! define_types {
             pub fn data_size(&self) -> u8 {
                 match self {
                    $(
-                        PrimitiveArray::$e(vec) => $io::val_size(v) as u8
+                        PrimitiveArray::$e(vec) => $io::val_size(&vec[0]) as u8
                    ),*
                 }
             }
