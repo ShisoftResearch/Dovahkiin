@@ -268,6 +268,9 @@ macro_rules! define_types {
                     _ => None
                 }
             }
+            pub fn base_size(&self) -> usize {
+                get_vsize(self.base_type_id(), self)
+            }
             pub fn cloned_iter_value(&self) -> Option<IntoIter<Value>> {
                 match self {
                     Value::Array(ref array) => Some(array.clone().into_iter()),
@@ -342,8 +345,17 @@ macro_rules! define_types {
                     _ => unreachable!()
                 }
             }
+            pub fn base_type_id(&self) -> u32 {
+                match self {
+                    $(
+                        &Value::$e(ref v) => $id,
+                    )*
+                    &Value::Array(ref v) => v[0].base_type_id(),
+                    $(Value::PrimArray(PrimitiveArray::$e(_)) => $id,)*
+                    _ => 0
+                }
+            }
         }
-
         pub fn get_type_id (name: String) -> u32 {
            match name.as_ref() {
                 $(
