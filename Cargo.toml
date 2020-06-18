@@ -12,7 +12,6 @@ name = "tests"
 [dependencies]
 serde = "*"
 serde_derive = "*"
-bincode = "*"
 byteorder = "1"
 bifrost = { git = "https://github.com/shisoft/bifrost", branch = "develop" }
 bifrost_plugins = { git = "https://github.com/shisoft/bifrost", branch = "develop" }

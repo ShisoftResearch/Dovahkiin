@@ -1,8 +1,7 @@
-use bifrost::utils::bincode::serialize;
+use bifrost::utils::serde::serialize;
 use bifrost_hasher::{hash_bytes, hash_bytes_secondary};
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use serde;
-use std::cmp::Ordering;
 use std::io::{Cursor, Error};
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, Hash, Ord, PartialOrd, PartialEq, Eq)]

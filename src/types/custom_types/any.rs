@@ -1,4 +1,4 @@
-use bifrost::utils::bincode::{deserialize, serialize};
+use bifrost::utils::serde::{serialize, deserialize};
 use serde;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, Hash)]
@@ -10,7 +10,7 @@ impl Any {
     where
         T: serde::Deserialize<'a>,
     {
-        deserialize(&self.data)
+        deserialize(&self.data).unwrap()
     }
     pub fn from<T>(data: &T) -> Any
     where
