@@ -20,7 +20,7 @@ impl ToValue for Value {
     }
 }
 
-impl ToValue for Vec<Value> where {
+impl ToValue for Vec<Value> {
     fn value(self) -> Value {
         return Value::Array(self);
     }
@@ -148,7 +148,7 @@ impl<'a> Iterator for ValueIter<'a> {
     }
 }
 
-impl <'a> ValueIter<'a> {
+impl<'a> ValueIter<'a> {
     fn iter_next(&mut self) -> Option<<Self as Iterator>::Item> {
         let val_opt = self.array.get(self.cursor);
         if let Some(ref _val) = val_opt {

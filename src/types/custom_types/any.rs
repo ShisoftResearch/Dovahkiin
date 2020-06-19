@@ -1,4 +1,4 @@
-use bifrost::utils::serde::{serialize, deserialize};
+use bifrost::utils::serde::{deserialize, serialize};
 use serde;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, Hash)]

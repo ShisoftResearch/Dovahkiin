@@ -144,18 +144,18 @@ macro_rules! get_from_val {
 }
 
 macro_rules! get_from_val_fn {
-    (true, $e:ident, $t:ty) => (
-        #[allow(non_snake_case)] 
+    (true, $e:ident, $t:ty) => {
+        #[allow(non_snake_case)]
         pub fn $e(&self) -> Option<&$t> {
             get_from_val!(true, $e, self)
         }
-    );
-    (false, $e:ident, $t:ty) => (
-        #[allow(non_snake_case)] 
+    };
+    (false, $e:ident, $t:ty) => {
+        #[allow(non_snake_case)]
         pub fn $e(&self) -> Option<&$t> {
             get_from_val!(false, $e, self)
         }
-    )
+    };
 }
 
 macro_rules! define_types {
@@ -264,7 +264,7 @@ macro_rules! define_types {
             $(
                 get_from_val_fn!($r, $e, $t);
             )*
-            #[allow(non_snake_case)] 
+            #[allow(non_snake_case)]
             pub fn Map(&self) -> Option<&Map> {
                 match self {
                     &Value::Map(ref m) => Some(m),
