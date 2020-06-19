@@ -1,5 +1,4 @@
 use super::*;
-use serde;
 use std::collections::HashMap;
 use std::iter::Iterator;
 use std::ops::{Index, IndexMut};
@@ -144,21 +143,18 @@ impl<'a> ValueIter<'a> {
 
 impl<'a> Iterator for ValueIter<'a> {
     type Item = &'a Value;
-
     fn next(&mut self) -> Option<<Self as Iterator>::Item> {
-        let val_opt = self.array.get(self.cursor);
-        if let Some(ref val) = val_opt {
-            self.cursor += 1;
-        }
-        return val_opt;
+        self.iter_next()
     }
 }
 
-impl<'a> Iterator for &'a ValueIter<'a> {
-    type Item = &'a Value;
-
-    fn next(&mut self) -> Option<<Self as Iterator>::Item> {
-        self.next()
+impl <'a> ValueIter<'a> {
+    fn iter_next(&mut self) -> Option<<Self as Iterator>::Item> {
+        let val_opt = self.array.get(self.cursor);
+        if let Some(ref _val) = val_opt {
+            self.cursor += 1;
+        }
+        return val_opt;
     }
 }
 

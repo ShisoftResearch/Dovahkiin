@@ -1,7 +1,4 @@
-use std::ascii::AsciiExt;
 use std::collections::HashSet;
-use std::iter::Peekable;
-use std::str::Chars;
 
 #[derive(Debug)]
 pub enum Token {
@@ -74,7 +71,7 @@ macro_rules! defpattern {
     }};
 }
 
-defpattern!(NUMBER_PATTERN: '0'...'9');
+defpattern!(NUMBER_PATTERN: '0'..='9');
 // defpattern!(WHITESPACE_PATTERN: ' '|'\t'|'\r'|'\n'); // unreliable
 
 fn readout_whitespaces(iter: &mut CharIter) {
@@ -180,7 +177,7 @@ fn read_escaped_char(iter: &mut CharIter) -> Result<char, String> {
                     if let Some(c) = iter.next() {
                         let c = c.to_ascii_lowercase();
                         match c {
-                            NUMBER_PATTERN!() | 'a'...'f' => {
+                            NUMBER_PATTERN!() | 'a'..='f' => {
                                 hex_chars.push(c);
                             }
                             _ => break,

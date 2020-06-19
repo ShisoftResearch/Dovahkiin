@@ -38,7 +38,7 @@ pub fn concat(lists: Vec<SExpr>) -> Result<SExpr, String> {
     return Ok(SExpr::Vec(result));
 }
 
-pub fn hashmap(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
+pub fn hashmap(exprs: Vec<SExpr>) -> Result<SExpr, String> {
     if exprs.len() & 2 == 0 {
         return Err(format!(
             "Map require even number of parameters. Found {}",
@@ -63,7 +63,7 @@ pub fn merge(exprs: Vec<SExpr>) -> Result<SExpr, String> {
     for expr in exprs {
         match expr {
             SExpr::Value(Value::Map(m)) => {
-                let mut map = m.map;
+                let map = m.map;
                 let mut fields = m.fields;
                 for (k, v) in map.into_iter() {
                     value_map.insert(k, v);
@@ -81,7 +81,7 @@ pub fn merge(exprs: Vec<SExpr>) -> Result<SExpr, String> {
 }
 
 pub fn conj(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
-    let mut list = stream::to_vec(exprs.remove(0));
+    let list = stream::to_vec(exprs.remove(0));
     if let Ok(SExpr::Vec(mut vec)) = list {
         vec.append(&mut exprs);
         return Ok(SExpr::Vec(vec));

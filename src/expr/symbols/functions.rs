@@ -1,5 +1,5 @@
 use super::super::interpreter::ENV;
-use super::bindings::{bind, unbind};
+use super::bindings::bind;
 use super::lambda::{eval_lambda, lambda_placeholder};
 use super::*;
 use std::borrow::Borrow;
@@ -12,7 +12,7 @@ pub fn eval_function(func_expr: &SExpr, params: Vec<SExpr>) -> Result<SExpr, Str
             let mut env_bind_ref: Option<Rc<SExpr>> = None;
             ENV.with(|env| {
                 let env_borrowed = env.borrow();
-                let mut bindings = env_borrowed.get_mut_bindings();
+                let bindings = env_borrowed.get_mut_bindings();
                 env_bind_ref = if let Some(binding_list) = bindings.get(&symbol_id) {
                     binding_list.front().cloned()
                 } else {

@@ -1,6 +1,5 @@
 use super::utils::is_true;
 use super::SExpr;
-use expr::symbols::Symbol;
 use types::Value;
 
 pub fn or(exprs: Vec<SExpr>) -> Result<SExpr, String> {

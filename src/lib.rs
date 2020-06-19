@@ -15,7 +15,6 @@ extern crate serde_derive;
 extern crate bifrost;
 extern crate bifrost_hasher;
 extern crate byteorder;
-#[macro_use]
 extern crate log;
 #[macro_use]
 extern crate lazy_static;

@@ -1,9 +1,8 @@
 use bifrost_hasher::hash_str;
 use expr::SExpr;
 use std::cell::RefCell;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::fmt::Debug;
-use std::sync::Arc;
 
 mod arithmetic;
 pub mod bindings;
@@ -24,12 +23,12 @@ pub trait Symbol: Sync + Debug {
 }
 
 pub struct ISymbolMap {
-    pub map: RefCell<HashMap<u64, Box<Symbol>>>,
+    pub map: RefCell<HashMap<u64, Box<dyn Symbol>>>,
 }
 
 unsafe impl Sync for ISymbolMap {}
 impl ISymbolMap {
-    pub fn new(map: HashMap<u64, Box<Symbol>>) -> ISymbolMap {
+    pub fn new(map: HashMap<u64, Box<dyn Symbol>>) -> ISymbolMap {
         ISymbolMap {
             map: RefCell::new(map),
         }
@@ -64,7 +63,7 @@ macro_rules! defsymbols {
         )*
         lazy_static! {
             pub static ref ISYMBOL_MAP: ISymbolMap = {
-                let mut symbol_map: HashMap<u64, Box<Symbol>> = HashMap::new();
+                let mut symbol_map: HashMap<u64, Box<dyn Symbol>> = HashMap::new();
                 $(
                     symbol_map.insert(hash_str($sym), Box::new($name));
                 )*

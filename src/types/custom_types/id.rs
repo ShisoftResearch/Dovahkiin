@@ -41,8 +41,8 @@ impl Id {
         let mut slice = [0u8; 16];
         {
             let mut cursor = Cursor::new(&mut slice[..]);
-            cursor.write_u64::<BigEndian>(self.higher);
-            cursor.write_u64::<BigEndian>(self.lower);
+            cursor.write_u64::<BigEndian>(self.higher).unwrap();
+            cursor.write_u64::<BigEndian>(self.lower).unwrap();
         }
         return slice;
     }

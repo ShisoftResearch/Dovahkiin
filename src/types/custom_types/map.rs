@@ -1,6 +1,6 @@
 use super::super::*;
 use bifrost_hasher::hash_str;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::iter::Iterator;
 use std::slice::Iter;
 
@@ -82,7 +82,7 @@ impl Map {
     pub fn get_in_mut_by_key_ids(&mut self, mut keys_ids: Iter<u64>) -> Option<&mut Value> {
         let current_key = keys_ids.next().cloned();
         if let Some(key) = current_key {
-            let mut value = self.get_mut_by_key_id(key);
+            let value = self.get_mut_by_key_id(key);
             match value {
                 &mut Value::Null => return None,
                 _ => {

@@ -42,7 +42,7 @@ macro_rules! big_end {
             let mut key_slice = [0u8; 8];
             {
                 let mut cursor = ::std::io::Cursor::new(&mut key_slice[..]);
-                cursor.$writer::<::byteorder::BigEndian>(n);
+                cursor.$writer::<::byteorder::BigEndian>(n).unwrap();
             };
             key_slice
         }
@@ -145,11 +145,13 @@ macro_rules! get_from_val {
 
 macro_rules! get_from_val_fn {
     (true, $e:ident, $t:ty) => (
+        #[allow(non_snake_case)] 
         pub fn $e(&self) -> Option<&$t> {
             get_from_val!(true, $e, self)
         }
     );
     (false, $e:ident, $t:ty) => (
+        #[allow(non_snake_case)] 
         pub fn $e(&self) -> Option<&$t> {
             get_from_val!(false, $e, self)
         }
@@ -262,6 +264,7 @@ macro_rules! define_types {
             $(
                 get_from_val_fn!($r, $e, $t);
             )*
+            #[allow(non_snake_case)] 
             pub fn Map(&self) -> Option<&Map> {
                 match self {
                     &Value::Map(ref m) => Some(m),
@@ -348,7 +351,7 @@ macro_rules! define_types {
             pub fn base_type_id(&self) -> u32 {
                 match self {
                     $(
-                        &Value::$e(ref v) => $id,
+                        &Value::$e(ref _v) => $id,
                     )*
                     &Value::Array(ref v) => v[0].base_type_id(),
                     $(Value::PrimArray(PrimitiveArray::$e(_)) => $id,)*
