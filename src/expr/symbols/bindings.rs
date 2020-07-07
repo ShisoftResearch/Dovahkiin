@@ -6,7 +6,7 @@ use std::rc::Rc;
 
 pub fn bind_rc(id: u64, val_rc: Rc<SExpr>) {
     ENV.with(|env| {
-        let mut env_borrow = env.borrow_mut();
+        let env_borrow = env.borrow_mut();
         let binding_map = &mut env_borrow.bindings.borrow_mut();
         binding_map
             .entry(id)
@@ -21,7 +21,7 @@ pub fn bind(id: u64, val: SExpr) {
 
 pub fn unbind(id: u64) {
     ENV.with(|env| {
-        let mut env_borrow = env.borrow_mut();
+        let env_borrow = env.borrow_mut();
         let binding_map = &mut env_borrow.bindings.borrow_mut();
         binding_map
             .entry(id)
