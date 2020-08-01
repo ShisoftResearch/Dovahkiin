@@ -412,7 +412,7 @@ macro_rules! data_map {
 #[macro_export]
 macro_rules! data_map_value {
     ($($k:ident: $v:expr),*) => {{
-            Value::Map(data_map!($($k: $v),*))
+        $crate::types::Value::Map(data_map!($($k: $v),*))
      }};
 }
 
