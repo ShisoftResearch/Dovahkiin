@@ -403,7 +403,7 @@ define_types!(
 #[macro_export]
 macro_rules! data_map {
     ($($k:ident: $v:expr),*) => {{
-            let mut map = Map::new();
+            let mut map = $crate::types::Map::new();
             $(map.insert_value(stringify!($k), $v);)*
             map
      }};
