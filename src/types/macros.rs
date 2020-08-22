@@ -416,7 +416,11 @@ macro_rules! define_types {
                                 mem_ptr += $io::val_size(v);
                             }
                         } else {
-                            $io::write(get_from_val!($r, $e, val).unwrap() , mem_ptr);
+                            if let Some(val) = get_from_val!($r, $e, val) {
+                                $io::write(val, mem_ptr);
+                            } else {
+                                panic!("value does not match type id {}, actual value {:?}", id, val);
+                            }
                         }
                      },
                  )*
@@ -427,11 +431,10 @@ macro_rules! define_types {
             match id {
                 $(
                     $id => {
-                        let val_opt = get_from_val!($r, $e, val);
-                        if val_opt.is_none() {
-                            panic!("value does not match type id {}, actual value {:?}", id, val);
+                        if let Some(val) = get_from_val!($r, $e, val) {
+                            $io::val_size(val)
                         } else {
-                            $io::val_size(val_opt.unwrap())
+                            panic!("value does not match type id {}, actual value {:?}", id, val);
                         }
                     },
                 )*
