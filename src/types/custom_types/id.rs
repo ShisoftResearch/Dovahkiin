@@ -57,6 +57,12 @@ impl Id {
     }
 }
 
+impl Default for Id {
+    fn default() -> Id {
+        Self::unit_id()
+    }
+}
+
 #[cfg(test)]
 mod test {
     use std::cmp::Ordering;
