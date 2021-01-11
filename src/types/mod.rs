@@ -392,7 +392,7 @@ define_types!(
     ["id"], 19, Id                                     ,Id          ,  id_io         ;
     ["string", "str"], 20, String                      ,String      ,  string_io     ;
     ["any", "dynamic"], 21, Any                        ,Any         ,  any_io        ;
-    ["bytes"], 22, Bytes                               ,Bytes       ,  bytes_io            ;
+    ["bytes"], 22, Bytes                               ,Bytes       ,  bytes_io      ;
     ["small_bytes"], 23, SmallBytes                    ,SmallBytes  ,  small_bytes_io
 );
 

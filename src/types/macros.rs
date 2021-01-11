@@ -246,6 +246,14 @@ macro_rules! define_types {
                 }
                 res
             }
+            $(
+                pub fn $e(&self) -> Option<&Vec<$t>> {
+                    match self {
+                        PrimitiveArray::$e(ref vec) => Some(vec),
+                        _ => None
+                    }
+                }
+            )*
         }
 
         impl Value {
@@ -344,6 +352,12 @@ macro_rules! define_types {
                     &Value::Array(ref v) => v[0].base_type_id(),
                     $(Value::PrimArray(PrimitiveArray::$e(_)) => $id,)*
                     _ => 0
+                }
+            }
+            pub fn prim_array(&self) -> Option<&PrimitiveArray> {
+                match self {
+                    &Value::PrimArray(ref pa) => Some(pa),
+                    _ => None
                 }
             }
         }
