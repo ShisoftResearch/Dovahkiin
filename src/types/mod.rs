@@ -373,27 +373,27 @@ gen_variable_types_io!(
 );
 
 define_types!(
-    ["bool", "bit"], 1, bool                           ,Bool     ,false ,  bool_io       ;
-    ["char"], 2, char                                  ,Char     ,false ,  char_io       ;
-    ["i8"], 3, i8                                      ,I8       ,false ,  i8_io         ;
-    ["i16", "int"], 4, i16                             ,I16      ,false ,  i16_io        ;
-    ["i32", "long"], 5, i32                            ,I32      ,false ,  i32_io        ;
-    ["i64", "longlong"], 6, i64                        ,I64      ,false ,  i64_io        ;
-    ["u8", "byte"], 7, u8                              ,U8       ,false ,  u8_io         ;
-    ["u16"], 8, u16                                    ,U16      ,false ,  u16_io        ;
-    ["u32"], 9, u32                                    ,U32      ,false ,  u32_io        ;
-    ["u64"], 10, u64                                   ,U64      ,false ,  u64_io        ;
-    ["f32", "float"], 13, f32                          ,F32      ,false ,  f32_io        ;
-    ["f64", "double"], 14, f64                         ,F64      ,false ,  f64_io        ;
-    ["pos2d32", "pos2d", "pos", "pos32"], 15, Pos2d32  ,Pos2d32  ,true  ,  pos2d32_io    ;
-    ["pos2d64", "pos64"], 16, Pos2d64                  ,Pos2d64  ,true  ,  pos2d64_io    ;
-    ["pos3d32", "pos3d"], 17, Pos3d32                  ,Pos3d32  ,true  ,  pos3d32_io    ;
-    ["pos3d64"], 18, Pos3d64                           ,Pos3d64  ,true  ,  pos3d64_io    ;
-    ["id"], 19, Id                                     ,Id       ,true  ,  id_io         ;
-    ["string", "str"], 20, String                      ,String   ,true  ,  string_io     ;
-    ["any", "dynamic"], 21, Any                        ,Any      ,true  ,  any_io        ;
-    ["bytes"], 22, Bytes                               ,Bytes         ,true  ,  bytes_io            ;
-    ["small_bytes"], 23, SmallBytes                    ,SmallBytes    ,true  ,  small_bytes_io
+    ["bool", "bit"], 1, bool                           ,Bool        ,  bool_io       ;
+    ["char"], 2, char                                  ,Char        ,  char_io       ;
+    ["i8"], 3, i8                                      ,I8          ,  i8_io         ;
+    ["i16", "int"], 4, i16                             ,I16         ,  i16_io        ;
+    ["i32", "long"], 5, i32                            ,I32         ,  i32_io        ;
+    ["i64", "longlong"], 6, i64                        ,I64         ,  i64_io        ;
+    ["u8", "byte"], 7, u8                              ,U8          ,  u8_io         ;
+    ["u16"], 8, u16                                    ,U16         ,  u16_io        ;
+    ["u32"], 9, u32                                    ,U32         ,  u32_io        ;
+    ["u64"], 10, u64                                   ,U64         ,  u64_io        ;
+    ["f32", "float"], 13, f32                          ,F32         ,  f32_io        ;
+    ["f64", "double"], 14, f64                         ,F64         ,  f64_io        ;
+    ["pos2d32", "pos2d", "pos", "pos32"], 15, Pos2d32  ,Pos2d32     ,  pos2d32_io    ;
+    ["pos2d64", "pos64"], 16, Pos2d64                  ,Pos2d64     ,  pos2d64_io    ;
+    ["pos3d32", "pos3d"], 17, Pos3d32                  ,Pos3d32     ,  pos3d32_io    ;
+    ["pos3d64"], 18, Pos3d64                           ,Pos3d64     ,  pos3d64_io    ;
+    ["id"], 19, Id                                     ,Id          ,  id_io         ;
+    ["string", "str"], 20, String                      ,String      ,  string_io     ;
+    ["any", "dynamic"], 21, Any                        ,Any         ,  any_io        ;
+    ["bytes"], 22, Bytes                               ,Bytes       ,  bytes_io            ;
+    ["small_bytes"], 23, SmallBytes                    ,SmallBytes  ,  small_bytes_io
 );
 
 #[macro_export]

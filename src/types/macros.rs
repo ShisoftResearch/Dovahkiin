@@ -129,13 +129,7 @@ macro_rules! gen_variable_types_io {
 }
 
 macro_rules! get_from_val {
-    (true, $e:ident, $d:ident) => {
-        match $d {
-            &Value::$e(ref v) => Some(v),
-            _ => None,
-        }
-    };
-    (false, $e:ident, $d:ident) => {
+    ($e:ident, $d:ident) => {
         match $d {
             &Value::$e(ref v) => Some(v),
             _ => None,
@@ -144,16 +138,10 @@ macro_rules! get_from_val {
 }
 
 macro_rules! get_from_val_fn {
-    (true, $e:ident, $t:ty) => {
+    ($e:ident, $t:ty) => {
         #[allow(non_snake_case)]
         pub fn $e(&self) -> Option<&$t> {
-            get_from_val!(true, $e, self)
-        }
-    };
-    (false, $e:ident, $t:ty) => {
-        #[allow(non_snake_case)]
-        pub fn $e(&self) -> Option<&$t> {
-            get_from_val!(false, $e, self)
+            get_from_val!($e, self)
         }
     };
 }
@@ -161,7 +149,7 @@ macro_rules! get_from_val_fn {
 macro_rules! define_types {
     (
         $(
-            [ $( $name:expr ),* ], $id:expr, $t:ty, $e:ident, $r:ident, $io:ident
+            [ $( $name:expr ),* ], $id:expr, $t:ty, $e:ident, $io:ident
          );*
     ) => (
 
@@ -262,7 +250,7 @@ macro_rules! define_types {
 
         impl Value {
             $(
-                get_from_val_fn!($r, $e, $t);
+                get_from_val_fn!($e, $t);
             )*
             #[allow(non_snake_case)]
             pub fn Map(&self) -> Option<&Map> {
@@ -416,7 +404,7 @@ macro_rules! define_types {
                                 mem_ptr += $io::val_size(v);
                             }
                         } else {
-                            if let Some(val) = get_from_val!($r, $e, val) {
+                            if let Some(val) = get_from_val!($e, val) {
                                 $io::write(val, mem_ptr);
                             } else {
                                 panic!("value does not match type id {}, actual value {:?}", id, val);
@@ -431,7 +419,7 @@ macro_rules! define_types {
             match id {
                 $(
                     $id => {
-                        if let Some(val) = get_from_val!($r, $e, val) {
+                        if let Some(val) = get_from_val!($e, val) {
                             $io::val_size(val)
                         } else {
                             panic!("value does not match type id {}, actual value {:?}", id, val);
