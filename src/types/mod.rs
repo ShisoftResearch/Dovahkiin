@@ -9,6 +9,7 @@ pub use types::custom_types::any::*;
 pub use types::custom_types::bytes::*;
 pub use types::custom_types::id::*;
 pub use types::custom_types::owned_map::*;
+pub use types::custom_types::shared_map::*;
 pub use types::custom_types::pos::*;
 pub use types::owned_value::*;
 

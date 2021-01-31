@@ -1,16 +1,17 @@
-use super::{super::*, shared_map::key_hash};
+use super::super::*;
+use bifrost_hasher::hash_str;
 use std::collections::HashMap;
 use std::iter::Iterator;
 use std::slice::Iter;
 
-type Value = OwnedValue;
+type Value = SharedValue;
 
-#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
-pub struct OwnedMap {
+#[derive(Debug, PartialEq)]
+pub struct SharedMap {
     pub map: HashMap<u64, Value>,
     pub fields: Vec<String>,
 }
-impl OwnedMap {
+impl SharedMap {
     pub fn new() -> Self {
         Self {
             map: HashMap::new(),
@@ -28,6 +29,12 @@ impl OwnedMap {
             fields,
         }
     }
+    pub fn to_owned(&self) -> OwnedMap {
+      OwnedMap {
+        map: self.map.iter().map(|(k,  v)| (*k, v.to_owned())).collect(),
+        fields: self.fields.clone()
+      }
+    }
     pub fn insert<'a>(&mut self, key: &'a str, value: Value) -> Option<Value> {
         self.fields.push(key.to_string());
         self.insert_key_id(key_hash(key), value)
@@ -35,20 +42,8 @@ impl OwnedMap {
     pub fn insert_key_id(&mut self, key: u64, value: Value) -> Option<Value> {
         self.map.insert(key, value)
     }
-    pub fn insert_value<'a, V>(&mut self, key: &'a str, value: V) -> Option<Value>
-    where
-        V: ToValue,
-    {
-        self.insert(key, value.value())
-    }
-    pub fn insert_key_id_value<V>(&mut self, key: u64, value: V) -> Option<Value>
-    where
-        V: ToValue,
-    {
-        self.insert_key_id(key, value.value())
-    }
     pub fn get_by_key_id(&self, key: u64) -> &Value {
-        self.map.get(&key).unwrap_or(&NULL_OWNED_VALUE)
+        self.map.get(&key).unwrap_or(&Value::Null)
     }
     pub fn get_mut_by_key_id(&mut self, key: u64) -> &mut Value {
         self.map.entry(key).or_insert(Value::Null)
@@ -75,7 +70,7 @@ impl OwnedMap {
                 }
             }
         }
-        return &NULL_OWNED_VALUE;
+        return &Value::Null;
     }
     pub fn get_in(&self, keys: &[&'static str]) -> &Value {
         self.get_in_by_ids(Self::strs_to_ids(keys).iter())
@@ -152,5 +147,12 @@ impl OwnedMap {
     pub fn len(&self) -> usize {
         self.map.len()
     }
-} 
+}
 
+pub fn key_hash<'a>(key: &'a str) -> u64 {
+    hash_str(key)
+}
+
+pub fn key_hashes(keys: &Vec<String>) -> Vec<u64> {
+    keys.iter().map(|str| hash_str(str)).collect()
+}
