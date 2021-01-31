@@ -1,6 +1,5 @@
 use std::ops::Deref;
 use std::ops::DerefMut;
-
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, Hash)]
 pub struct Bytes {
     pub data: Vec<u8>,
@@ -48,5 +47,21 @@ impl Bytes {
 impl SmallBytes {
     pub fn from_vec(vec: Vec<u8>) -> SmallBytes {
         SmallBytes { data: vec }
+    }
+}
+
+impl From<Vec<u8>> for SmallBytes {
+    fn from(vec: Vec<u8>) -> Self {
+        Self {
+            data: vec
+        }
+    }
+}
+
+impl From<Vec<u8>> for Bytes {
+    fn from(vec: Vec<u8>) -> Self {
+        Self {
+            data: vec
+        }
     }
 }

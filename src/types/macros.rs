@@ -4,16 +4,15 @@ macro_rules! gen_primitive_types_io {
     ) => (
             $(
                 pub mod $tmod {
-                    use std::ptr;
                     use std::mem;
-                    pub fn read(mem_ptr: usize) -> $t {
-                         unsafe {
-                            ptr::read(mem_ptr as *mut $t)
+                    pub fn read(mem_ptr: usize) -> &'static $t {
+                        unsafe {
+                            &*(mem_ptr as *const $t)
                         }
                     }
                     pub fn write(val: &$t, mem_ptr: usize) {
                         unsafe {
-                            ptr::write(mem_ptr as *mut $t, *val)
+                            std::ptr::write(mem_ptr as *mut $t, *val)
                         }
                     }
                     pub fn size(_: usize) -> usize {
@@ -60,21 +59,23 @@ macro_rules! big_end_cast {
 
 macro_rules! gen_compound_types_io {
     (
-        $($t:ident, $tmod:ident, $reader:expr, $writer: expr, $size:expr, $feat: expr, $hash: expr);*
+        $($t:ident, $tmod:ident, $feat: expr, $hash: expr);*
     ) => (
             $(
                 pub mod $tmod {
                     use types::*;
-                    pub fn read(mem_ptr: usize) -> $t {
-                        let read = $reader;
-                        read(mem_ptr)
+                    pub fn read(mem_ptr: usize) -> &'static $t {
+                        unsafe {
+                            &*(mem_ptr as *const $t)
+                        }
                     }
                     pub fn write(val: &$t, mem_ptr: usize) {
-                        let write = $writer;
-                        write(val, mem_ptr)
+                        unsafe {
+                            std::ptr::write(mem_ptr as *mut $t, val.to_owned())
+                        }
                     }
                     pub fn size(_: usize) -> usize {
-                        $size
+                        std::mem::size_of::<$t>()
                     }
                     pub fn val_size(_: &$t) -> usize {
                         size(0)
@@ -94,12 +95,12 @@ macro_rules! gen_compound_types_io {
 
 macro_rules! gen_variable_types_io {
     (
-        $($t:ident, $tmod:ident, $reader:expr, $writer: expr, $size:expr, $val_size:expr, $feat: expr, $hash: expr);*
+        $($t:ty, $rt: ty, $tmod:ident, $reader:expr, $writer: expr, $size:expr, $val_size:expr, $feat: expr, $hash: expr);*
     ) => (
             $(
                 pub mod $tmod {
                     use types::*;
-                    pub fn read(mem_ptr: usize) -> $t {
+                    pub fn read(mem_ptr: usize) -> $rt {
                         let read = $reader;
                         read(mem_ptr)
                     }
@@ -385,21 +386,14 @@ macro_rules! define_types {
                 _ => 0,
            }
         }
-        pub fn get_val (id:u32, mem_ptr: usize) -> Value {
-             match id {
-                 $(
-                     $id => Value::$e($io::read(mem_ptr)),
-                 )*
-                 _ => Value::NA,
-             }
-        }
         pub fn get_prim_array_val(id:u32, size: usize, mem_ptr: &mut usize) -> Option<PrimitiveArray> {
              match id {
                  $(
                      $id => {
                         let mut vals = Vec::with_capacity(size);
                         for _ in 0..size {
-                            vals.push($io::read(*mem_ptr));
+                            let read_res = $io::read(*mem_ptr).to_owned();
+                            vals.push(read_res.into());
                             *mem_ptr += get_size(id, *mem_ptr);
                         }
                         Some(PrimitiveArray::$e(vals))
