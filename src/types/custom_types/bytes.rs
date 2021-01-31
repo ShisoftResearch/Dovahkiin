@@ -1,5 +1,7 @@
 use std::ops::Deref;
 use std::ops::DerefMut;
+
+use bifrost::utils::serde::{deserialize, serialize};
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, Hash)]
 pub struct Bytes {
     pub data: Vec<u8>,
@@ -41,6 +43,20 @@ impl DerefMut for SmallBytes {
 impl Bytes {
     pub fn from_vec(vec: Vec<u8>) -> Bytes {
         Bytes { data: vec }
+    }
+    pub fn to<'a, T>(&'a self) -> T
+    where
+        T: serde::Deserialize<'a>,
+    {
+        deserialize(&self.data).unwrap()
+    }
+    pub fn from<T>(data: &T) -> Self
+    where
+        T: serde::Serialize,
+    {
+        Self {
+            data: serialize(data),
+        }
     }
 }
 
