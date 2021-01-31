@@ -7,24 +7,24 @@ use std::slice::Iter;
 type Value = OwnedValue;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
-pub struct Map {
+pub struct OwnedMap {
     pub map: HashMap<u64, Value>,
     pub fields: Vec<String>,
 }
-impl Map {
-    pub fn new() -> Map {
-        Map {
+impl OwnedMap {
+    pub fn new() -> Self {
+        Self {
             map: HashMap::new(),
             fields: Vec::new(),
         }
     }
-    pub fn from_hash_map(map: HashMap<String, Value>) -> Map {
+    pub fn from_hash_map(map: HashMap<String, Value>) -> Self {
         let mut target_map = HashMap::new();
         let fields = map.keys().cloned().collect();
         for (key, value) in map {
             target_map.insert(key_hash(&key), value);
         }
-        Map {
+        Self{
             map: target_map,
             fields,
         }
@@ -79,7 +79,7 @@ impl Map {
         return &NULL_OWNED_VALUE;
     }
     pub fn get_in(&self, keys: &[&'static str]) -> &Value {
-        self.get_in_by_ids(Map::strs_to_ids(keys).iter())
+        self.get_in_by_ids(Self::strs_to_ids(keys).iter())
     }
     pub fn get_in_mut_by_key_ids(&mut self, mut keys_ids: Iter<u64>) -> Option<&mut Value> {
         let current_key = keys_ids.next().cloned();
@@ -105,7 +105,7 @@ impl Map {
         }
     }
     pub fn get_in_mut(&mut self, keys: &[&'static str]) -> Option<&mut Value> {
-        self.get_in_mut_by_key_ids(Map::strs_to_ids(keys).iter())
+        self.get_in_mut_by_key_ids(Self::strs_to_ids(keys).iter())
     }
     pub fn update_in_by_key_ids<U>(&mut self, keys: Iter<u64>, update: U) -> Option<()>
     where
@@ -123,7 +123,7 @@ impl Map {
     where
         U: FnOnce(&mut Value),
     {
-        self.update_in_by_key_ids(Map::strs_to_ids(keys).iter(), update)
+        self.update_in_by_key_ids(Self::strs_to_ids(keys).iter(), update)
     }
     pub fn set_in_by_key_ids(&mut self, keys: Iter<u64>, value: Value) -> Option<()> {
         let val = self.get_in_mut_by_key_ids(keys);
@@ -135,7 +135,7 @@ impl Map {
         }
     }
     pub fn set_in(&mut self, keys: &[&'static str], value: Value) -> Option<()> {
-        self.set_in_by_key_ids(Map::strs_to_ids(keys).iter(), value)
+        self.set_in_by_key_ids(Self::strs_to_ids(keys).iter(), value)
     }
     pub fn into_string_map(self) -> HashMap<String, Value> {
         let mut id_map: HashMap<u64, String> = self

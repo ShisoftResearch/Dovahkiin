@@ -251,7 +251,7 @@ macro_rules! define_types {
             $(
                 $e($t),
             )*
-            Map(Map),
+            Map(OwnedMap),
             Array(Vec<OwnedValue>),
             PrimArray(PrimitiveArray),
             NA,
@@ -263,7 +263,7 @@ macro_rules! define_types {
                 get_from_val_fn!($e, $t);
             )*
             #[allow(non_snake_case)]
-            pub fn Map(&self) -> Option<&Map> {
+            pub fn Map(&self) -> Option<&OwnedMap> {
                 match self {
                     &OwnedValue::Map(ref m) => Some(m),
                     _ => None

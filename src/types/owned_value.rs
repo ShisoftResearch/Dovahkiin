@@ -42,7 +42,7 @@ where
     V: ToValue,
 {
     fn value(self) -> Value {
-        let mut map = Map::new();
+        let mut map = OwnedMap::new();
         for (k, v) in self {
             map.insert_value(&k, v);
         }
