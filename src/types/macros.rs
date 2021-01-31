@@ -414,7 +414,7 @@ macro_rules! define_types {
                 _ => SharedValue::NA,
             }
         }
-        pub fn get_prim_array_val(id:u32, size: usize, mem_ptr: &mut usize) -> Option<OwnedPrimArray> {
+        pub fn get_owned_prim_array_val(id:u32, size: usize, mem_ptr: &mut usize) -> Option<OwnedPrimArray> {
              match id {
                  $(
                      $id => {
@@ -430,6 +430,19 @@ macro_rules! define_types {
                  _ => None,
              }
         }
+        pub fn get_shared_prim_array_val(id:u32, size: usize, mem_ptr: &mut usize) -> Option<SharedPrimArray> {
+            match id {
+                $(
+                    $id => {
+                       let slice = unsafe {
+                            std::slice::from_raw_parts(*mem_ptr as *const _, size)
+                       };
+                       Some(SharedPrimArray::$e(slice))
+                    },
+                )*
+                _ => None,
+            }
+       }
         pub fn set_val (id:u32, val: &OwnedValue, mut mem_ptr: usize) {
              match id {
                  $(
