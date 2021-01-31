@@ -81,12 +81,10 @@ macro_rules! gen_compound_types_io {
                         size(0)
                     }
                     pub fn feature(val: &$t) -> [u8; 8] {
-                        let feature = $feat;
-                        feature(val)
+                        ($feat)(val)
                     }
                     pub fn hash(val: &$t) -> [u8; 8] {
-                        let hash = $hash;
-                        hash(val)
+                        ($hash)(val)
                     }
                 }
             )*
@@ -100,29 +98,23 @@ macro_rules! gen_variable_types_io {
             $(
                 pub mod $tmod {
                     use types::*;
-                    pub fn read(mem_ptr: usize) -> $rt {
-                        let read = $reader;
-                        read(mem_ptr)
+                    pub fn read(mem_ptr: usize) -> &'static $rt {
+                        ($reader)(mem_ptr)
                     }
                     pub fn write(val: &$t, mem_ptr: usize) {
-                        let write = $writer;
-                        write(val, mem_ptr)
+                        ($writer)(val, mem_ptr)
                     }
                     pub fn size(mem_ptr: usize) -> usize {
-                        let size = $size;
-                        size(mem_ptr)
+                        ($size)(mem_ptr)
                     }
-                    pub fn val_size(val: &$t) -> usize {
-                        let size = $val_size;
-                        size(val)
+                    pub fn val_size(val: &$rt) -> usize {
+                        ($val_size)(val)
                     }
-                    pub fn feature(val: &$t) -> [u8; 8] {
-                        let feature = $feat;
-                        feature(val)
+                    pub fn feature(val: &$rt) -> [u8; 8] {
+                        ($feat)(val)
                     }
-                    pub fn hash(val: &$t) -> [u8; 8] {
-                        let hash = $hash;
-                        hash(val)
+                    pub fn hash(val: &$rt) -> [u8; 8] {
+                        ($hash)(val)
                     }
                 }
             )*
@@ -131,17 +123,17 @@ macro_rules! gen_variable_types_io {
 
 macro_rules! get_from_val {
     ($e:ident, $d:ident) => {
-        match $d {
-            &OwnedValue::$e(ref v) => Some(v),
+        match &$d {
+            &OwnedValue::$e(v) => Some(v),
             _ => None,
         }
     };
 }
 
 macro_rules! ref_from_val_fn {
-    ($e:ident, $t:ty) => {
+    ($e:ident, $st:ty) => {
         #[allow(non_snake_case)]
-        pub fn $e(&self) -> Option<&'static $t> {
+        pub fn $e(&self) -> Option<$st> {
             ref_from_val!($e, self)
         }
     };
@@ -150,7 +142,7 @@ macro_rules! ref_from_val_fn {
 macro_rules! ref_from_val {
     ($e:ident, $d:ident) => {
         match $d {
-            &SharedValue::$e(ref v) => Some(v),
+            &SharedValue::$e(v) => Some(v),
             _ => None,
         }
     };
@@ -169,7 +161,7 @@ macro_rules! get_from_val_fn {
 macro_rules! define_types {
     (
         $(
-            [ $( $name:expr ),* ], $id:expr, $t:ty, $e:ident, $io:ident
+            [ $( $name:expr ),* ], $id:expr, $t:ty, $st: ty, $e:ident, $io:ident
          );*
     ) => (
 
@@ -204,9 +196,9 @@ macro_rules! define_types {
 
         impl OwnedPrimArray {
             pub fn size(&self) -> usize {
-                match self {
+                match &self {
                     $(
-                        OwnedPrimArray::$e(vec) => {
+                        &OwnedPrimArray::$e(vec) => {
                             return vec.iter().map(|v| $io::val_size(v)).sum()
                         }
                     ),*
@@ -223,9 +215,9 @@ macro_rules! define_types {
             }
             pub fn features(&self) -> Vec<[u8; 8]> {
                 let mut res = vec![];
-                match self {
+                match &self {
                     $(
-                        OwnedPrimArray::$e(vec) => {
+                        &OwnedPrimArray::$e(vec) => {
                             for v in vec {
                                 res.push($io::feature(v));
                             }
@@ -235,17 +227,17 @@ macro_rules! define_types {
                 res
             }
             pub fn data_size(&self) -> u8 {
-                match self {
+                match &self {
                    $(
-                        OwnedPrimArray::$e(vec) => $io::val_size(&vec[0]) as u8
+                        &OwnedPrimArray::$e(vec) => $io::val_size(&vec[0]) as u8
                    ),*
                 }
             }
             pub fn hashes(&self) -> Vec<[u8; 8]> {
                 let mut res = vec![];
-                match self {
+                match &self {
                     $(
-                        OwnedPrimArray::$e(vec) => {
+                        &OwnedPrimArray::$e(vec) => {
                             for v in vec {
                                 res.push($io::hash(v));
                             }
@@ -315,11 +307,11 @@ macro_rules! define_types {
                 }
             }
             pub fn feature(&self) -> [u8; 8] {
-                match self {
+                match &self {
                     $(
-                        OwnedValue::$e(ref v) => $io::feature(v)
+                        &OwnedValue::$e(v) => $io::feature(&v)
                     ),*,
-                    OwnedValue::Map(_) | OwnedValue::Array(_) | OwnedValue::PrimArray(_) => unreachable!(),
+                    &OwnedValue::Map(_) | &OwnedValue::Array(_) | &OwnedValue::PrimArray(_) => unreachable!(),
                     _ => [0u8; 8]
                 }
             }
@@ -341,9 +333,9 @@ macro_rules! define_types {
             }
 
             pub fn hash(&self) -> [u8; 8] {
-                match self {
+                match &self {
                     $(
-                        OwnedValue::$e(ref v) => $io::hash(v)
+                        &OwnedValue::$e(v) => $io::hash(&v)
                     ),*,
                     OwnedValue::Map(_) | OwnedValue::Array(_) | OwnedValue::PrimArray(_) => panic!(),
                     _ => [0u8; 8]
@@ -442,8 +434,8 @@ macro_rules! define_types {
              match id {
                  $(
                      $id => {
-                        if let &OwnedValue::PrimArray(OwnedPrimArray::$e(ref vec)) = val {
-                            for v in vec {
+                        if let &OwnedValue::PrimArray(OwnedPrimArray::$e(vec)) = &val {
+                            for v in vec.iter() {
                                 $io::write(v , mem_ptr);
                                 mem_ptr += $io::val_size(v);
                             }
@@ -559,7 +551,7 @@ macro_rules! define_types {
         #[derive(Debug, PartialEq)]
         pub enum SharedValue {
             $(
-                $e(&'static $t),
+                $e($st),
             )*
             Map(SharedMap),
             Array(Vec<SharedValue>),
@@ -569,13 +561,13 @@ macro_rules! define_types {
         }
         impl SharedValue {
             $(
-                ref_from_val_fn!($e, $t);
+                ref_from_val_fn!($e, $st);
             )*
 
             pub fn to_owned(&self) -> OwnedValue {
                 match self {
                     $(
-                        SharedValue::$e(ref v) => OwnedValue::$e((*v).clone())
+                        SharedValue::$e(ref v) => OwnedValue::$e((*v).to_owned().into())
                     ),*,
                     SharedValue::Array(ref array) => OwnedValue::Array(array.iter().map(|v| v.to_owned()).collect()),
                     $(SharedValue::PrimArray(SharedPrimArray::$e(ref vec)) => OwnedValue::PrimArray(OwnedPrimArray::$e(vec.iter().cloned().collect())),)*
@@ -631,7 +623,7 @@ macro_rules! define_types {
             pub fn hash(&self) -> [u8; 8] {
                 match self {
                     $(
-                        SharedValue::$e(ref v) => $io::hash(v)
+                        &SharedValue::$e(v) => $io::hash(v)
                     ),*,
                     SharedValue::Map(_) | SharedValue::Array(_) | SharedValue::PrimArray(_) => panic!(),
                     _ => [0u8; 8]
