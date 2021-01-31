@@ -132,7 +132,7 @@ macro_rules! gen_variable_types_io {
 macro_rules! get_from_val {
     ($e:ident, $d:ident) => {
         match $d {
-            &Value::$e(ref v) => Some(v),
+            &OwnedValue::$e(ref v) => Some(v),
             _ => None,
         }
     };
@@ -165,28 +165,16 @@ macro_rules! define_types {
 
         $(
             impl ToValue for $t {
-                fn value(self) -> Value {
-                    Value::$e(self)
+                fn value(self) -> OwnedValue {
+                    OwnedValue::$e(self)
                 }
             }
             impl ToValue for Vec<$t> {
-                fn value(self) -> Value {
-                    Value::PrimArray(PrimitiveArray::$e(self))
+                fn value(self) -> OwnedValue {
+                    OwnedValue::PrimArray(PrimitiveArray::$e(self))
                 }
             }
         )*
-
-        #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-        pub enum Value {
-            $(
-                $e($t),
-            )*
-            Map(Map),
-            Array(Vec<Value>),
-            PrimArray(PrimitiveArray),
-            NA,
-            Null
-        }
 
         #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
         pub enum PrimitiveArray {
@@ -257,24 +245,37 @@ macro_rules! define_types {
             )*
         }
 
-        impl Value {
+
+        #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+        pub enum OwnedValue {
+            $(
+                $e($t),
+            )*
+            Map(Map),
+            Array(Vec<OwnedValue>),
+            PrimArray(PrimitiveArray),
+            NA,
+            Null
+        }
+
+        impl OwnedValue {
             $(
                 get_from_val_fn!($e, $t);
             )*
             #[allow(non_snake_case)]
             pub fn Map(&self) -> Option<&Map> {
                 match self {
-                    &Value::Map(ref m) => Some(m),
+                    &OwnedValue::Map(ref m) => Some(m),
                     _ => None
                 }
             }
             pub fn base_size(&self) -> usize {
                 get_vsize(self.base_type_id(), self)
             }
-            pub fn cloned_iter_value(&self) -> Option<IntoIter<Value>> {
+            pub fn cloned_iter_value(&self) -> Option<IntoIter<OwnedValue>> {
                 match self {
-                    Value::Array(ref array) => Some(array.clone().into_iter()),
-                    $(Value::PrimArray(PrimitiveArray::$e(ref vec)) => {
+                    OwnedValue::Array(ref array) => Some(array.clone().into_iter()),
+                    $(OwnedValue::PrimArray(PrimitiveArray::$e(ref vec)) => {
                         let packed_iter = vec.iter().map(|v| v.clone().value());
                         let packed_vec: Vec<_> = packed_iter.collect();
                         Some(packed_vec.into_iter())
@@ -283,37 +284,37 @@ macro_rules! define_types {
                 }
             }
             pub fn iter_value(&self) -> Option<ValueIter> {
-                if let Value::Array(ref array) = self {
+                if let OwnedValue::Array(ref array) = self {
                     Some(ValueIter::new(array))
                 } else { None }
             }
             pub fn len(&self) -> Option<usize> {
                 match self {
-                    Value::Array(ref array) => Some(array.len()),
-                    $(Value::PrimArray(PrimitiveArray::$e(ref vec)) => Some(vec.len()),)*
+                    OwnedValue::Array(ref array) => Some(array.len()),
+                    $(OwnedValue::PrimArray(PrimitiveArray::$e(ref vec)) => Some(vec.len()),)*
                     _ => None
                 }
             }
             pub fn feature(&self) -> [u8; 8] {
                 match self {
                     $(
-                        Value::$e(ref v) => $io::feature(v)
+                        OwnedValue::$e(ref v) => $io::feature(v)
                     ),*,
-                    Value::Map(_) | Value::Array(_) | Value::PrimArray(_) => unreachable!(),
+                    OwnedValue::Map(_) | OwnedValue::Array(_) | OwnedValue::PrimArray(_) => unreachable!(),
                     _ => [0u8; 8]
                 }
             }
 
             pub fn features(&self) -> Vec<[u8; 8]> {
                 match self {
-                    Value::Array(ref vec) => {
+                    OwnedValue::Array(ref vec) => {
                         let mut res = vec![];
                         for v in vec {
                             res.push(v.feature());
                         }
                         res
                     },
-                    Value::PrimArray(ref prim_arr) => {
+                    OwnedValue::PrimArray(ref prim_arr) => {
                         prim_arr.features()
                     },
                     _ => unreachable!()
@@ -323,23 +324,23 @@ macro_rules! define_types {
             pub fn hash(&self) -> [u8; 8] {
                 match self {
                     $(
-                        Value::$e(ref v) => $io::hash(v)
+                        OwnedValue::$e(ref v) => $io::hash(v)
                     ),*,
-                    Value::Map(_) | Value::Array(_) | Value::PrimArray(_) => panic!(),
+                    OwnedValue::Map(_) | OwnedValue::Array(_) | OwnedValue::PrimArray(_) => panic!(),
                     _ => [0u8; 8]
                 }
             }
 
             pub fn hashes(&self) -> Vec<[u8; 8]> {
                 match self {
-                    Value::Array(ref vec) => {
+                    OwnedValue::Array(ref vec) => {
                         let mut res = vec![];
                         for v in vec {
                             res.push(v.hash());
                         }
                         res
                     },
-                    Value::PrimArray(ref prim_arr) => {
+                    OwnedValue::PrimArray(ref prim_arr) => {
                         prim_arr.hashes()
                     },
                     _ => unreachable!()
@@ -348,16 +349,16 @@ macro_rules! define_types {
             pub fn base_type_id(&self) -> u32 {
                 match self {
                     $(
-                        &Value::$e(ref _v) => $id,
+                        &OwnedValue::$e(ref _v) => $id,
                     )*
-                    &Value::Array(ref v) => v[0].base_type_id(),
-                    $(Value::PrimArray(PrimitiveArray::$e(_)) => $id,)*
+                    &OwnedValue::Array(ref v) => v[0].base_type_id(),
+                    $(OwnedValue::PrimArray(PrimitiveArray::$e(_)) => $id,)*
                     _ => 0
                 }
             }
             pub fn prim_array(&self) -> Option<&PrimitiveArray> {
                 match self {
-                    &Value::PrimArray(ref pa) => Some(pa),
+                    &OwnedValue::PrimArray(ref pa) => Some(pa),
                     _ => None
                 }
             }
@@ -402,11 +403,11 @@ macro_rules! define_types {
                  _ => None,
              }
         }
-        pub fn set_val (id:u32, val: &Value, mut mem_ptr: usize) {
+        pub fn set_val (id:u32, val: &OwnedValue, mut mem_ptr: usize) {
              match id {
                  $(
                      $id => {
-                        if let &Value::PrimArray(PrimitiveArray::$e(ref vec)) = val {
+                        if let &OwnedValue::PrimArray(PrimitiveArray::$e(ref vec)) = val {
                             for v in vec {
                                 $io::write(v , mem_ptr);
                                 mem_ptr += $io::val_size(v);
@@ -423,7 +424,7 @@ macro_rules! define_types {
                  _ => panic!("Type id not illegal {}", id),
              }
         }
-        pub fn get_vsize (id: u32, val: &Value) -> usize {
+        pub fn get_vsize (id: u32, val: &OwnedValue) -> usize {
             match id {
                 $(
                     $id => {

@@ -1,16 +1,18 @@
 #[macro_use]
 mod macros;
 pub mod custom_types;
-pub mod value;
+pub mod owned_value;
 
 use serde::Deserialize;
 use std::vec::IntoIter;
 pub use types::custom_types::any::*;
 pub use types::custom_types::bytes::*;
 pub use types::custom_types::id::*;
-pub use types::custom_types::map::*;
+pub use types::custom_types::owned_map::*;
 pub use types::custom_types::pos::*;
-pub use types::value::*;
+pub use types::owned_value::*;
+
+pub type Value = OwnedValue;
 
 gen_primitive_types_io!(
     bool:   bool_io       big_end_cast!();
@@ -338,7 +340,7 @@ pub fn type_id_of(t: Type) -> u32 {
     return t as u32;
 }
 
-pub static NULL_VALUE: Value = Value::Null;
+pub static NULL_OWNED_VALUE: OwnedValue = OwnedValue::Null;
 pub const ARRAY_LEN_TYPE_ID: u32 = 9; //u32
 pub const NULL_TYPE_ID: u32 = 7; //u8
 

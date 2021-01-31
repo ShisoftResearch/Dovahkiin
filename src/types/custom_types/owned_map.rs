@@ -4,6 +4,8 @@ use std::collections::HashMap;
 use std::iter::Iterator;
 use std::slice::Iter;
 
+type Value = OwnedValue;
+
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct Map {
     pub map: HashMap<u64, Value>,
@@ -47,7 +49,7 @@ impl Map {
         self.insert_key_id(key, value.value())
     }
     pub fn get_by_key_id(&self, key: u64) -> &Value {
-        self.map.get(&key).unwrap_or(&NULL_VALUE)
+        self.map.get(&key).unwrap_or(&NULL_OWNED_VALUE)
     }
     pub fn get_mut_by_key_id(&mut self, key: u64) -> &mut Value {
         self.map.entry(key).or_insert(Value::Null)
@@ -74,7 +76,7 @@ impl Map {
                 }
             }
         }
-        return &NULL_VALUE;
+        return &NULL_OWNED_VALUE;
     }
     pub fn get_in(&self, keys: &[&'static str]) -> &Value {
         self.get_in_by_ids(Map::strs_to_ids(keys).iter())
