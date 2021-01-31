@@ -1,6 +1,6 @@
 use super::*;
 use std::collections::HashMap;
-use types::custom_types::map::Map;
+use types::custom_types::owned_map::OwnedMap;
 use types::Value;
 
 pub fn size_(vals: &Vec<SExpr>) -> Result<u64, String> {
@@ -54,7 +54,7 @@ pub fn hashmap(exprs: Vec<SExpr>) -> Result<SExpr, String> {
             return Err(format!("Wrong hashmap key value data type. Key should be a string and value should be a value"));
         }
     }
-    return Ok(SExpr::Value(Value::Map(Map::from_hash_map(hashmap))));
+    return Ok(SExpr::Value(Value::Map(OwnedMap::from_hash_map(hashmap))));
 }
 
 pub fn merge(exprs: Vec<SExpr>) -> Result<SExpr, String> {
@@ -74,7 +74,7 @@ pub fn merge(exprs: Vec<SExpr>) -> Result<SExpr, String> {
         }
     }
     field_names.dedup();
-    Ok(SExpr::Value(Value::Map(Map {
+    Ok(SExpr::Value(Value::Map(OwnedMap {
         map: value_map,
         fields: field_names,
     })))

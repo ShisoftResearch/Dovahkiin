@@ -1,16 +1,19 @@
 #[macro_use]
 mod macros;
 pub mod custom_types;
-pub mod value;
+pub mod owned_value;
 
 use serde::Deserialize;
 use std::vec::IntoIter;
 pub use types::custom_types::any::*;
 pub use types::custom_types::bytes::*;
 pub use types::custom_types::id::*;
-pub use types::custom_types::map::*;
+pub use types::custom_types::owned_map::*;
+pub use types::custom_types::shared_map::*;
 pub use types::custom_types::pos::*;
-pub use types::value::*;
+pub use types::owned_value::*;
+
+pub type Value = OwnedValue;
 
 gen_primitive_types_io!(
     bool:   bool_io       big_end_cast!();
@@ -28,20 +31,8 @@ gen_primitive_types_io!(
 );
 
 gen_compound_types_io! (
-    Pos2d32, pos2d32_io, {
-        |mem_ptr| {
-            let x = f32_io::read(mem_ptr);
-            let y = f32_io::read(mem_ptr + f32_io::size(0));
-            Pos2d32 {x: x, y: y}
-        }
-    }, {
-        |val: &Pos2d32, mem_ptr| {
-            f32_io::write(&val.x, mem_ptr);
-            f32_io::write(&val.y, mem_ptr + f32_io::size(0));
-        }
-    }, {
-        f32_io::size(0) * 2
-    }, {
+    Pos2d32, pos2d32_io,
+    {
         |_| [0u8; 8]
     }, {
         |val: &Pos2d32| {
@@ -53,20 +44,8 @@ gen_compound_types_io! (
         }
     };
 
-    Pos2d64, pos2d64_io, {
-        |mem_ptr| {
-            let x = f64_io::read(mem_ptr);
-            let y = f64_io::read(mem_ptr + f64_io::size(0));
-            Pos2d64 {x: x, y: y}
-        }
-    }, {
-        |val: &Pos2d64, mem_ptr| {
-            f64_io::write(&val.x, mem_ptr);
-            f64_io::write(&val.y, mem_ptr + f64_io::size(0));
-        }
-    }, {
-        f64_io::size(0) * 2
-    }, {
+    Pos2d64, pos2d64_io,
+    {
         |_| [0u8; 8]
     }, {
         |val: &Pos2d64| {
@@ -80,22 +59,8 @@ gen_compound_types_io! (
 
     //////////////////////////////////////////////////////////////
 
-    Pos3d32, pos3d32_io, {
-        |mem_ptr| {
-            let x = f32_io::read(mem_ptr);
-            let y = f32_io::read(mem_ptr + f32_io::size(0));
-            let z = f32_io::read(mem_ptr + f32_io::size(0) * 2);
-            Pos3d32 {x: x, y: y, z: z}
-        }
-    }, {
-        |val: &Pos3d32, mem_ptr| {
-            f32_io::write(&val.x, mem_ptr);
-            f32_io::write(&val.y, mem_ptr + f32_io::size(0));
-            f32_io::write(&val.z, mem_ptr + f32_io::size(0) * 2);
-        }
-    }, {
-        f32_io::size(0) * 3
-    }, {
+    Pos3d32, pos3d32_io,
+    {
         |_| [0u8; 8]
     }, {
         |val: &Pos3d32| {
@@ -108,22 +73,8 @@ gen_compound_types_io! (
         }
     };
 
-    Pos3d64, pos3d64_io, {
-        |mem_ptr| {
-            let x = f64_io::read(mem_ptr);
-            let y = f64_io::read(mem_ptr + f64_io::size(0));
-            let z = f64_io::read(mem_ptr + f64_io::size(0) * 2);
-            Pos3d64 {x: x, y: y, z: z}
-        }
-    }, {
-        |val: &Pos3d64, mem_ptr| {
-            f64_io::write(&val.x, mem_ptr);
-            f64_io::write(&val.y, mem_ptr + f64_io::size(0));
-            f64_io::write(&val.z, mem_ptr + f64_io::size(0) * 2);
-        }
-    }, {
-        f64_io::size(0) * 3
-    }, {
+    Pos3d64, pos3d64_io,
+    {
         |_| [0u8; 8]
     }, {
         |val: &Pos3d64| {
@@ -138,20 +89,8 @@ gen_compound_types_io! (
 
     //////////////////////////////////////////////////////////
 
-    Id, id_io, {
-        |mem_ptr| {
-            let higher = u64_io::read(mem_ptr);
-            let lower =  u64_io::read(mem_ptr + u64_io::size(0));
-            Id {higher: higher, lower: lower}
-        }
-    }, {
-        |val: &Id, mem_ptr| {
-            u64_io::write(&val.higher, mem_ptr);
-            u64_io::write(&val.lower,  mem_ptr + u64_io::size(0));
-        }
-    }, {
-        u64_io::size(0) * 2
-    }, {
+    Id, id_io,
+    {
         |id: &Id| {
             let big_end = big_end!(write_u64);
             big_end(id.higher ^ id.lower)
@@ -168,20 +107,16 @@ gen_compound_types_io! (
 );
 
 gen_variable_types_io!(
-    String,
+    String, &'static str,
     string_io,
     {
-        use std::ptr;
         |mem_ptr| {
-            let len = u32_io::read(mem_ptr) as usize;
+            let len = *u32_io::read(mem_ptr) as usize;
             let smem_ptr = mem_ptr + u32_io::size(0);
-            let mut bytes = Vec::with_capacity(len);
-            for i in 0..len {
-                let ptr = smem_ptr + i;
-                let b = unsafe { ptr::read(ptr as *mut u8) };
-                bytes.push(b);
-            }
-            String::from_utf8(bytes).unwrap()
+            let slice = unsafe {
+                std::slice::from_raw_parts(smem_ptr as *const u8, len)
+            };
+            std::str::from_utf8(slice).unwrap()
         }
     },
     {
@@ -201,7 +136,7 @@ gen_variable_types_io!(
     },
     {
         |mem_ptr| {
-            let str_len = u32_io::read(mem_ptr) as usize;
+            let str_len = *u32_io::read(mem_ptr) as usize;
             str_len + u32_io::size(0)
         }
     },
@@ -218,20 +153,15 @@ gen_variable_types_io!(
 );
 
 gen_variable_types_io!(
-    Bytes,
+    Bytes, &'static [u8],
     bytes_io,
     {
-        use std::ptr;
         |mem_ptr| {
-            let len = u32_io::read(mem_ptr) as usize;
+            let len = *u32_io::read(mem_ptr) as usize;
             let smem_ptr = mem_ptr + u32_io::size(0);
-            let mut bytes = Vec::with_capacity(len);
-            for i in 0..len {
-                let ptr = smem_ptr + i;
-                let b = unsafe { ptr::read(ptr as *mut u8) };
-                bytes.push(b);
+            unsafe {
+                std::slice::from_raw_parts(smem_ptr as *const u8, len)
             }
-            Bytes::from_vec(bytes)
         }
     },
     {
@@ -249,7 +179,7 @@ gen_variable_types_io!(
             }
         }
     },
-    |mem_ptr| { u32_io::read(mem_ptr) as usize + u32_io::size(0) },
+    |mem_ptr| { *u32_io::read(mem_ptr) as usize + u32_io::size(0) },
     |val: &Bytes| { val.len() + u32_io::size(0) },
     |val: &Bytes| {
         let bytes = &val.data;
@@ -268,20 +198,15 @@ gen_variable_types_io!(
 );
 
 gen_variable_types_io!(
-    SmallBytes,
+    SmallBytes, &'static [u8],
     small_bytes_io,
     {
-        use std::ptr;
         |mem_ptr| {
-            let len = u8_io::read(mem_ptr) as usize;
+            let len = *u8_io::read(mem_ptr) as usize;
             let smem_ptr = mem_ptr + 1;
-            let mut bytes = Vec::with_capacity(len);
-            for i in 0..len {
-                let ptr = smem_ptr + i;
-                let b = unsafe { ptr::read(ptr as *mut u8) };
-                bytes.push(b);
+            unsafe {
+                std::slice::from_raw_parts(smem_ptr as *const u8, len)
             }
-            SmallBytes::from_vec(bytes)
         }
     },
     {
@@ -299,7 +224,7 @@ gen_variable_types_io!(
             }
         }
     },
-    |mem_ptr| { u8_io::read(mem_ptr) as usize + 1 },
+    |mem_ptr| { *u8_io::read(mem_ptr) as usize + 1 },
     |val: &SmallBytes| { val.len() + 1 },
     |val: &SmallBytes| {
         let bytes = &val.data;
@@ -318,12 +243,12 @@ gen_variable_types_io!(
 );
 
 gen_variable_types_io!(
-    Any,
+    Any, Any,
     any_io,
     {
         use std::ptr;
         |mem_ptr| {
-            let len = u32_io::read(mem_ptr) as usize;
+            let len = *u32_io::read(mem_ptr) as usize;
             let smem_ptr = mem_ptr + u32_io::size(0);
             let mut bytes = Vec::with_capacity(len);
             for i in 0..len {
@@ -351,7 +276,7 @@ gen_variable_types_io!(
     },
     {
         |mem_ptr| {
-            let str_len = u32_io::read(mem_ptr) as usize;
+            let str_len = *u32_io::read(mem_ptr) as usize;
             str_len + u32_io::size(0)
         }
     },
@@ -416,7 +341,7 @@ pub fn type_id_of(t: Type) -> u32 {
     return t as u32;
 }
 
-pub static NULL_VALUE: Value = Value::Null;
+pub static NULL_OWNED_VALUE: OwnedValue = OwnedValue::Null;
 pub const ARRAY_LEN_TYPE_ID: u32 = 9; //u32
 pub const NULL_TYPE_ID: u32 = 7; //u8
 

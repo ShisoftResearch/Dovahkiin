@@ -4,28 +4,36 @@ use std::collections::HashMap;
 use std::iter::Iterator;
 use std::slice::Iter;
 
-#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
-pub struct Map {
+type Value = SharedValue;
+
+#[derive(Debug, PartialEq)]
+pub struct SharedMap {
     pub map: HashMap<u64, Value>,
     pub fields: Vec<String>,
 }
-impl Map {
-    pub fn new() -> Map {
-        Map {
+impl SharedMap {
+    pub fn new() -> Self {
+        Self {
             map: HashMap::new(),
             fields: Vec::new(),
         }
     }
-    pub fn from_hash_map(map: HashMap<String, Value>) -> Map {
+    pub fn from_hash_map(map: HashMap<String, Value>) -> Self {
         let mut target_map = HashMap::new();
         let fields = map.keys().cloned().collect();
         for (key, value) in map {
             target_map.insert(key_hash(&key), value);
         }
-        Map {
+        Self{
             map: target_map,
             fields,
         }
+    }
+    pub fn to_owned(&self) -> OwnedMap {
+      OwnedMap {
+        map: self.map.iter().map(|(k,  v)| (*k, v.to_owned())).collect(),
+        fields: self.fields.clone()
+      }
     }
     pub fn insert<'a>(&mut self, key: &'a str, value: Value) -> Option<Value> {
         self.fields.push(key.to_string());
@@ -34,20 +42,8 @@ impl Map {
     pub fn insert_key_id(&mut self, key: u64, value: Value) -> Option<Value> {
         self.map.insert(key, value)
     }
-    pub fn insert_value<'a, V>(&mut self, key: &'a str, value: V) -> Option<Value>
-    where
-        V: ToValue,
-    {
-        self.insert(key, value.value())
-    }
-    pub fn insert_key_id_value<V>(&mut self, key: u64, value: V) -> Option<Value>
-    where
-        V: ToValue,
-    {
-        self.insert_key_id(key, value.value())
-    }
     pub fn get_by_key_id(&self, key: u64) -> &Value {
-        self.map.get(&key).unwrap_or(&NULL_VALUE)
+        self.map.get(&key).unwrap_or(&Value::Null)
     }
     pub fn get_mut_by_key_id(&mut self, key: u64) -> &mut Value {
         self.map.entry(key).or_insert(Value::Null)
@@ -74,10 +70,10 @@ impl Map {
                 }
             }
         }
-        return &NULL_VALUE;
+        return &Value::Null;
     }
     pub fn get_in(&self, keys: &[&'static str]) -> &Value {
-        self.get_in_by_ids(Map::strs_to_ids(keys).iter())
+        self.get_in_by_ids(Self::strs_to_ids(keys).iter())
     }
     pub fn get_in_mut_by_key_ids(&mut self, mut keys_ids: Iter<u64>) -> Option<&mut Value> {
         let current_key = keys_ids.next().cloned();
@@ -103,7 +99,7 @@ impl Map {
         }
     }
     pub fn get_in_mut(&mut self, keys: &[&'static str]) -> Option<&mut Value> {
-        self.get_in_mut_by_key_ids(Map::strs_to_ids(keys).iter())
+        self.get_in_mut_by_key_ids(Self::strs_to_ids(keys).iter())
     }
     pub fn update_in_by_key_ids<U>(&mut self, keys: Iter<u64>, update: U) -> Option<()>
     where
@@ -121,7 +117,7 @@ impl Map {
     where
         U: FnOnce(&mut Value),
     {
-        self.update_in_by_key_ids(Map::strs_to_ids(keys).iter(), update)
+        self.update_in_by_key_ids(Self::strs_to_ids(keys).iter(), update)
     }
     pub fn set_in_by_key_ids(&mut self, keys: Iter<u64>, value: Value) -> Option<()> {
         let val = self.get_in_mut_by_key_ids(keys);
@@ -133,7 +129,7 @@ impl Map {
         }
     }
     pub fn set_in(&mut self, keys: &[&'static str], value: Value) -> Option<()> {
-        self.set_in_by_key_ids(Map::strs_to_ids(keys).iter(), value)
+        self.set_in_by_key_ids(Self::strs_to_ids(keys).iter(), value)
     }
     pub fn into_string_map(self) -> HashMap<String, Value> {
         let mut id_map: HashMap<u64, String> = self

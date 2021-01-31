@@ -4,6 +4,8 @@ use std::iter::Iterator;
 use std::ops::{Index, IndexMut};
 use std::vec::IntoIter;
 
+type Value = OwnedValue;
+
 pub trait ToValue {
     fn value(self) -> Value;
 }
@@ -40,7 +42,7 @@ where
     V: ToValue,
 {
     fn value(self) -> Value {
-        let mut map = Map::new();
+        let mut map = OwnedMap::new();
         for (k, v) in self {
             map.insert_value(&k, v);
         }
@@ -54,7 +56,7 @@ impl<'a> Index<&'a str> for Value {
     fn index(&self, index: &'a str) -> &Self::Output {
         match self {
             &Value::Map(ref map) => map.get(index),
-            _ => &NULL_VALUE,
+            _ => &NULL_OWNED_VALUE,
         }
     }
 }
@@ -64,9 +66,9 @@ impl Index<usize> for Value {
 
     fn index(&self, index: usize) -> &Self::Output {
         match self {
-            &Value::Array(ref array) => array.get(index).unwrap_or(&NULL_VALUE),
+            &Value::Array(ref array) => array.get(index).unwrap_or(&NULL_OWNED_VALUE),
             &Value::Map(ref map) => map.get_by_key_id(index as u64),
-            _ => &NULL_VALUE,
+            _ => &NULL_OWNED_VALUE,
         }
     }
 }
@@ -77,8 +79,8 @@ impl Index<u64> for Value {
     fn index(&self, index: u64) -> &Self::Output {
         match self {
             &Value::Map(ref map) => map.get_by_key_id(index),
-            &Value::Array(ref array) => array.get(index as usize).unwrap_or(&NULL_VALUE),
-            _ => &NULL_VALUE,
+            &Value::Array(ref array) => array.get(index as usize).unwrap_or(&NULL_OWNED_VALUE),
+            _ => &NULL_OWNED_VALUE,
         }
     }
 }
