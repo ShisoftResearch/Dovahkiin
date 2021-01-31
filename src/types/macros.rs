@@ -406,6 +406,22 @@ macro_rules! define_types {
                 _ => 0,
            }
         }
+        pub fn get_owned_val (id:u32, mem_ptr: usize) -> OwnedValue {
+            match id {
+                $(
+                    $id => OwnedValue::$e($io::read(mem_ptr).to_owned().into()),
+                )*
+                _ => OwnedValue::NA,
+            }
+       }
+       pub fn get_shared_val (id:u32, mem_ptr: usize) -> SharedValue {
+            match id {
+                $(
+                    $id => SharedValue::$e($io::read(mem_ptr)),
+                )*
+                _ => SharedValue::NA,
+            }
+        }
         pub fn get_prim_array_val(id:u32, size: usize, mem_ptr: &mut usize) -> Option<OwnedPrimArray> {
              match id {
                  $(

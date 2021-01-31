@@ -3,6 +3,7 @@ mod macros;
 pub mod custom_types;
 pub mod owned_value;
 
+use custom_types::any;
 use serde::Deserialize;
 use std::vec::IntoIter;
 pub use types::custom_types::any::*;
@@ -344,5 +345,3 @@ pub fn type_id_of(t: Type) -> u32 {
 pub static NULL_OWNED_VALUE: OwnedValue = OwnedValue::Null;
 pub const ARRAY_LEN_TYPE_ID: u32 = 9; //u32
 pub const NULL_TYPE_ID: u32 = 7; //u8
-
-pub trait Prim {}
