@@ -686,6 +686,7 @@ macro_rules! define_types {
             fn hashes(&self) -> Vec<[u8; 8]>;
             fn base_type_id(&self) -> u32;
             fn index_of(&self, index: usize) -> &dyn Value;
+            fn base_size(&self) -> usize;
         }
         
         impl Value for OwnedValue {
@@ -711,6 +712,9 @@ macro_rules! define_types {
             }
             fn index_of(&self, index: usize) -> &dyn Value {
                 &self[index]
+            }
+            fn base_size(&self) -> usize {
+                OwnedValue::base_size(&self)
             }
         }
         
@@ -760,6 +764,9 @@ macro_rules! define_types {
             }
             fn index_of(&self, index: usize) -> &dyn Value {
                 &self[index]
+            }
+            fn base_size(&self) -> usize {
+               SharedValue::base_size(self)
             }
         }
         
