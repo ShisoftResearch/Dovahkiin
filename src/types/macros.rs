@@ -674,7 +674,9 @@ macro_rules! define_types {
             }
         }
 
-        pub trait Value: Index<usize, Output = Self> + Index<u64, Output = Self> {
+        pub type GenericValue = dyn Value;
+
+        pub trait Value {
             $(
                 fn $fn(&self) -> Option<$t>;
             )*
@@ -683,6 +685,7 @@ macro_rules! define_types {
             fn hash(&self) -> [u8; 8];
             fn hashes(&self) -> Vec<[u8; 8]>;
             fn base_type_id(&self) -> u32;
+            fn index_of(&self, index: usize) -> &dyn Value;
         }
         
         impl Value for OwnedValue {
@@ -706,11 +709,13 @@ macro_rules! define_types {
             fn base_type_id(&self) -> u32 {
                 OwnedValue::base_type_id(&self)
             }
+            fn index_of(&self, index: usize) -> &dyn Value {
+                &self[index]
+            }
         }
         
         impl Index<usize> for OwnedValue {
             type Output = Self;
-        
             fn index(&self, index: usize) -> &Self::Output {
                 match self {
                     &Self::Array(ref array) => array.get(index).unwrap_or(&NULL_OWNED_VALUE),
@@ -752,6 +757,9 @@ macro_rules! define_types {
             }
             fn base_type_id(&self) -> u32 {
                 SharedValue::base_type_id(&self)
+            }
+            fn index_of(&self, index: usize) -> &dyn Value {
+                &self[index]
             }
         }
         
