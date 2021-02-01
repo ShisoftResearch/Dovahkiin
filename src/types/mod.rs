@@ -281,3 +281,14 @@ pub static NULL_SHARED_VALUE: SharedValue = SharedValue::Null;
 pub const ARRAY_LEN_TYPE_ID: u32 = 9; //u32
 pub const TYPE_CODE_TYPE_ID: u32 = 9; //u32
 pub const NULL_TYPE_ID: u32 = 7; //u8
+
+impl<'a> Index<&'a str> for SharedValue {
+    type Output = Self;
+
+    fn index(&self, index: &'a str) -> &Self::Output {
+        match self {
+            &Self::Map(ref map) => map.get(index),
+            _ => &NULL_SHARED_VALUE,
+        }
+    }
+}
