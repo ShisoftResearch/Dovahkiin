@@ -362,7 +362,7 @@ macro_rules! define_types {
                     $(
                         &OwnedValue::$e(ref _v) => $id,
                     )*
-                    &OwnedValue::Array(ref v) => v[0].base_type_id(),
+                    // &OwnedValue::Array(ref v) => v[0].base_type_id(),
                     $(OwnedValue::PrimArray(OwnedPrimArray::$e(_)) => $id,)*
                     _ => 0
                 }
