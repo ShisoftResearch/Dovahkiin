@@ -4,7 +4,7 @@ pub mod custom_types;
 pub mod owned_value;
 
 use serde::Deserialize;
-use std::vec::IntoIter;
+use std::{ops::Index, vec::IntoIter};
 pub use types::custom_types::any::*;
 pub use types::custom_types::bytes::*;
 pub use types::custom_types::id::*;

@@ -50,36 +50,12 @@ where
     }
 }
 
-impl<'a> Index<&'a str> for Value {
-    type Output = Value;
+impl<'a> Index<&'a str> for OwnedValue {
+    type Output = Self;
 
     fn index(&self, index: &'a str) -> &Self::Output {
         match self {
-            &Value::Map(ref map) => map.get(index),
-            _ => &NULL_OWNED_VALUE,
-        }
-    }
-}
-
-impl Index<usize> for Value {
-    type Output = Value;
-
-    fn index(&self, index: usize) -> &Self::Output {
-        match self {
-            &Value::Array(ref array) => array.get(index).unwrap_or(&NULL_OWNED_VALUE),
-            &Value::Map(ref map) => map.get_by_key_id(index as u64),
-            _ => &NULL_OWNED_VALUE,
-        }
-    }
-}
-
-impl Index<u64> for Value {
-    type Output = Value;
-
-    fn index(&self, index: u64) -> &Self::Output {
-        match self {
-            &Value::Map(ref map) => map.get_by_key_id(index),
-            &Value::Array(ref array) => array.get(index as usize).unwrap_or(&NULL_OWNED_VALUE),
+            &Self::Map(ref map) => map.get(index),
             _ => &NULL_OWNED_VALUE,
         }
     }

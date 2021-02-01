@@ -675,5 +675,65 @@ macro_rules! define_types {
             }
         }
 
+        pub trait Value: Index<usize> + Index<u64> {
+            // $(
+            //     fn $e(&self) -> Option<&$t>;
+            // )*
+            fn feature(&self) -> [u8; 8];
+            fn features(&self) -> Vec<[u8; 8]>;
+            fn hash(&self) -> [u8; 8];
+            fn hashes(&self) -> Vec<[u8; 8]>;
+            fn base_type_id(&self) -> u32;
+        }
+        
+        impl Value for OwnedValue {
+            // $(
+            //     fn $e(&self) -> Option<&$t> {
+            //         let func: fn(&Self) -> Option<&$t>  = OwnedValue::$e;
+            //         func(self)
+            //     }
+            // )*
+            fn feature(&self) -> [u8; 8] {
+                OwnedValue::feature(self)
+            }
+            fn features(&self) -> Vec<[u8; 8]> {
+                OwnedValue::features(&self)
+            }
+            fn hash(&self) -> [u8; 8] {
+                OwnedValue::hash(self)
+            }
+            fn hashes(&self) -> Vec<[u8; 8]> {
+                OwnedValue::hashes(self)
+            }
+            fn base_type_id(&self) -> u32 {
+                OwnedValue::base_type_id(&self)
+            }
+        }
+        
+        impl Index<usize> for OwnedValue {
+            type Output = Self;
+        
+            fn index(&self, index: usize) -> &Self::Output {
+                match self {
+                    &Self::Array(ref array) => array.get(index).unwrap_or(&NULL_OWNED_VALUE),
+                    &Self::Map(ref map) => map.get_by_key_id(index as u64),
+                    _ => &NULL_OWNED_VALUE,
+                }
+            }
+        }
+        
+        impl Index<u64> for OwnedValue {
+            type Output = Self;
+        
+            fn index(&self, index: u64) -> &Self::Output {
+                match self {
+                    &Self::Map(ref map) => map.get_by_key_id(index),
+                    &Self::Array(ref array) => array.get(index as usize).unwrap_or(&NULL_OWNED_VALUE),
+                    _ => &NULL_OWNED_VALUE,
+                }
+            }
+        }
+        
+        
     );
 }
