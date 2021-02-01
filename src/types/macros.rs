@@ -131,9 +131,8 @@ macro_rules! get_from_val {
 }
 
 macro_rules! ref_from_val_fn {
-    ($e:ident, $st:ty) => {
-        #[allow(non_snake_case)]
-        pub fn $e(&self) -> Option<$st> {
+    ($e:ident, $fn: ident, $st:ty) => {
+        pub fn $fn(&self) -> Option<$st> {
             ref_from_val!($e, self)
         }
     };
@@ -149,9 +148,9 @@ macro_rules! ref_from_val {
 }
 
 macro_rules! get_from_val_fn {
-    ($e:ident, $t:ty) => {
+    ($e:ident, $fn: ident, $t:ty) => {
         #[allow(non_snake_case)]
-        pub fn $e(&self) -> Option<&$t> {
+        pub fn $fn(&self) -> Option<&$t> {
             get_from_val!($e, self)
         }
     };
@@ -160,7 +159,7 @@ macro_rules! get_from_val_fn {
 macro_rules! define_types {
     (
         $(
-            [ $( $name:expr ),* ], $id:expr, $t:ty, $st: ty, $e:ident, $io:ident
+            [ $( $name:expr ),* ], $id:expr, $t:ty, $st: ty, $e:ident, $io:ident, $fn: ident
          );*
     ) => (
 
@@ -246,7 +245,7 @@ macro_rules! define_types {
                 res
             }
             $(
-                pub fn $e(&self) -> Option<&Vec<$t>> {
+                pub fn $fn(&self) -> Option<&Vec<$t>> {
                     match self {
                         OwnedPrimArray::$e(ref vec) => Some(vec),
                         _ => None
@@ -270,7 +269,7 @@ macro_rules! define_types {
 
         impl OwnedValue {
             $(
-                get_from_val_fn!($e, $t);
+                get_from_val_fn!($e, $fn, $t);
             )*
             #[allow(non_snake_case)]
             pub fn Map(&self) -> Option<&OwnedMap> {
@@ -551,7 +550,7 @@ macro_rules! define_types {
                 res
             }
             $(
-                pub fn $e(&self) -> Option<&'static [$t]> {
+                pub fn $fn(&self) -> Option<&'static [$t]> {
                     match self {
                         SharedPrimArray::$e(ref vec) => Some(vec),
                         _ => None
@@ -573,7 +572,7 @@ macro_rules! define_types {
         }
         impl SharedValue {
             $(
-                ref_from_val_fn!($e, $st);
+                ref_from_val_fn!($e, $fn, $st);
             )*
 
             pub fn to_owned(&self) -> OwnedValue {
@@ -676,9 +675,9 @@ macro_rules! define_types {
         }
 
         pub trait Value: Index<usize> + Index<u64> {
-            // $(
-            //     fn $e(&self) -> Option<&$t>;
-            // )*
+            $(
+                fn $fn(&self) -> Option<$t>;
+            )*
             fn feature(&self) -> [u8; 8];
             fn features(&self) -> Vec<[u8; 8]>;
             fn hash(&self) -> [u8; 8];
@@ -687,12 +686,11 @@ macro_rules! define_types {
         }
         
         impl Value for OwnedValue {
-            // $(
-            //     fn $e(&self) -> Option<&$t> {
-            //         let func: fn(&Self) -> Option<&$t>  = OwnedValue::$e;
-            //         func(self)
-            //     }
-            // )*
+            $(
+                fn $fn(&self) -> Option<$t> {
+                    OwnedValue::$fn(self).map(|v| v.to_owned())
+                }
+            )*
             fn feature(&self) -> [u8; 8] {
                 OwnedValue::feature(self)
             }
@@ -734,6 +732,52 @@ macro_rules! define_types {
             }
         }
         
+        impl Value for SharedValue {
+            $(
+                fn $fn(&self) -> Option<$t> {
+                    SharedValue::$fn(self).map(|v| v.to_owned().into())
+                }
+            )*
+            fn feature(&self) -> [u8; 8] {
+                SharedValue::feature(self)
+            }
+            fn features(&self) -> Vec<[u8; 8]> {
+                SharedValue::features(&self)
+            }
+            fn hash(&self) -> [u8; 8] {
+                SharedValue::hash(self)
+            }
+            fn hashes(&self) -> Vec<[u8; 8]> {
+                SharedValue::hashes(self)
+            }
+            fn base_type_id(&self) -> u32 {
+                SharedValue::base_type_id(&self)
+            }
+        }
+        
+        impl Index<usize> for SharedValue {
+            type Output = Self;
+        
+            fn index(&self, index: usize) -> &Self::Output {
+                match self {
+                    &Self::Array(ref array) => array.get(index).unwrap_or(&NULL_SHARED_VALUE),
+                    &Self::Map(ref map) => map.get_by_key_id(index as u64),
+                    _ => &NULL_SHARED_VALUE,
+                }
+            }
+        }
+        
+        impl Index<u64> for SharedValue {
+            type Output = Self;
+        
+            fn index(&self, index: u64) -> &Self::Output {
+                match self {
+                    &Self::Map(ref map) => map.get_by_key_id(index),
+                    &Self::Array(ref array) => array.get(index as usize).unwrap_or(&NULL_SHARED_VALUE),
+                    _ => &NULL_SHARED_VALUE,
+                }
+            }
+        }
         
     );
 }
