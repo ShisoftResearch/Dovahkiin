@@ -687,6 +687,8 @@ macro_rules! define_types {
             fn base_type_id(&self) -> u32;
             fn index_of(&self, index: usize) -> &dyn Value;
             fn base_size(&self) -> usize;
+            fn is_prim_array(&self) -> bool;
+            fn uni_array(&self) -> Option<Vec<&dyn Value>>;
         }
         
         impl Value for OwnedValue {
@@ -695,6 +697,7 @@ macro_rules! define_types {
                     OwnedValue::$fn(self).map(|v| v.to_owned())
                 }
             )*
+
             fn feature(&self) -> [u8; 8] {
                 OwnedValue::feature(self)
             }
@@ -715,6 +718,18 @@ macro_rules! define_types {
             }
             fn base_size(&self) -> usize {
                 OwnedValue::base_size(&self)
+            }
+            fn is_prim_array(&self) -> bool {
+                match self {
+                    OwnedValue::PrimArray(_) => true,
+                    _ => false,
+                }
+            }
+            fn uni_array(&self) -> Option<Vec<&dyn Value>> {
+                match self {
+                    OwnedValue::Array(arr) => Some(arr.iter().map(|v| v as &dyn Value).collect()),
+                    _ => None
+                }
             }
         }
         
@@ -767,6 +782,18 @@ macro_rules! define_types {
             }
             fn base_size(&self) -> usize {
                SharedValue::base_size(self)
+            }
+            fn is_prim_array(&self) -> bool {
+                match self {
+                    SharedValue::PrimArray(_) => true,
+                    _ => false,
+                }
+            }
+            fn uni_array(&self) -> Option<Vec<&dyn Value>> {
+                match self {
+                    SharedValue::Array(arr) => Some(arr.iter().map(|v| v as &dyn Value).collect()),
+                    _ => None
+                }
             }
         }
         
