@@ -674,7 +674,7 @@ macro_rules! define_types {
             }
         }
 
-        pub trait Value: Index<usize> + Index<u64> {
+        pub trait Value: Index<usize, Output = Self> + Index<u64, Output = Self> {
             $(
                 fn $fn(&self) -> Option<$t>;
             )*
