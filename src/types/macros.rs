@@ -687,7 +687,7 @@ macro_rules! define_types {
             fn base_type_id(&self) -> u32;
             fn index_of(&self, index: usize) -> &dyn Value;
             fn base_size(&self) -> usize;
-            fn is_prim_array(&self) -> bool;
+            fn prim_array_data_size(&self) -> Option<u8>;
             fn uni_array(&self) -> Option<Vec<&dyn Value>>;
         }
         
@@ -719,10 +719,10 @@ macro_rules! define_types {
             fn base_size(&self) -> usize {
                 OwnedValue::base_size(&self)
             }
-            fn is_prim_array(&self) -> bool {
+            fn prim_array_data_size(&self) -> Option<u8> {
                 match self {
-                    OwnedValue::PrimArray(_) => true,
-                    _ => false,
+                    OwnedValue::PrimArray(arr) => Some(arr.data_size()),
+                    _ => None,
                 }
             }
             fn uni_array(&self) -> Option<Vec<&dyn Value>> {
@@ -783,10 +783,10 @@ macro_rules! define_types {
             fn base_size(&self) -> usize {
                SharedValue::base_size(self)
             }
-            fn is_prim_array(&self) -> bool {
+            fn prim_array_data_size(&self) -> Option<u8> {
                 match self {
-                    SharedValue::PrimArray(_) => true,
-                    _ => false,
+                    SharedValue::PrimArray(arr) => Some(arr.data_size()),
+                    _ => None,
                 }
             }
             fn uni_array(&self) -> Option<Vec<&dyn Value>> {
