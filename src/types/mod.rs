@@ -259,7 +259,7 @@ define_types!(
 #[macro_export]
 macro_rules! data_map {
     ($($k:ident: $v:expr),*) => {{
-            let mut map = $crate::types::Map::new();
+            let mut map = $crate::types::OwnedMap::new();
             $(map.insert_value(stringify!($k), $v);)*
             map
      }};
@@ -268,7 +268,7 @@ macro_rules! data_map {
 #[macro_export]
 macro_rules! data_map_value {
     ($($k:ident: $v:expr),*) => {{
-        $crate::types::Value::Map(data_map!($($k: $v),*))
+        $crate::types::OwnedValue::Map(data_map!($($k: $v),*))
      }};
 }
 
