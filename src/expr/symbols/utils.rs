@@ -1,5 +1,4 @@
 use super::*;
-use types::Value;
 
 pub fn is_true(expr: SExpr) -> bool {
     match expr {

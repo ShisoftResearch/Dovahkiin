@@ -2,7 +2,7 @@ use bifrost_hasher::hash_str;
 use expr::SExpr;
 use lexer::lisp::Token;
 use std::vec::IntoIter;
-use types::Value;
+use types::{OwnedValue as Value};
 
 fn parse_list(iter: &mut IntoIter<Token>) -> Result<SExpr, String> {
     let mut contents = Vec::new();

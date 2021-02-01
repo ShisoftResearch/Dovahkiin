@@ -1,7 +1,6 @@
 use super::*;
 use std::collections::HashMap;
 use types::custom_types::owned_map::OwnedMap;
-use types::Value;
 
 pub fn size_(vals: &Vec<SExpr>) -> Result<u64, String> {
     let mut result: u64 = 0;

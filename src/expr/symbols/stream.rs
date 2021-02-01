@@ -1,7 +1,6 @@
 use super::functions::eval_function;
 use super::utils::is_true;
 use super::*;
-use types::Value;
 
 pub fn to_array(expr: SExpr) -> Result<SExpr, String> {
     match expr {

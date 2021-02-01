@@ -13,8 +13,6 @@ pub use types::custom_types::shared_map::*;
 pub use types::custom_types::pos::*;
 pub use types::owned_value::*;
 
-pub type Value = OwnedValue;
-
 gen_primitive_types_io!(
     bool:   bool_io       big_end_cast!();
     char:   char_io       big_end_cast!();

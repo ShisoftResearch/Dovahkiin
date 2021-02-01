@@ -1,5 +1,4 @@
-use super::SExpr;
-use types::Value;
+use super::*;
 
 pub fn do_(exprs: Vec<SExpr>) -> Result<SExpr, String> {
     let mut result = SExpr::Value(Value::Null);

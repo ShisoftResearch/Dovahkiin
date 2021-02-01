@@ -1,7 +1,5 @@
 use super::utils::is_true;
 use super::*;
-use types::Value;
-
 pub fn if_(exprs: Vec<SExpr>) -> Result<SExpr, String> {
     let mut iter = exprs.into_iter();
     let tester = iter.next().unwrap();

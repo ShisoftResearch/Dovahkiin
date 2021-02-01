@@ -4,7 +4,6 @@ use super::lambda::{eval_lambda, lambda_placeholder};
 use super::*;
 use std::borrow::Borrow;
 use std::rc::Rc;
-use types::Value;
 
 pub fn eval_function(func_expr: &SExpr, params: Vec<SExpr>) -> Result<SExpr, String> {
     match func_expr {

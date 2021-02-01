@@ -1,7 +1,5 @@
 use super::bindings::*;
 use super::*;
-use types::Value;
-
 pub fn lambda_placeholder(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
     let params = exprs.remove(0);
     let params_list = if let SExpr::Vec(symbols) = params {

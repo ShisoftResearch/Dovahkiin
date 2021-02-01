@@ -1,7 +1,7 @@
 use expr::interpreter::ENV;
 use std::borrow::Borrow;
 use std::rc::Rc;
-use types::Value;
+use types::{OwnedValue as Value};
 
 #[macro_use]
 pub mod symbols;

@@ -1,5 +1,4 @@
 use super::*;
-use types::Value;
 
 macro_rules! reduce {
     ($type: path, $values: ident, $exp: expr) => {{

@@ -1,5 +1,4 @@
 use super::*;
-use types::Value;
 
 pub fn equals(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
     let last = exprs.pop().unwrap();

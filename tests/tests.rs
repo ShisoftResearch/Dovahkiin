@@ -1,6 +1,6 @@
 use dovahkiin::expr::SExpr;
 use dovahkiin::integrated::lisp;
-use dovahkiin::types::Value;
+use dovahkiin::types::{OwnedValue as Value};
 
 extern crate dovahkiin;
 
