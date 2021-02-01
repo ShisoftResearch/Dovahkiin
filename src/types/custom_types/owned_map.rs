@@ -23,7 +23,7 @@ impl OwnedMap {
         for (key, value) in map {
             target_map.insert(key_hash(&key), value);
         }
-        Self{
+        Self {
             map: target_map,
             fields,
         }
@@ -152,5 +152,4 @@ impl OwnedMap {
     pub fn len(&self) -> usize {
         self.map.len()
     }
-} 
-
+}

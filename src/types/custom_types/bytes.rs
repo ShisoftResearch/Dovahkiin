@@ -68,16 +68,12 @@ impl SmallBytes {
 
 impl From<Vec<u8>> for SmallBytes {
     fn from(vec: Vec<u8>) -> Self {
-        Self {
-            data: vec
-        }
+        Self { data: vec }
     }
 }
 
 impl From<Vec<u8>> for Bytes {
     fn from(vec: Vec<u8>) -> Self {
-        Self {
-            data: vec
-        }
+        Self { data: vec }
     }
 }

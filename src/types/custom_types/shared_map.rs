@@ -24,16 +24,16 @@ impl SharedMap {
         for (key, value) in map {
             target_map.insert(key_hash(&key), value);
         }
-        Self{
+        Self {
             map: target_map,
             fields,
         }
     }
     pub fn to_owned(&self) -> OwnedMap {
-      OwnedMap {
-        map: self.map.iter().map(|(k,  v)| (*k, v.to_owned())).collect(),
-        fields: self.fields.clone()
-      }
+        OwnedMap {
+            map: self.map.iter().map(|(k, v)| (*k, v.to_owned())).collect(),
+            fields: self.fields.clone(),
+        }
     }
     pub fn insert<'a>(&mut self, key: &'a str, value: Value) -> Option<Value> {
         self.fields.push(key.to_string());

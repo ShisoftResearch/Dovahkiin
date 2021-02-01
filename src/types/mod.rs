@@ -9,8 +9,8 @@ pub use types::custom_types::any::*;
 pub use types::custom_types::bytes::*;
 pub use types::custom_types::id::*;
 pub use types::custom_types::owned_map::*;
-pub use types::custom_types::shared_map::*;
 pub use types::custom_types::pos::*;
+pub use types::custom_types::shared_map::*;
 pub use types::owned_value::*;
 
 gen_primitive_types_io!(
@@ -105,15 +105,14 @@ gen_compound_types_io! (
 );
 
 gen_variable_types_io!(
-    String, str,
+    String,
+    str,
     string_io,
     {
         |mem_ptr| {
             let len = *u32_io::read(mem_ptr) as usize;
             let smem_ptr = mem_ptr + u32_io::size(0);
-            let slice = unsafe {
-                std::slice::from_raw_parts(smem_ptr as *const u8, len)
-            };
+            let slice = unsafe { std::slice::from_raw_parts(smem_ptr as *const u8, len) };
             std::str::from_utf8(slice).unwrap()
         }
     },
@@ -151,15 +150,14 @@ gen_variable_types_io!(
 );
 
 gen_variable_types_io!(
-    Bytes, [u8],
+    Bytes,
+    [u8],
     bytes_io,
     {
         |mem_ptr| {
             let len = *u32_io::read(mem_ptr) as usize;
             let smem_ptr = mem_ptr + u32_io::size(0);
-            unsafe {
-                std::slice::from_raw_parts(smem_ptr as *const u8, len)
-            }
+            unsafe { std::slice::from_raw_parts(smem_ptr as *const u8, len) }
         }
     },
     {
@@ -194,15 +192,14 @@ gen_variable_types_io!(
 );
 
 gen_variable_types_io!(
-    SmallBytes, [u8],
+    SmallBytes,
+    [u8],
     small_bytes_io,
     {
         |mem_ptr| {
             let len = *u8_io::read(mem_ptr) as usize;
             let smem_ptr = mem_ptr + 1;
-            unsafe {
-                std::slice::from_raw_parts(smem_ptr as *const u8, len)
-            }
+            unsafe { std::slice::from_raw_parts(smem_ptr as *const u8, len) }
         }
     },
     {

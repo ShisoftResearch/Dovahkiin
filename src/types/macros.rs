@@ -157,7 +157,6 @@ macro_rules! get_from_val_fn {
     };
 }
 
-
 macro_rules! define_types {
     (
         $(
@@ -497,7 +496,7 @@ macro_rules! define_types {
               $(
                   $e(&'static[$t]),
               )*
-        } 
+        }
 
         impl SharedPrimArray {
             pub fn size(&self) -> usize {
@@ -587,7 +586,7 @@ macro_rules! define_types {
                     SharedValue::Map(ref map) => OwnedValue::Map(map.to_owned()),
                     SharedValue::NA => OwnedValue::NA,
                     SharedValue::Null => OwnedValue::Null,
-                }                
+                }
             }
 
             #[allow(non_snake_case)]

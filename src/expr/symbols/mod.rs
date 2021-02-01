@@ -3,7 +3,7 @@ use expr::SExpr;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt::Debug;
-pub use types::{OwnedValue as Value};
+pub use types::OwnedValue as Value;
 
 mod arithmetic;
 pub mod bindings;
