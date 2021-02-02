@@ -118,14 +118,14 @@ macro_rules! gen_compound_types_io {
 macro_rules! gen_variable_types_io {
     (
         $(
-            $t:ty, 
-            $rt: ty, 
-            $tmod:ident, 
-            $reader:expr, 
-            $writer: expr, 
-            $size:expr, 
-            $val_size:expr, 
-            $feat: expr, 
+            $t:ty,
+            $rt: ty,
+            $tmod:ident,
+            $reader:expr,
+            $writer: expr,
+            $size:expr,
+            $val_size:expr,
+            $feat: expr,
             $hash: expr
         );*
     ) => (
@@ -750,7 +750,7 @@ macro_rules! define_types {
             fn prim_array_data_size(&self) -> Option<u8>;
             fn uni_array(&self) -> Option<Vec<&dyn Value>>;
         }
-        
+
         impl Value for OwnedValue {
             $(
                 fn $fn(&self) -> Option<$t> {
@@ -792,7 +792,7 @@ macro_rules! define_types {
                 }
             }
         }
-        
+
         impl Index<usize> for OwnedValue {
             type Output = Self;
             fn index(&self, index: usize) -> &Self::Output {
@@ -803,10 +803,10 @@ macro_rules! define_types {
                 }
             }
         }
-        
+
         impl Index<u64> for OwnedValue {
             type Output = Self;
-        
+
             fn index(&self, index: u64) -> &Self::Output {
                 match self {
                     &Self::Map(ref map) => map.get_by_key_id(index),
@@ -815,7 +815,7 @@ macro_rules! define_types {
                 }
             }
         }
-        
+
         impl Value for SharedValue {
             $(
                 fn $fn(&self) -> Option<$t> {
@@ -856,10 +856,10 @@ macro_rules! define_types {
                 }
             }
         }
-        
+
         impl Index<usize> for SharedValue {
             type Output = Self;
-        
+
             fn index(&self, index: usize) -> &Self::Output {
                 match self {
                     &Self::Array(ref array) => array.get(index).unwrap_or(&NULL_SHARED_VALUE),
@@ -868,10 +868,10 @@ macro_rules! define_types {
                 }
             }
         }
-        
+
         impl Index<u64> for SharedValue {
             type Output = Self;
-        
+
             fn index(&self, index: u64) -> &Self::Output {
                 match self {
                     &Self::Map(ref map) => map.get_by_key_id(index),
@@ -880,6 +880,6 @@ macro_rules! define_types {
                 }
             }
         }
-        
+
     );
 }

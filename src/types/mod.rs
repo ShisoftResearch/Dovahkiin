@@ -3,6 +3,7 @@ mod macros;
 pub mod custom_types;
 pub mod owned_value;
 
+use log::{debug, info, trace, warn};
 use serde::Deserialize;
 use std::{ops::Index, vec::IntoIter};
 pub use types::custom_types::any::*;
@@ -12,7 +13,6 @@ pub use types::custom_types::owned_map::*;
 pub use types::custom_types::pos::*;
 pub use types::custom_types::shared_map::*;
 pub use types::owned_value::*;
-use log::{info, trace, warn, debug};
 
 gen_primitive_types_io!(
     bool:   bool_io       big_end_cast!();
