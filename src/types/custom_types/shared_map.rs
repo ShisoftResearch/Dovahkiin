@@ -29,9 +29,9 @@ impl SharedMap {
             fields,
         }
     }
-    pub fn to_owned(&self) -> OwnedMap {
+    pub fn owned(&self) -> OwnedMap {
         OwnedMap {
-            map: self.map.iter().map(|(k, v)| (*k, v.to_owned())).collect(),
+            map: self.map.iter().map(|(k, v)| (*k, v.owned())).collect(),
             fields: self.fields.clone(),
         }
     }

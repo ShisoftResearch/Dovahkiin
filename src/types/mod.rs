@@ -12,6 +12,7 @@ pub use types::custom_types::owned_map::*;
 pub use types::custom_types::pos::*;
 pub use types::custom_types::shared_map::*;
 pub use types::owned_value::*;
+use log::{info, trace, warn, debug};
 
 gen_primitive_types_io!(
     bool:   bool_io       big_end_cast!();
@@ -205,8 +206,8 @@ gen_variable_types_io!(
     {
         use std::ptr;
         |val: &[u8], mem_ptr| {
-            let len = val.len();
-            u8_io::write(&(len as u8), mem_ptr);
+            let len = val.len() as u8;
+            u8_io::write(&len, mem_ptr);
             let mut smem_ptr = mem_ptr + 1;
             unsafe {
                 for b in val {
@@ -234,26 +235,26 @@ gen_variable_types_io!(
 );
 
 define_types!(
-    ["bool", "bit"], 1, bool, &'static bool                           ,Bool        ,  bool_io, boll       ;
-    ["char"], 2, char, &'static char                                  ,Char        ,  char_io, char       ;
-    ["i8"], 3, i8, &'static i8                                        ,I8          ,  i8_io, i8         ;
-    ["i16", "int"], 4, i16, &'static i16                              ,I16         ,  i16_io, i16        ;
-    ["i32", "long"], 5, i32, &'static i32                             ,I32         ,  i32_io, i32        ;
-    ["i64", "longlong"], 6, i64, &'static i64                         ,I64         ,  i64_io, i64        ;
-    ["u8", "byte"], 7, u8, &'static u8                                ,U8          ,  u8_io, u8         ;
-    ["u16"], 8, u16, &'static u16                                     ,U16         ,  u16_io, u16        ;
-    ["u32"], 9, u32, &'static u32                                     ,U32         ,  u32_io, u32        ;
-    ["u64"], 10, u64, &'static u64                                    ,U64         ,  u64_io, u64        ;
-    ["f32", "float"], 13, f32, &'static f32                           ,F32         ,  f32_io, f32        ;
-    ["f64", "double"], 14, f64, &'static f64                          ,F64         ,  f64_io, f64        ;
-    ["pos2d32", "pos2d", "pos", "pos32"], 15, Pos2d32, &'static Pos2d32  ,Pos2d32     ,  pos2d32_io, pos2d32    ;
-    ["pos2d64", "pos64"], 16, Pos2d64, &'static Pos2d64                  ,Pos2d64     ,  pos2d64_io, pos2d64    ;
-    ["pos3d32", "pos3d"], 17, Pos3d32, &'static Pos3d32                  ,Pos3d32     ,  pos3d32_io, pos3d32    ;
-    ["pos3d64"], 18, Pos3d64, &'static Pos3d64                           ,Pos3d64     ,  pos3d64_io, pos3d64    ;
-    ["id"], 19, Id, &'static Id                                          ,Id          ,  id_io, id         ;
-    ["string", "str"], 20, String, &'static str                          ,String      ,  string_io, string     ;
-    ["bytes"], 22, Bytes, &'static [u8]                                  ,Bytes       ,  bytes_io, bytes      ;
-    ["small_bytes"], 23, SmallBytes, &'static [u8]                       ,SmallBytes  ,  small_bytes_io, small_bytes
+    ["bool", "bit"], 1, bool                           ,Bool        ,  bool_io, boll       ;
+    ["char"], 2, char                                  ,Char        ,  char_io, char       ;
+    ["i8"], 3, i8                                      ,I8          ,  i8_io, i8         ;
+    ["i16", "int"], 4, i16                             ,I16         ,  i16_io, i16        ;
+    ["i32", "long"], 5, i32                            ,I32         ,  i32_io, i32        ;
+    ["i64", "longlong"], 6, i64                        ,I64         ,  i64_io, i64        ;
+    ["u8", "byte"], 7, u8                              ,U8          ,  u8_io, u8         ;
+    ["u16"], 8, u16                                    ,U16         ,  u16_io, u16        ;
+    ["u32"], 9, u32                                    ,U32         ,  u32_io, u32        ;
+    ["u64"], 10, u64                                   ,U64         ,  u64_io, u64        ;
+    ["f32", "float"], 13, f32                          ,F32         ,  f32_io, f32        ;
+    ["f64", "double"], 14, f64                         ,F64         ,  f64_io, f64        ;
+    ["pos2d32", "pos2d", "pos", "pos32"], 15, Pos2d32  ,Pos2d32     ,  pos2d32_io, pos2d32    ;
+    ["pos2d64", "pos64"], 16, Pos2d64                  ,Pos2d64     ,  pos2d64_io, pos2d64    ;
+    ["pos3d32", "pos3d"], 17, Pos3d32                  ,Pos3d32     ,  pos3d32_io, pos3d32    ;
+    ["pos3d64"], 18, Pos3d64                           ,Pos3d64     ,  pos3d64_io, pos3d64    ;
+    ["id"], 19, Id                                     ,Id          ,  id_io, id         ;
+    ["string", "str"], 20, String                      ,String      ,  string_io, string     ;
+    ["bytes"], 22, Bytes                               ,Bytes       ,  bytes_io, bytes      ;
+    ["small_bytes"], 23, SmallBytes                    ,SmallBytes  ,  small_bytes_io, small_bytes
 );
 
 #[macro_export]

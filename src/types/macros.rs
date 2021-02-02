@@ -5,12 +5,25 @@ macro_rules! gen_primitive_types_io {
             $(
                 pub mod $tmod {
                     use std::mem;
-                    pub fn read(mem_ptr: usize) -> &'static $t {
+
+                    pub type Slice = &'static [$t];
+                    pub type ReadRef = &'static $t;
+
+                    pub fn read(mem_ptr: usize) -> ReadRef {
+                        debug_assert!(mem_ptr > 0);
                         unsafe {
                             &*(mem_ptr as *const $t)
                         }
                     }
+                    pub fn read_slice(mem_ptr: usize, len: usize) -> (Slice, usize) {
+                        unsafe {
+                            let slice = std::slice::from_raw_parts(mem_ptr as *const _, len);
+                            let size = size(0) * len;
+                            (slice, size)
+                        }
+                    }
                     pub fn write(val: &$t, mem_ptr: usize) {
+                        debug_assert!(mem_ptr > 0);
                         unsafe {
                             std::ptr::write(mem_ptr as *mut $t, *val)
                         }
@@ -64,9 +77,20 @@ macro_rules! gen_compound_types_io {
             $(
                 pub mod $tmod {
                     use types::*;
-                    pub fn read(mem_ptr: usize) -> &'static $t {
+
+                    pub type Slice = &'static [$t];
+                    pub type ReadRef = &'static $t;
+
+                    pub fn read(mem_ptr: usize) -> ReadRef {
                         unsafe {
                             &*(mem_ptr as *const $t)
+                        }
+                    }
+                    pub fn read_slice(mem_ptr: usize, len: usize) -> (Slice, usize) {
+                        unsafe {
+                            let slice = std::slice::from_raw_parts(mem_ptr as *const _, len);
+                            let size = size(0) * len;
+                            (slice, size)
                         }
                     }
                     pub fn write(val: &$t, mem_ptr: usize) {
@@ -93,13 +117,37 @@ macro_rules! gen_compound_types_io {
 
 macro_rules! gen_variable_types_io {
     (
-        $($t:ty, $rt: ty, $tmod:ident, $reader:expr, $writer: expr, $size:expr, $val_size:expr, $feat: expr, $hash: expr);*
+        $(
+            $t:ty, 
+            $rt: ty, 
+            $tmod:ident, 
+            $reader:expr, 
+            $writer: expr, 
+            $size:expr, 
+            $val_size:expr, 
+            $feat: expr, 
+            $hash: expr
+        );*
     ) => (
             $(
                 pub mod $tmod {
                     use types::*;
-                    pub fn read(mem_ptr: usize) -> &'static $rt {
+
+                    pub type Slice = Vec<ReadRef>;
+                    pub type ReadRef = &'static $rt;
+
+                    pub fn read(mem_ptr: usize) -> ReadRef {
                         ($reader)(mem_ptr)
+                    }
+                    pub fn read_slice(mut mem_ptr: usize, len: usize) -> (Slice, usize) {
+                        let origin_ptr = mem_ptr;
+                        let res = (0..len).map(|_| {
+                            let v = read(mem_ptr);
+                            mem_ptr += val_size(v);
+                            v
+                        })
+                        .collect::<Vec<_>>();
+                        (res, mem_ptr - origin_ptr)
                     }
                     pub fn write(val: &$t, mem_ptr: usize) {
                         ($writer)(val, mem_ptr)
@@ -159,7 +207,7 @@ macro_rules! get_from_val_fn {
 macro_rules! define_types {
     (
         $(
-            [ $( $name:expr ),* ], $id:expr, $t:ty, $st: ty, $e:ident, $io:ident, $fn: ident
+            [ $( $name:expr ),* ], $id:expr, $t:ty, $e:ident, $io:ident, $fn: ident
          );*
     ) => (
 
@@ -399,7 +447,10 @@ macro_rules! define_types {
         pub fn get_owned_val (id:u32, mem_ptr: usize) -> OwnedValue {
             match id {
                 $(
-                    $id => OwnedValue::$e($io::read(mem_ptr).to_owned().into()),
+                    $id => {
+                        let val: $t = $io::read(mem_ptr).to_owned().into();
+                        OwnedValue::$e(val)
+                    },
                 )*
                 _ => OwnedValue::NA,
             }
@@ -416,7 +467,7 @@ macro_rules! define_types {
              match id {
                  $(
                      $id => {
-                        let mut vals = Vec::with_capacity(size);
+                        let mut vals: Vec<$t> = Vec::with_capacity(size);
                         for _ in 0..size {
                             let read_res = $io::read(*mem_ptr).to_owned();
                             vals.push(read_res.into());
@@ -428,13 +479,12 @@ macro_rules! define_types {
                  _ => None,
              }
         }
-        pub fn get_shared_prim_array_val(id:u32, size: usize, mem_ptr: &mut usize) -> Option<SharedPrimArray> {
+        pub fn get_shared_prim_array_val(id:u32, len: usize, mem_ptr: &mut usize) -> Option<SharedPrimArray> {
             match id {
                 $(
                     $id => {
-                       let slice = unsafe {
-                            std::slice::from_raw_parts(*mem_ptr as *const _, size)
-                       };
+                       let (slice, size) = $io::read_slice(*mem_ptr, len);
+                       *mem_ptr += size;
                        Some(SharedPrimArray::$e(slice))
                     },
                 )*
@@ -493,7 +543,7 @@ macro_rules! define_types {
         #[derive(Debug, PartialEq)]
         pub enum SharedPrimArray {
               $(
-                  $e(&'static[$t]),
+                  $e($io::Slice),
               )*
         }
 
@@ -550,7 +600,7 @@ macro_rules! define_types {
                 res
             }
             $(
-                pub fn $fn(&self) -> Option<&'static [$t]> {
+                pub fn $fn(&self) -> Option<& $io::Slice> {
                     match self {
                         SharedPrimArray::$e(ref vec) => Some(vec),
                         _ => None
@@ -562,7 +612,7 @@ macro_rules! define_types {
         #[derive(Debug, PartialEq)]
         pub enum SharedValue {
             $(
-                $e($st),
+                $e($io::ReadRef),
             )*
             Map(SharedMap),
             Array(Vec<SharedValue>),
@@ -572,17 +622,27 @@ macro_rules! define_types {
         }
         impl SharedValue {
             $(
-                ref_from_val_fn!($e, $fn, $st);
+                ref_from_val_fn!($e, $fn, $io::ReadRef);
             )*
 
-            pub fn to_owned(&self) -> OwnedValue {
+            pub fn owned(&self) -> OwnedValue {
                 match self {
                     $(
-                        SharedValue::$e(ref v) => OwnedValue::$e((*v).to_owned().into())
+                        SharedValue::$e(ref v) => {
+                            let v: $t = (*v).to_owned().into();
+                            OwnedValue::$e(v)
+                        }
                     ),*,
-                    SharedValue::Array(ref array) => OwnedValue::Array(array.iter().map(|v| v.to_owned()).collect()),
-                    $(SharedValue::PrimArray(SharedPrimArray::$e(ref vec)) => OwnedValue::PrimArray(OwnedPrimArray::$e(vec.iter().cloned().collect())),)*
-                    SharedValue::Map(ref map) => OwnedValue::Map(map.to_owned()),
+                    SharedValue::Array(ref array) => OwnedValue::Array(array.iter().map(|v| v.owned()).collect()),
+                    $(
+                        SharedValue::PrimArray(SharedPrimArray::$e(ref vec)) => OwnedValue::PrimArray(OwnedPrimArray::$e(vec
+                            .iter()
+                            .map(|v| {
+                                (*v).to_owned().into()
+                            })
+                        .collect())),
+                    )*
+                    SharedValue::Map(ref map) => OwnedValue::Map(map.owned()),
                     SharedValue::NA => OwnedValue::NA,
                     SharedValue::Null => OwnedValue::Null,
                 }
