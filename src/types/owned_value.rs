@@ -1,8 +1,9 @@
 use super::*;
-use std::collections::HashMap;
+use std::{collections::HashMap, hash::Hasher};
 use std::iter::Iterator;
 use std::ops::{Index, IndexMut};
 use std::vec::IntoIter;
+use std::hash::Hash;
 
 type Value = OwnedValue;
 
@@ -138,6 +139,12 @@ impl<'a> ValueIter<'a> {
 
 impl Eq for Value {
     // TODO: elaborate it
+}
+
+impl Hash for Value {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        state.write(bifrost::utils::serde::serialize(self).as_slice());
+    }
 }
 
 pub trait Compound {}
