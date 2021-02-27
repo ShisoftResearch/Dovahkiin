@@ -235,7 +235,7 @@ gen_variable_types_io!(
 );
 
 define_types!(
-    ["bool", "bit"], 1, bool                           ,Bool        ,  bool_io, boll       ;
+    ["bool", "bit"], 1, bool                           ,Bool        ,  bool_io, bool       ;
     ["char"], 2, char                                  ,Char        ,  char_io, char       ;
     ["i8"], 3, i8                                      ,I8          ,  i8_io, i8         ;
     ["i16", "int"], 4, i16                             ,I16         ,  i16_io, i16        ;
