@@ -7,7 +7,7 @@ use types::OwnedValue as Value;
 pub mod symbols;
 pub mod interpreter;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum SExpr {
     Symbol(String),
     ISymbol(u64, String),
