@@ -214,11 +214,11 @@ macro_rules! define_types {
         #[derive(Copy, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
         pub enum Type {
             Null,
+            Map, // No matter which id we pick for 'Map' because w/r planners will ignore it when sub_fields is not 'None',
             $(
                 $e,
             )*
-            Map = 254, // No matter which id we pick for 'Map' because w/r planners will ignore it when sub_fields is not 'None',
-            NA = 255
+            NA
         }
 
         impl Type {
