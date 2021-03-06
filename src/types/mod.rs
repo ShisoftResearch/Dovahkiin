@@ -279,9 +279,8 @@ pub fn type_id_of(t: Type) -> u32 {
 
 pub static NULL_OWNED_VALUE: OwnedValue = OwnedValue::Null;
 pub static NULL_SHARED_VALUE: SharedValue = SharedValue::Null;
-pub const ARRAY_LEN_TYPE_ID: u32 = 9; //u32
-pub const TYPE_CODE_TYPE_ID: u32 = 9; //u32
-pub const NULL_TYPE_ID: u32 = 7; //u8
+pub const ARRAY_LEN_TYPE: Type = Type::U32; //u32
+pub const TYPE_CODE_TYPE: Type = Type::U8; //u32
 
 impl<'a> Index<&'a str> for SharedValue {
     type Output = Self;

@@ -147,4 +147,10 @@ impl Hash for Value {
     }
 }
 
+impl Default for Value {
+    fn default() -> Self {
+        Self::NA
+    }
+}
+
 pub trait Compound {}

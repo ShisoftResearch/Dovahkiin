@@ -909,6 +909,12 @@ macro_rules! define_types {
                 }
             }
         }
+        
+        impl Default for SharedValue {
+            fn default() -> Self {
+                Self::NA
+            }
+        }
 
     );
 }
