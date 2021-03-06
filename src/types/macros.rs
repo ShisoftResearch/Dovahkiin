@@ -211,7 +211,7 @@ macro_rules! define_types {
          );*
     ) => (
 
-        #[derive(Copy, Clone, Eq, PartialEq, Debug)]
+        #[derive(Copy, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
         pub enum Type {
             Null,
             $(
