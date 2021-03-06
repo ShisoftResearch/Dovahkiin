@@ -207,17 +207,38 @@ macro_rules! get_from_val_fn {
 macro_rules! define_types {
     (
         $(
-            [ $( $name:expr ),* ], $id:expr, $t:ty, $e:ident, $io:ident, $fn: ident
+            [ $( $name:expr ),* ], $t:ty, $e:ident, $io:ident, $fn: ident
          );*
     ) => (
 
-        #[derive(Copy, Clone, Eq, PartialEq)]
+        #[derive(Copy, Clone, Eq, PartialEq, Debug)]
         pub enum Type {
+            Null,
             $(
-                $e = $id,
+                $e,
             )*
-            Map = 1024, // No matter which id we pick for 'Map' because w/r planners will ignore it when sub_fields is not 'None',
-            Default = 0
+            Map = 254, // No matter which id we pick for 'Map' because w/r planners will ignore it when sub_fields is not 'None',
+            NA = 255
+        }
+
+        impl Type {
+            pub const fn id(self) -> u8  {
+                self as u8
+            }
+            pub fn from_id(id: u8) -> Self {
+                match id {
+                    $(
+                        type_id::$fn => Type::$e,
+                    )*
+                    _ => Type::NA
+                }
+            }
+        }
+
+        mod type_id {
+            $(
+                pub const $fn: u8 = super::Type::$e.id();
+            )*
         }
 
         $(
@@ -311,8 +332,8 @@ macro_rules! define_types {
             Map(OwnedMap),
             Array(Vec<OwnedValue>),
             PrimArray(OwnedPrimArray),
-            NA,
-            Null
+            Null,
+            NA
         }
 
         impl OwnedValue {
@@ -327,7 +348,7 @@ macro_rules! define_types {
                 }
             }
             pub fn base_size(&self) -> usize {
-                get_vsize(self.base_type_id(), self)
+                get_vsize(self.base_type(), self)
             }
             pub fn cloned_iter_value(&self) -> Option<IntoIter<OwnedValue>> {
                 match self {
@@ -403,14 +424,18 @@ macro_rules! define_types {
                     _ => unreachable!()
                 }
             }
-            pub fn base_type_id(&self) -> u32 {
+            pub fn base_type(&self) -> Type {
                 match self {
                     $(
-                        &OwnedValue::$e(ref _v) => $id,
+                        &OwnedValue::$e(ref _v) => Type::$e,
                     )*
-                    // &OwnedValue::Array(ref v) => v[0].base_type_id(),
-                    $(OwnedValue::PrimArray(OwnedPrimArray::$e(_)) => $id,)*
-                    _ => 0
+                    $(
+                        OwnedValue::PrimArray(OwnedPrimArray::$e(_)) => Type::$e,
+                    )*
+                    &OwnedValue::Array(ref v) => v[0].base_type(),
+                    &OwnedValue::Map(_) => Type::Map,
+                    &OwnedValue::Null => Type::Null,
+                    &OwnedValue::NA => Type::NA,
                 }
             }
             pub fn prim_array(&self) -> Option<&OwnedPrimArray> {
@@ -420,69 +445,69 @@ macro_rules! define_types {
                 }
             }
         }
-        pub fn get_type_id (name: String) -> u32 {
+        pub fn get_type_id (name: String) -> u8 {
            match name.as_ref() {
                 $(
-                    $($name => $id,)*
+                    $($name => Type::$e.id(),)*
                 )*
                 _ => 0,
            }
         }
-        pub fn get_id_type (id: u32) -> &'static str {
-           match id {
+        pub fn get_type (t: Type) -> &'static str {
+           match t {
                 $(
-                    $id => [$($name),*][0],
+                    Type::$e => [$($name),*][0],
                 )*
                 _ => "N/A",
            }
         }
-        pub fn get_size (id: u32, mem_ptr: usize) -> usize {
-           match id {
+        pub fn get_size (t: Type, mem_ptr: usize) -> usize {
+           match t {
                 $(
-                    $id => $io::size(mem_ptr),
+                    Type::$e => $io::size(mem_ptr),
                 )*
-                _ => 0,
+                _ => 0
            }
         }
-        pub fn get_owned_val (id:u32, mem_ptr: usize) -> OwnedValue {
-            match id {
+        pub fn get_owned_val (t: Type, mem_ptr: usize) -> OwnedValue {
+            match t {
                 $(
-                    $id => {
+                    Type::$e => {
                         let val: $t = $io::read(mem_ptr).to_owned().into();
                         OwnedValue::$e(val)
                     },
                 )*
-                _ => OwnedValue::NA,
+                _ => OwnedValue::NA
             }
        }
-       pub fn get_shared_val (id:u32, mem_ptr: usize) -> SharedValue {
-            match id {
+       pub fn get_shared_val (t: Type, mem_ptr: usize) -> SharedValue {
+            match t {
                 $(
-                    $id => SharedValue::$e($io::read(mem_ptr)),
+                    Type::$e => SharedValue::$e($io::read(mem_ptr)),
                 )*
-                _ => SharedValue::NA,
+                _ => SharedValue::NA
             }
         }
-        pub fn get_owned_prim_array_val(id:u32, size: usize, mem_ptr: &mut usize) -> Option<OwnedPrimArray> {
-             match id {
+        pub fn get_owned_prim_array_val(t: Type, size: usize, mem_ptr: &mut usize) -> Option<OwnedPrimArray> {
+             match t {
                  $(
-                     $id => {
+                    Type::$e => {
                         let mut vals: Vec<$t> = Vec::with_capacity(size);
                         for _ in 0..size {
                             let read_res = $io::read(*mem_ptr).to_owned();
                             vals.push(read_res.into());
-                            *mem_ptr += get_size(id, *mem_ptr);
+                            *mem_ptr += get_size(t, *mem_ptr);
                         }
                         Some(OwnedPrimArray::$e(vals))
                      },
                  )*
-                 _ => None,
+                 _ => None
              }
         }
-        pub fn get_shared_prim_array_val(id:u32, len: usize, mem_ptr: &mut usize) -> Option<SharedPrimArray> {
-            match id {
+        pub fn get_shared_prim_array_val(t: Type, len: usize, mem_ptr: &mut usize) -> Option<SharedPrimArray> {
+            match t {
                 $(
-                    $id => {
+                    Type::$e => {
                        let (slice, size) = $io::read_slice(*mem_ptr, len);
                        *mem_ptr += size;
                        Some(SharedPrimArray::$e(slice))
@@ -491,10 +516,10 @@ macro_rules! define_types {
                 _ => None,
             }
        }
-        pub fn set_val (id:u32, val: &OwnedValue, mut mem_ptr: usize) {
-             match id {
+        pub fn set_val (t: Type, val: &OwnedValue, mut mem_ptr: usize) {
+             match t {
                  $(
-                     $id => {
+                    Type::$e => {
                         if let &OwnedValue::PrimArray(OwnedPrimArray::$e(vec)) = &val {
                             for v in vec.iter() {
                                 $io::write(v , mem_ptr);
@@ -504,40 +529,40 @@ macro_rules! define_types {
                             if let Some(val) = get_from_val!($e, val) {
                                 $io::write(val, mem_ptr);
                             } else {
-                                panic!("value does not match type id {}, actual value {:?}", id, val);
+                                panic!("value does not match type id {:?}, actual value {:?}", t, val);
                             }
                         }
                      },
                  )*
-                 _ => panic!("Type id not illegal {}", id),
+                 _ => panic!("type {:?} does not supported for set_value", t)
              }
         }
-        pub fn get_vsize (id: u32, val: &OwnedValue) -> usize {
-            match id {
+        pub fn get_vsize (t: Type, val: &OwnedValue) -> usize {
+            match t {
                 $(
-                    $id => {
+                    Type::$e => {
                         if let Some(val) = get_from_val!($e, val) {
                             $io::val_size(val)
                         } else {
-                            panic!("value does not match type id {}, actual value {:?}", id, val);
+                            panic!("value does not match type id {:?}, actual value {:?}", t, val);
                         }
                     },
                 )*
-                _ => {panic!("type id does not found");},
+                _ => panic!("type {:?} does not supported for get_vsize", t)
            }
         }
-        pub fn get_rsize (id: u32, val: &SharedValue) -> usize {
-            match id {
+        pub fn get_rsize (t: Type, val: &SharedValue) -> usize {
+            match t {
                 $(
-                    $id => {
+                    Type::$e => {
                         if let Some(val) = ref_from_val!($e, val) {
                             $io::val_size(val)
                         } else {
-                            panic!("value does not match type id {}, actual value {:?}", id, val);
+                            panic!("value does not match type id {:?}, actual value {:?}", t, val);
                         }
                     },
                 )*
-                _ => {panic!("type id does not found");},
+                _ => panic!("type {:?} does not supported for get_rsize", t),
            }
         }
         #[derive(Debug, PartialEq)]
@@ -617,8 +642,8 @@ macro_rules! define_types {
             Map(SharedMap),
             Array(Vec<SharedValue>),
             PrimArray(SharedPrimArray),
-            NA,
-            Null
+            Null,
+            NA
         }
         impl SharedValue {
             $(
@@ -643,8 +668,8 @@ macro_rules! define_types {
                         .collect())),
                     )*
                     SharedValue::Map(ref map) => OwnedValue::Map(map.owned()),
-                    SharedValue::NA => OwnedValue::NA,
                     SharedValue::Null => OwnedValue::Null,
+                    SharedValue::NA => OwnedValue::NA,
                 }
             }
 
@@ -656,7 +681,7 @@ macro_rules! define_types {
                 }
             }
             pub fn base_size(&self) -> usize {
-                get_rsize(self.base_type_id(), self)
+                get_rsize(self.base_type(), self)
             }
             pub fn len(&self) -> Option<usize> {
                 match self {
@@ -716,14 +741,18 @@ macro_rules! define_types {
                     _ => unreachable!()
                 }
             }
-            pub fn base_type_id(&self) -> u32 {
+            pub fn base_type(&self) -> Type {
                 match self {
                     $(
-                        &SharedValue::$e(ref _v) => $id,
+                        &SharedValue::$e(ref _v) => Type::$e,
                     )*
-                    &SharedValue::Array(ref v) => v[0].base_type_id(),
-                    $(SharedValue::PrimArray(SharedPrimArray::$e(_)) => $id,)*
-                    _ => 0
+                    $(
+                        SharedValue::PrimArray(SharedPrimArray::$e(_)) => Type::$e,
+                    )*
+                    &SharedValue::Array(ref v) => v[0].base_type(),
+                    &SharedValue::Map(_) => Type::Map,
+                    &SharedValue::Null => Type::Null,
+                    &SharedValue::NA => Type::NA
                 }
             }
             pub fn prim_array(&self) -> Option<&SharedPrimArray> {
