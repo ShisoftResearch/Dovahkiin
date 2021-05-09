@@ -77,3 +77,15 @@ impl From<Vec<u8>> for Bytes {
         Self { data: vec }
     }
 }
+
+impl AsRef<[u8]> for Bytes {
+    fn as_ref(&self) -> &[u8] {
+        self.data.as_slice()
+    }
+}
+
+impl AsRef<[u8]> for SmallBytes {
+    fn as_ref(&self) -> &[u8] {
+        self.data.as_slice()
+    }
+}
