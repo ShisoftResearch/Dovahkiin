@@ -28,6 +28,9 @@ macro_rules! gen_primitive_types_io {
                             std::ptr::write(mem_ptr as *mut $t, *val)
                         }
                     }
+                    pub const fn fixed_size() -> bool {
+                        true
+                    }
                     pub const fn type_size() -> usize {
                         mem::size_of::<$t>()
                     }
@@ -104,6 +107,9 @@ macro_rules! gen_compound_types_io {
                     pub const fn type_size() -> usize {
                         std::mem::size_of::<$t>()
                     }
+                    pub const fn fixed_size() -> bool {
+                        true
+                    }
                     pub fn size_at(_: usize) -> usize {
                         type_size()
                     }
@@ -160,6 +166,9 @@ macro_rules! gen_variable_types_io {
                     }
                     pub fn type_size() -> usize {
                         panic!("variable type does not have type size")
+                    }
+                    pub const fn fixed_size() -> bool {
+                        false
                     }
                     pub fn size_at(mem_ptr: usize) -> usize {
                         ($size)(mem_ptr)
@@ -555,6 +564,16 @@ macro_rules! define_types {
                 )*
                 _ => panic!("type {:?} does not supported for size_of", t)
            }                      
+        }
+        pub fn fixed_size(t: Type) -> bool {
+            match t {
+                $(
+                    Type::$e => {
+                        $io::fixed_size()
+                    },
+                )*
+                _ => false
+           }   
         }
         pub fn get_vsize (t: Type, val: &OwnedValue) -> usize {
             match t {
