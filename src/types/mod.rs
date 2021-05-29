@@ -112,7 +112,7 @@ gen_variable_types_io!(
     {
         |mem_ptr| {
             let len = *u32_io::read(mem_ptr) as usize;
-            let smem_ptr = mem_ptr + u32_io::size(0);
+            let smem_ptr = mem_ptr + u32_io::type_size();
             let slice = unsafe { std::slice::from_raw_parts(smem_ptr as *const u8, len) };
             std::str::from_utf8(slice).unwrap()
         }
@@ -123,7 +123,7 @@ gen_variable_types_io!(
             let bytes = val.as_bytes();
             let len = bytes.len();
             u32_io::write(&(len as u32), mem_ptr);
-            let mut smem_ptr = mem_ptr + u32_io::size(0);
+            let mut smem_ptr = mem_ptr + u32_io::type_size();
             unsafe {
                 for b in bytes {
                     ptr::write(smem_ptr as *mut u8, *b);
@@ -135,10 +135,10 @@ gen_variable_types_io!(
     {
         |mem_ptr| {
             let str_len = *u32_io::read(mem_ptr) as usize;
-            str_len + u32_io::size(0)
+            str_len + u32_io::type_size()
         }
     },
-    |val: &str| { val.as_bytes().len() + u32_io::size(0) },
+    |val: &str| { val.as_bytes().len() + u32_io::type_size() },
     |val: &str| {
         let bytes = val.as_bytes();
         let mut r = [0u8; 8];
@@ -157,7 +157,7 @@ gen_variable_types_io!(
     {
         |mem_ptr| {
             let len = *u32_io::read(mem_ptr) as usize;
-            let smem_ptr = mem_ptr + u32_io::size(0);
+            let smem_ptr = mem_ptr + u32_io::type_size();
             unsafe { std::slice::from_raw_parts(smem_ptr as *const u8, len) }
         }
     },
@@ -166,7 +166,7 @@ gen_variable_types_io!(
         |val: &[u8], mem_ptr| {
             let len = val.len();
             u32_io::write(&(len as u32), mem_ptr);
-            let mut smem_ptr = mem_ptr + u32_io::size(0);
+            let mut smem_ptr = mem_ptr + u32_io::type_size();
             unsafe {
                 for b in val {
                     ptr::write(smem_ptr as *mut u8, *b);
@@ -175,8 +175,8 @@ gen_variable_types_io!(
             }
         }
     },
-    |mem_ptr| { *u32_io::read(mem_ptr) as usize + u32_io::size(0) },
-    |val: &[u8]| { val.len() + u32_io::size(0) },
+    |mem_ptr| { *u32_io::read(mem_ptr) as usize + u32_io::type_size() },
+    |val: &[u8]| { val.len() + u32_io::type_size() },
     |val: &[u8]| {
         let mut r = [0u8; 8];
         for i in 0..::std::cmp::min(r.len(), val.len()) {

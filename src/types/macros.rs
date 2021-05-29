@@ -18,7 +18,7 @@ macro_rules! gen_primitive_types_io {
                     pub fn read_slice(mem_ptr: usize, len: usize) -> (Slice, usize) {
                         unsafe {
                             let slice = std::slice::from_raw_parts(mem_ptr as *const _, len);
-                            let size = size(0) * len;
+                            let size = type_size() * len;
                             (slice, size)
                         }
                     }
@@ -28,11 +28,14 @@ macro_rules! gen_primitive_types_io {
                             std::ptr::write(mem_ptr as *mut $t, *val)
                         }
                     }
-                    pub fn size(_: usize) -> usize {
+                    pub const fn type_size() -> usize {
                         mem::size_of::<$t>()
                     }
+                    pub fn size_at(_: usize) -> usize {
+                        type_size()
+                    }
                     pub fn val_size(_: &$t) -> usize {
-                        size(0)
+                        type_size()
                     }
                     pub fn feature(val: &$t) -> [u8; 8] {
                         $feat_writer(*val)
@@ -89,7 +92,7 @@ macro_rules! gen_compound_types_io {
                     pub fn read_slice(mem_ptr: usize, len: usize) -> (Slice, usize) {
                         unsafe {
                             let slice = std::slice::from_raw_parts(mem_ptr as *const _, len);
-                            let size = size(0) * len;
+                            let size = type_size() * len;
                             (slice, size)
                         }
                     }
@@ -98,11 +101,14 @@ macro_rules! gen_compound_types_io {
                             std::ptr::write(mem_ptr as *mut $t, val.to_owned())
                         }
                     }
-                    pub fn size(_: usize) -> usize {
+                    pub const fn type_size() -> usize {
                         std::mem::size_of::<$t>()
                     }
+                    pub fn size_at(_: usize) -> usize {
+                        type_size()
+                    }
                     pub fn val_size(_: &$t) -> usize {
-                        size(0)
+                        type_size()
                     }
                     pub fn feature(val: &$t) -> [u8; 8] {
                         ($feat)(val)
@@ -152,7 +158,10 @@ macro_rules! gen_variable_types_io {
                     pub fn write(val: &$t, mem_ptr: usize) {
                         ($writer)(val, mem_ptr)
                     }
-                    pub fn size(mem_ptr: usize) -> usize {
+                    pub fn type_size() -> usize {
+                        panic!("variable type does not have type size")
+                    }
+                    pub fn size_at(mem_ptr: usize) -> usize {
                         ($size)(mem_ptr)
                     }
                     pub fn val_size(val: &$rt) -> usize {
@@ -464,7 +473,7 @@ macro_rules! define_types {
         pub fn get_size (t: Type, mem_ptr: usize) -> usize {
            match t {
                 $(
-                    Type::$e => $io::size(mem_ptr),
+                    Type::$e => $io::size_at(mem_ptr),
                 )*
                 _ => 0
            }
@@ -536,6 +545,16 @@ macro_rules! define_types {
                  )*
                  _ => panic!("type {:?} does not supported for set_value", t)
              }
+        }
+        pub fn size_of_type(t: Type) -> usize {
+            match t {
+                $(
+                    Type::$e => {
+                        $io::type_size()
+                    },
+                )*
+                _ => panic!("type {:?} does not supported for size_of", t)
+           }                      
         }
         pub fn get_vsize (t: Type, val: &OwnedValue) -> usize {
             match t {
