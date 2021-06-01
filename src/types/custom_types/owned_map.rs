@@ -6,7 +6,7 @@ use std::slice::Iter;
 
 type Value = OwnedValue;
 
-#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct OwnedMap {
     pub map: HashMap<u64, Value>,
     pub fields: Vec<String>,
@@ -156,7 +156,7 @@ impl OwnedMap {
     }
 }
 
-impl fmt::Display for OwnedMap {
+impl fmt::Debug for OwnedMap {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "( ")?;
         for name in &self.fields {
