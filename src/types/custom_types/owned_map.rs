@@ -1,5 +1,6 @@
 use super::{super::*, shared_map::key_hash};
 use std::collections::HashMap;
+use std::fmt;
 use std::iter::Iterator;
 use std::slice::Iter;
 
@@ -10,6 +11,7 @@ pub struct OwnedMap {
     pub map: HashMap<u64, Value>,
     pub fields: Vec<String>,
 }
+
 impl OwnedMap {
     pub fn new() -> Self {
         Self {
@@ -151,5 +153,16 @@ impl OwnedMap {
     }
     pub fn len(&self) -> usize {
         self.map.len()
+    }
+}
+
+impl fmt::Display for OwnedMap {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "( ")?;
+        for name in &self.fields {
+            let id = key_hash(name);
+            write!(f, "{}: {:?} ", name, self.map[&id])?;
+        }
+        write!(f, ") ")
     }
 }
