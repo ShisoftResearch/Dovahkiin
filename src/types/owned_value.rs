@@ -1,9 +1,9 @@
 use super::*;
-use std::{collections::HashMap, hash::Hasher};
+use std::hash::Hash;
 use std::iter::Iterator;
 use std::ops::{Index, IndexMut};
 use std::vec::IntoIter;
-use std::hash::Hash;
+use std::{collections::HashMap, hash::Hasher};
 
 type Value = OwnedValue;
 

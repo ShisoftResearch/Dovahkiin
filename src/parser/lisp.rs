@@ -60,7 +60,7 @@ fn parse_int(num_str: String, unit: String) -> Result<SExpr, String> {
 }
 
 fn parse_float(num_str: String, unit: String) -> Result<SExpr, String> {
-    match unit.as_ref() { 
+    match unit.as_ref() {
         "f32" => num_str.parse::<f32>().map(Value::F32),
         "f64" => num_str.parse::<f64>().map(Value::F64),
         _ => return Err(format!("Unknown float number type {}", unit)),

@@ -64,7 +64,10 @@ impl OwnedMap {
     pub fn strs_to_ids<'a>(keys: &[&'a str]) -> Vec<u64> {
         keys.iter().map(|str| key_hash(str)).collect()
     }
-    pub fn get_in_by_ids(&self, mut key_ids: Iter<u64>) -> &Value {
+    pub fn get_in_by_ids<'a, I: Iterator<Item = &'a u64> + ExactSizeIterator>(
+        &self,
+        mut key_ids: I,
+    ) -> &Value {
         let current_key = key_ids.next().cloned();
         if let Some(key) = current_key {
             let value = self.get_by_key_id(key);

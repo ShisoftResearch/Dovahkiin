@@ -563,7 +563,7 @@ macro_rules! define_types {
                     },
                 )*
                 _ => panic!("type {:?} does not supported for size_of", t)
-           }                      
+           }
         }
         pub fn fixed_size(t: Type) -> bool {
             match t {
@@ -573,7 +573,7 @@ macro_rules! define_types {
                     },
                 )*
                 _ => false
-           }   
+           }
         }
         pub fn get_vsize (t: Type, val: &OwnedValue) -> usize {
             match t {
@@ -947,7 +947,7 @@ macro_rules! define_types {
                 }
             }
         }
-        
+
         impl Default for SharedValue {
             fn default() -> Self {
                 Self::NA
