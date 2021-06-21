@@ -807,6 +807,7 @@ macro_rules! define_types {
             $(
                 fn $fn(&self) -> Option<$t>;
             )*
+            fn get_in_by_ids(&self, ids: &Vec<u64>) -> &dyn Value;
             fn feature(&self) -> [u8; 8];
             fn features(&self) -> Vec<[u8; 8]>;
             fn hash(&self) -> [u8; 8];
@@ -856,6 +857,13 @@ macro_rules! define_types {
                 match self {
                     OwnedValue::Array(arr) => Some(arr.iter().map(|v| v as &dyn Value).collect()),
                     _ => None
+                }
+            }
+            fn get_in_by_ids(&self, ids: &Vec<u64>) -> &dyn Value {
+                if let OwnedValue::Map(map) = &self {
+                    map.get_in_by_ids(ids.iter())
+                } else {
+                    &OwnedValue::Null
                 }
             }
         }
@@ -920,6 +928,13 @@ macro_rules! define_types {
                 match self {
                     SharedValue::Array(arr) => Some(arr.iter().map(|v| v as &dyn Value).collect()),
                     _ => None
+                }
+            }
+            fn get_in_by_ids(&self, ids: &Vec<u64>) -> &dyn Value {
+                if let SharedValue::Map(map) = &self {
+                    map.get_in_by_ids(ids.iter())
+                } else {
+                    &SharedValue::Null
                 }
             }
         }
