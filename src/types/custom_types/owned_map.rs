@@ -169,3 +169,9 @@ impl fmt::Debug for OwnedMap {
         write!(f, ") ")
     }
 }
+
+impl PartialOrd for OwnedMap {
+    fn partial_cmp(&self, _: &Self) -> Option<std::cmp::Ordering> {
+        unreachable!("Cannot compare maps")
+    }
+}

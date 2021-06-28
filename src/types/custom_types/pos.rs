@@ -1,23 +1,23 @@
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialOrd)]
 pub struct Pos2d32 {
     pub x: f32,
     pub y: f32,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialOrd)]
 pub struct Pos2d64 {
     pub x: f64,
     pub y: f64,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialOrd)]
 pub struct Pos3d32 {
     pub x: f32,
     pub y: f32,
     pub z: f32,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialOrd)]
 pub struct Pos3d64 {
     pub x: f64,
     pub y: f64,

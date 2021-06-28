@@ -2,12 +2,12 @@ use std::ops::Deref;
 use std::ops::DerefMut;
 
 use bifrost::utils::serde::{deserialize, serialize};
-#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, Hash, PartialOrd, Ord)]
 pub struct Bytes {
     pub data: Vec<u8>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, Hash, PartialOrd, Ord)]
 pub struct SmallBytes {
     pub data: Vec<u8>,
 }

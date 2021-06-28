@@ -272,7 +272,7 @@ macro_rules! define_types {
             }
         )*
 
-        #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+        #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd)]
         pub enum OwnedPrimArray {
               $(
                   $e(Vec<$t>),
@@ -342,7 +342,7 @@ macro_rules! define_types {
         }
 
 
-        #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+        #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd)]
         pub enum OwnedValue {
             $(
                 $e($t),
