@@ -603,7 +603,7 @@ macro_rules! define_types {
                 _ => panic!("type {:?} does not supported for get_rsize", t),
            }
         }
-        #[derive(Debug, PartialEq)]
+        #[derive(Debug, PartialEq, Clone)]
         pub enum SharedPrimArray {
               $(
                   $e($io::Slice),
@@ -672,7 +672,7 @@ macro_rules! define_types {
             )*
         }
 
-        #[derive(Debug, PartialEq)]
+        #[derive(Debug, PartialEq, Clone)]
         pub enum SharedValue {
             $(
                 $e($io::ReadRef),

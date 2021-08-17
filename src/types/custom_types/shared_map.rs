@@ -6,7 +6,7 @@ use std::slice::Iter;
 
 type Value = SharedValue;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct SharedMap {
     pub map: HashMap<u64, Value>,
     pub fields: Vec<String>,
