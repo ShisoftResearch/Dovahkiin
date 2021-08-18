@@ -7,7 +7,19 @@ use types::OwnedValue as Value;
 pub mod symbols;
 pub mod interpreter;
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+// #[derive(Debug, Clone, PartialEq, Eq)]
+// pub enum Value {
+//     Owned(OwnedValue),
+//     Shared(SharedValue)
+// }
+
+// impl Value {
+//     pub const fn null() -> Self {
+//         Self::Owned(OwnedValue::Null)
+//     }
+// }
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SExpr {
     Symbol(String),
     ISymbol(u64, String),

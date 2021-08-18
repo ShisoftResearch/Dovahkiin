@@ -801,6 +801,10 @@ macro_rules! define_types {
             }
         }
 
+        impl Eq for SharedValue {
+            // TODO: elaborate it
+        }
+
         pub type GenericValue = dyn Value;
 
         pub trait Value {
