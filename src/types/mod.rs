@@ -282,7 +282,7 @@ pub static NULL_SHARED_VALUE: SharedValue = SharedValue::Null;
 pub const ARRAY_LEN_TYPE: Type = Type::U32; //u32
 pub const TYPE_CODE_TYPE: Type = Type::U8; //u32
 
-impl<'a> Index<&'a str> for SharedValue {
+impl<'a, 'v> Index<&'a str> for SharedValue<'v> {
     type Output = Self;
 
     fn index(&self, index: &'a str) -> &Self::Output {

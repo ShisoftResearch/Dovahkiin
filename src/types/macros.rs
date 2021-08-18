@@ -6,22 +6,25 @@ macro_rules! gen_primitive_types_io {
                 pub mod $tmod {
                     use std::mem;
 
-                    pub type Slice = &'static [$t];
-                    pub type ReadRef = &'static $t;
+                    pub type Slice<'a> = &'a [$t];
+                    pub type ReadRef<'a> = &'a $t;
 
-                    pub fn read(mem_ptr: usize) -> ReadRef {
+                    pub fn read<'a>(mem_ptr: usize) -> ReadRef<'a> {
                         debug_assert!(mem_ptr > 0);
                         unsafe {
                             &*(mem_ptr as *const $t)
                         }
                     }
-                    pub fn read_slice(mem_ptr: usize, len: usize) -> (Slice, usize) {
+                    pub fn read_slice<'a>(mem_ptr: usize, len: usize) -> (Slice<'a>, usize) {
                         unsafe {
                             let slice = std::slice::from_raw_parts(mem_ptr as *const _, len);
                             let size = type_size() * len;
                             (slice, size)
                         }
                     }
+                    // pub fn vec_to_read_ref(vec: &Vec<$t>) -> Slice {
+                    //     vec.as_slice()
+                    // }
                     pub fn write(val: &$t, mem_ptr: usize) {
                         debug_assert!(mem_ptr > 0);
                         unsafe {
@@ -84,15 +87,15 @@ macro_rules! gen_compound_types_io {
                 pub mod $tmod {
                     use types::*;
 
-                    pub type Slice = &'static [$t];
-                    pub type ReadRef = &'static $t;
+                    pub type Slice<'a> = &'a [$t];
+                    pub type ReadRef<'a> = &'a $t;
 
-                    pub fn read(mem_ptr: usize) -> ReadRef {
+                    pub fn read<'a>(mem_ptr: usize) -> ReadRef<'a> {
                         unsafe {
                             &*(mem_ptr as *const $t)
                         }
                     }
-                    pub fn read_slice(mem_ptr: usize, len: usize) -> (Slice, usize) {
+                    pub fn read_slice<'a>(mem_ptr: usize, len: usize) -> (Slice<'a>, usize) {
                         unsafe {
                             let slice = std::slice::from_raw_parts(mem_ptr as *const _, len);
                             let size = type_size() * len;
@@ -145,13 +148,13 @@ macro_rules! gen_variable_types_io {
                 pub mod $tmod {
                     use types::*;
 
-                    pub type Slice = Vec<ReadRef>;
-                    pub type ReadRef = &'static $rt;
+                    pub type Slice<'a> = Vec<ReadRef<'a>>;
+                    pub type ReadRef<'a> = &'a $rt;
 
-                    pub fn read(mem_ptr: usize) -> ReadRef {
+                    pub fn read<'a>(mem_ptr: usize) -> ReadRef<'a> {
                         ($reader)(mem_ptr)
                     }
-                    pub fn read_slice(mut mem_ptr: usize, len: usize) -> (Slice, usize) {
+                    pub fn read_slice<'a>(mut mem_ptr: usize, len: usize) -> (Slice<'a>, usize) {
                         let origin_ptr = mem_ptr;
                         let res = (0..len).map(|_| {
                             let v = read(mem_ptr);
@@ -498,7 +501,7 @@ macro_rules! define_types {
                 _ => OwnedValue::NA
             }
        }
-       pub fn get_shared_val (t: Type, mem_ptr: usize) -> SharedValue {
+       pub fn get_shared_val<'a> (t: Type, mem_ptr: usize) -> SharedValue<'a> {
             match t {
                 $(
                     Type::$e => SharedValue::$e($io::read(mem_ptr)),
@@ -604,13 +607,13 @@ macro_rules! define_types {
            }
         }
         #[derive(Debug, PartialEq, Clone)]
-        pub enum SharedPrimArray {
+        pub enum SharedPrimArray<'a> {
               $(
-                  $e($io::Slice),
+                  $e($io::Slice<'a>),
               )*
         }
 
-        impl SharedPrimArray {
+        impl <'a> SharedPrimArray <'a> {
             pub fn size(&self) -> usize {
                 match self {
                     $(
@@ -673,17 +676,17 @@ macro_rules! define_types {
         }
 
         #[derive(Debug, PartialEq, Clone)]
-        pub enum SharedValue {
+        pub enum SharedValue<'a> {
             $(
-                $e($io::ReadRef),
+                $e($io::ReadRef<'a>),
             )*
-            Map(SharedMap),
-            Array(Vec<SharedValue>),
-            PrimArray(SharedPrimArray),
+            Map(SharedMap<'a>),
+            Array(Vec<SharedValue<'a>>),
+            PrimArray(SharedPrimArray<'a>),
             Null,
             NA
         }
-        impl SharedValue {
+        impl <'a> SharedValue <'a> {
             $(
                 ref_from_val_fn!($e, $fn, $io::ReadRef);
             )*
@@ -801,7 +804,7 @@ macro_rules! define_types {
             }
         }
 
-        impl Eq for SharedValue {
+        impl <'a> Eq for SharedValue<'a> {
             // TODO: elaborate it
         }
 
@@ -895,7 +898,7 @@ macro_rules! define_types {
             }
         }
 
-        impl Value for SharedValue {
+        impl <'a> Value for SharedValue<'a> {
             $(
                 fn $fn(&self) -> Option<$t> {
                     SharedValue::$fn(self).map(|v| v.to_owned().into())
@@ -943,7 +946,7 @@ macro_rules! define_types {
             }
         }
 
-        impl Index<usize> for SharedValue {
+        impl <'a> Index<usize> for SharedValue<'a> {
             type Output = Self;
 
             fn index(&self, index: usize) -> &Self::Output {
@@ -955,7 +958,7 @@ macro_rules! define_types {
             }
         }
 
-        impl Index<u64> for SharedValue {
+        impl <'a> Index<u64> for SharedValue<'a> {
             type Output = Self;
 
             fn index(&self, index: u64) -> &Self::Output {
@@ -967,7 +970,7 @@ macro_rules! define_types {
             }
         }
 
-        impl Default for SharedValue {
+        impl <'a> Default for SharedValue<'a> {
             fn default() -> Self {
                 Self::NA
             }
