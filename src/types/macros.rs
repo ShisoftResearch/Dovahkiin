@@ -525,7 +525,7 @@ macro_rules! define_types {
                  _ => None
              }
         }
-        pub fn get_shared_prim_array_val(t: Type, len: usize, mem_ptr: &mut usize) -> Option<SharedPrimArray> {
+        pub fn get_shared_prim_array_val<'v>(t: Type, len: usize, mem_ptr: &mut usize) -> Option<SharedPrimArray<'v>> {
             match t {
                 $(
                     Type::$e => {
