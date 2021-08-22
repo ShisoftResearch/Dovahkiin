@@ -1,3 +1,5 @@
+use crate::types::SharedMap;
+
 use super::{super::*, shared_map::key_hash};
 use std::collections::HashMap;
 use std::fmt;
@@ -156,6 +158,12 @@ impl OwnedMap {
     }
     pub fn len(&self) -> usize {
         self.map.len()
+    }
+    pub fn to_shared<'a>(&'a self) -> SharedMap<'a> {
+        SharedMap {
+            fields: self.fields.clone(),
+            map: self.map.iter().map(|(k, v)| (*k, v.shared())).collect()
+        }
     }
 }
 

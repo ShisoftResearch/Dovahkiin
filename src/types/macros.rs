@@ -22,9 +22,9 @@ macro_rules! gen_primitive_types_io {
                             (slice, size)
                         }
                     }
-                    // pub fn vec_to_read_ref(vec: &Vec<$t>) -> Slice {
-                    //     vec.as_slice()
-                    // }
+                    pub fn vec_to_read_ref(vec: &Vec<$t>) -> Slice {
+                        vec.as_slice()
+                    }
                     pub fn write(val: &$t, mem_ptr: usize) {
                         debug_assert!(mem_ptr > 0);
                         unsafe {
@@ -102,6 +102,9 @@ macro_rules! gen_compound_types_io {
                             (slice, size)
                         }
                     }
+                    pub fn vec_to_read_ref(vec: &Vec<$t>) -> Slice {
+                        vec.as_slice()
+                    }
                     pub fn write(val: &$t, mem_ptr: usize) {
                         unsafe {
                             std::ptr::write(mem_ptr as *mut $t, val.to_owned())
@@ -141,7 +144,8 @@ macro_rules! gen_variable_types_io {
             $size:expr,
             $val_size:expr,
             $feat: expr,
-            $hash: expr
+            $hash: expr,
+            $as_ref: expr
         );*
     ) => (
             $(
@@ -163,6 +167,9 @@ macro_rules! gen_variable_types_io {
                         })
                         .collect::<Vec<_>>();
                         (res, mem_ptr - origin_ptr)
+                    }
+                    pub fn vec_to_read_ref<'a>(vec: &'a Vec<$t>) -> Slice<'a> {
+                        vec.iter().map(|v| ($as_ref)(v)).collect()
                     }
                     pub fn write(val: &$t, mem_ptr: usize) {
                         ($writer)(val, mem_ptr)
@@ -361,6 +368,22 @@ macro_rules! define_types {
             $(
                 get_from_val_fn!($e, $fn, $t);
             )*
+            pub fn shared<'a>(&'a self) -> SharedValue<'a> {
+                match self {
+                    $(
+                        OwnedValue::$e(ref v) => {
+                            SharedValue::$e(v)
+                        }
+                    ),*,
+                    OwnedValue::Array(ref array) => SharedValue::Array(array.iter().map(|v| v.shared()).collect()),
+                    $(
+                        OwnedValue::PrimArray(OwnedPrimArray::$e(ref vec)) => SharedValue::PrimArray(SharedPrimArray::$e($io::vec_to_read_ref(vec))),
+                    )*
+                    OwnedValue::Map(ref map) => SharedValue::Map(map.to_shared()),
+                    OwnedValue::Null => SharedValue::Null,
+                    OwnedValue::NA => SharedValue::NA,
+                }
+            }
             #[allow(non_snake_case)]
             pub fn Map(&self) -> Option<&OwnedMap> {
                 match self {
@@ -832,7 +855,6 @@ macro_rules! define_types {
                     OwnedValue::$fn(self).map(|v| v.to_owned())
                 }
             )*
-
             fn feature(&self) -> [u8; 8] {
                 OwnedValue::feature(self)
             }

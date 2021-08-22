@@ -147,7 +147,8 @@ gen_variable_types_io!(
         }
         r
     },
-    |val: &str| { u64_io::feature(&::bifrost_hasher::hash_str(val)) }
+    |val: &str| { u64_io::feature(&::bifrost_hasher::hash_str(val)) },
+    |val: &'a String| { val.as_str() }
 );
 
 gen_variable_types_io!(
@@ -189,7 +190,8 @@ gen_variable_types_io!(
         let mut hasher = twox_hash::XxHash::default();
         hasher.write(val);
         u64_io::feature(&hasher.finish())
-    }
+    },
+    |val: &'a Bytes| { val.data.as_slice() }
 );
 
 gen_variable_types_io!(
@@ -231,7 +233,8 @@ gen_variable_types_io!(
         let mut hasher = twox_hash::XxHash::default();
         hasher.write(&val);
         u64_io::feature(&hasher.finish())
-    }
+    },
+    |val: &'a SmallBytes| { val.data.as_slice() }
 );
 
 define_types!(
