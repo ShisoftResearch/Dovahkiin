@@ -11,7 +11,7 @@ pub struct SharedMap<'v> {
     pub map: HashMap<u64, Value<'v>>,
     pub fields: Vec<String>,
 }
-impl <'v> SharedMap<'v> {
+impl<'v> SharedMap<'v> {
     pub fn new() -> Self {
         Self {
             map: HashMap::new(),

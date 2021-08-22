@@ -162,7 +162,7 @@ impl OwnedMap {
     pub fn to_shared<'a>(&'a self) -> SharedMap<'a> {
         SharedMap {
             fields: self.fields.clone(),
-            map: self.map.iter().map(|(k, v)| (*k, v.shared())).collect()
+            map: self.map.iter().map(|(k, v)| (*k, v.shared())).collect(),
         }
     }
 }

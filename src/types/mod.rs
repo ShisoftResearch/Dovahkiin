@@ -3,7 +3,6 @@ mod macros;
 pub mod custom_types;
 pub mod owned_value;
 
-use log::{debug, info, trace, warn};
 use serde::Deserialize;
 use std::{ops::Index, vec::IntoIter};
 pub use types::custom_types::any::*;
