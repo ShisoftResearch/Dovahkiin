@@ -24,7 +24,7 @@ pub fn lambda_placeholder(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
 }
 
 pub fn eval_lambda<'a>(lambda_expr: &SExpr<'a>, params: Vec<SExpr<'a>>, env: &mut Envorinment<'a>) -> Result<SExpr<'a>, String> {
-    if let &SExpr::LAMBDA(ref params_list, ref body) = lambda_expr {
+    if let SExpr::LAMBDA(ref params_list, ref body) = lambda_expr {
         {
             // bind parameters
             let mut param_pos = 0;
@@ -44,7 +44,7 @@ pub fn eval_lambda<'a>(lambda_expr: &SExpr<'a>, params: Vec<SExpr<'a>>, env: &mu
         let mut last_result = SExpr::Value(Value::null());
         for body_line in body {
             // eval function body by cloning expression
-            last_result = body_line.clone().eval(env)?;
+            last_result = body_line.eval(env)?;
         }
         for lambda_param in params_list {
             // unbind parameters

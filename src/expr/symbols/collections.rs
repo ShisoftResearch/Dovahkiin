@@ -6,7 +6,7 @@ use std::collections::HashMap;
 pub fn size_(vals: &Vec<SExpr>) -> Result<u64, String> {
     let mut result: u64 = 0;
     for val in vals {
-        result += match val {
+        result += match &val {
             &SExpr::Vec(ref v) => v.len(),
             &SExpr::Value(val) => {
                 let v = val.norm();

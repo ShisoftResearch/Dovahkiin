@@ -8,12 +8,12 @@ pub fn to_array<'a>(expr: SExpr<'a>) -> Result<SExpr<'a>, String> {
             let mut array = Vec::new();
             for expr in vec {
                 if let SExpr::Value(val) = expr {
-                    array.push(val.norm())
+                    array.push(val.into_owned_val())
                 } else {
                     return Err(format!("Data {:?} cannot be value", expr));
                 }
             }
-            return Ok(SExpr::shared_value(SharedValue::Array(array)));
+            return Ok(SExpr::owned_value(OwnedValue::Array(array)));
         }
         SExpr::Value(Value::Shared(SharedValue::Array(_)))
         | SExpr::Value(Value::Owned(OwnedValue::Array(_))) => return Ok(expr),

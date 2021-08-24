@@ -3,15 +3,14 @@ use crate::expr::interpreter::Envorinment;
 use super::bindings::bind;
 use super::lambda::{eval_lambda, lambda_placeholder};
 use super::*;
-use std::borrow::Borrow;
 use std::rc::Rc;
 
 pub fn eval_function<'a>(
-    func_expr: &SExpr<'a>,
+    func_expr: &'a SExpr<'a>,
     params: Vec<SExpr<'a>>,
     env: &mut Envorinment<'a>,
 ) -> Result<SExpr<'a>, String> {
-    match func_expr {
+    match &func_expr {
         &SExpr::ISymbol(symbol_id, ref name) => {
             let mut env_bind_ref: Option<Rc<SExpr>> = None;
             let bindings = env.get_mut_bindings();
@@ -21,7 +20,7 @@ pub fn eval_function<'a>(
                 None
             };
             if let Some(env_bind) = env_bind_ref {
-                return eval_lambda(env_bind.borrow(), params, env);
+                return eval_lambda(&*env_bind, params, env);
             } else {
                 // internal functions
                 let symbols = ISYMBOL_MAP.map.borrow();
@@ -56,7 +55,7 @@ pub fn eval_function<'a>(
             )
         }
         &SExpr::LAMBDA(_, _) => return eval_lambda(func_expr, params, env),
-        &SExpr::Value(v) => {
+        &SExpr::Value(ref v) => {
             match v.norm() {
                 SharedValue::String(str_key) => {
                     // same as clojure (:key map)

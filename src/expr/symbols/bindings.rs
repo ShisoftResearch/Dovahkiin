@@ -54,7 +54,8 @@ pub fn let_binding<'a>(env: &mut Envorinment<'a>, mut exprs: Vec<SExpr<'a>>) -> 
                 _ => return Err(format!("Cannot bind to {:?}, need symbol", symbol)),
             };
             if let Some(expr) = form_iter.next() {
-                bind(env, symbol_id, expr.eval(env)?);
+                let val = expr.eval(env)?;
+                bind(env, symbol_id, val);
                 binded_ids.push(symbol_id);
             } else {
                 return Err(format!("cannot bind to {:?}, no value", symbol));

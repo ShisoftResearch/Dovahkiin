@@ -18,7 +18,7 @@ impl <'a> Value <'a> {
     pub const fn null() -> Self {
         Self::Owned(OwnedValue::Null)
     }
-    pub fn norm(&'a self) -> SharedValue<'a> {
+    pub fn norm(&self) -> SharedValue {
         match self {
             Value::Owned(v) => v.shared(),
             Value::Shared(v) => v.clone()
@@ -81,14 +81,14 @@ impl <'a> SExpr <'a> {
     pub fn shared_value(val: SharedValue<'a>) -> Self {
         Self::Value(Value::Shared(val))
     }
-    pub fn val(&'a self) -> Option<SharedValue<'a>> {
+    pub fn val(&self) -> Option<SharedValue> {
         if let SExpr::Value(v) = self {
             Some(v.norm())
         } else {
             None
         }
     }
-    pub fn norm(&'a self) -> Self {
+    pub fn norm(self) -> Self {
         if let SExpr::Value(Value::Owned(owned)) = self {
             SExpr::Value(Value::Shared(owned.shared()))
         } else {
