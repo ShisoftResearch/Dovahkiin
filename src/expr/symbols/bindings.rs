@@ -1,36 +1,31 @@
+use crate::expr::interpreter::Envorinment;
+
 use super::super::Value;
 use super::*;
-use expr::interpreter::ENV;
 use std::collections::LinkedList;
 use std::rc::Rc;
 
-pub fn bind_rc(id: u64, val_rc: Rc<SExpr>) {
-    ENV.with(|env| {
-        let env_borrow = env.borrow_mut();
-        let binding_map = &mut env_borrow.bindings.borrow_mut();
-        binding_map
-            .entry(id)
-            .or_insert_with(|| LinkedList::new())
-            .push_front(val_rc);
-    });
+pub fn bind_rc<'a>(env: &mut Envorinment<'a>, id: u64, val_rc: Rc<SExpr<'a>>) {
+    let binding_map = &mut env.bindings;
+    binding_map
+        .entry(id)
+        .or_insert_with(|| LinkedList::new())
+        .push_front(val_rc);
 }
 
-pub fn bind(id: u64, val: SExpr) {
-    bind_rc(id, Rc::new(val))
+pub fn bind<'a>(env: &mut Envorinment<'a>, id: u64, val: SExpr<'a>) {
+    bind_rc(env, id, Rc::new(val))
 }
 
-pub fn unbind(id: u64) {
-    ENV.with(|env| {
-        let env_borrow = env.borrow_mut();
-        let binding_map = &mut env_borrow.bindings.borrow_mut();
-        binding_map
-            .entry(id)
-            .or_insert_with(|| LinkedList::new())
-            .pop_front();
-    });
+pub fn unbind<'a>(env: &mut Envorinment<'a>,id: u64) {
+    let binding_map = &mut env.bindings;
+    binding_map
+        .entry(id)
+        .or_insert_with(|| LinkedList::new())
+        .pop_front();
 }
 
-pub fn let_binding(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
+pub fn let_binding<'a>(env: &mut Envorinment<'a>, mut exprs: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
     if exprs.len() < 2 {
         return Err(format!(
             "Too few parameters for let. Required at least 2 but found {}",
@@ -59,32 +54,32 @@ pub fn let_binding(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
                 _ => return Err(format!("Cannot bind to {:?}, need symbol", symbol)),
             };
             if let Some(expr) = form_iter.next() {
-                bind(symbol_id, expr.eval()?);
+                bind(env, symbol_id, expr.eval(env)?);
                 binded_ids.push(symbol_id);
             } else {
                 return Err(format!("cannot bind to {:?}, no value", symbol));
             }
         }
     }
-    let mut body_result = SExpr::Value(Value::Null);
+    let mut body_result = SExpr::Value(Value::null());
     for body_line in exprs {
-        body_result = body_line.eval()?;
+        body_result = body_line.eval(env)?;
     }
     for binded_id in binded_ids {
-        unbind(binded_id);
+        unbind(env, binded_id);
     }
     return Ok(body_result);
 }
 
-pub fn define(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
+pub fn define<'a>(env: &mut Envorinment<'a>, mut exprs: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
     let name = exprs.remove(0);
-    let val = exprs.remove(0).eval()?;
+    let val = exprs.remove(0).eval(env)?;
     if let SExpr::Symbol(name) = name {
-        bind(hash_str(&name), val);
+        bind(env, hash_str(&name), val);
     } else if let SExpr::ISymbol(id, _) = name {
-        bind(id, val)
+        bind(env, id, val)
     } else {
         return Err(format!("Cannot bind to {:?}", name));
     }
-    return Ok(SExpr::Value(Value::Null));
+    return Ok(SExpr::Value(Value::null()));
 }

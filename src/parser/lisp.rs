@@ -34,11 +34,11 @@ fn parse_vec(iter: &mut IntoIter<Token>) -> Result<SExpr, String> {
     Err(String::from("Unexpected EOF, expect ']'"))
 }
 
-fn parse_symbol(name: String) -> SExpr {
+fn parse_symbol<'a>(name: String) -> SExpr<'a> {
     SExpr::ISymbol(hash_str(&name), name)
 }
 
-fn parse_int(num_str: String, unit: String) -> Result<SExpr, String> {
+fn parse_int<'a>(num_str: String, unit: String) -> Result<SExpr<'a>, String> {
     match unit.as_ref() {
         "u8" => num_str.parse::<u8>().map(Value::U8),
         "u16" => num_str.parse::<u16>().map(Value::U16),
@@ -56,10 +56,10 @@ fn parse_int(num_str: String, unit: String) -> Result<SExpr, String> {
             num_str, unit, e
         )
     })
-    .map(SExpr::Value)
+    .map(SExpr::owned_value)
 }
 
-fn parse_float(num_str: String, unit: String) -> Result<SExpr, String> {
+fn parse_float<'a>(num_str: String, unit: String) -> Result<SExpr<'a>, String> {
     match unit.as_ref() {
         "f32" => num_str.parse::<f32>().map(Value::F32),
         "f64" => num_str.parse::<f64>().map(Value::F64),
@@ -71,11 +71,11 @@ fn parse_float(num_str: String, unit: String) -> Result<SExpr, String> {
             num_str, unit, e
         )
     })
-    .map(SExpr::Value)
+    .map(SExpr::owned_value)
 }
 
-fn parse_string(str: String) -> SExpr {
-    SExpr::Value(Value::String(str))
+fn parse_string<'a>(str: String) -> SExpr<'a> {
+    SExpr::owned_value(Value::String(str))
 }
 
 fn parse_token(token: Token, iter: &mut IntoIter<Token>) -> Result<SExpr, String> {
@@ -90,7 +90,7 @@ fn parse_token(token: Token, iter: &mut IntoIter<Token>) -> Result<SExpr, String
     }
 }
 
-pub fn parse_to_sexpr(tokens: Vec<Token>) -> Result<Vec<SExpr>, String> {
+pub fn parse_to_sexpr<'a>(tokens: Vec<Token>) -> Result<Vec<SExpr<'a>>, String> {
     let mut exprs: Vec<SExpr> = Vec::new();
     let mut iter = tokens.into_iter();
     while let Some(token) = iter.next() {
