@@ -9,7 +9,7 @@ pub fn bind<'a>(env: &mut Envorinment<'a>, id: u64, val: SExpr<'a>) {
     binding_map
         .entry(id)
         .or_insert_with(|| LinkedList::new())
-        .push_front(val);
+        .push_front(Rc::new(val));
 }
 
 pub fn unbind<'a>(env: &mut Envorinment<'a>, id: u64) {

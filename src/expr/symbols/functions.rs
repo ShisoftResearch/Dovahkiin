@@ -52,7 +52,7 @@ pub fn eval_function<'a>(
             let symbol_name = symbol_name.clone();
             return eval_function(&SExpr::ISymbol(symbol_id, symbol_name), params, env);
         }
-        &SExpr::LAMBDA(_, _) => return eval_lambda(func_expr.clone(), params, env),
+        &SExpr::LAMBDA(_, _) => return eval_lambda(Rc::new(func_expr.clone()), params, env),
         &SExpr::Value(ref v) => return eval_value(v, params),
         _ => {}
     }

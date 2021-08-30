@@ -1,9 +1,10 @@
 use expr::symbols::misc;
 use expr::SExpr;
 use std::collections::{HashMap, LinkedList};
+use std::rc::Rc;
 #[derive(Debug)]
 pub struct Envorinment<'a> {
-    pub bindings: HashMap<u64, LinkedList<SExpr<'a>>>,
+    pub bindings: HashMap<u64, LinkedList<Rc<SExpr<'a>>>>,
 }
 
 impl<'a> Envorinment<'a> {
@@ -12,7 +13,7 @@ impl<'a> Envorinment<'a> {
             bindings: HashMap::new(),
         }
     }
-    pub fn get_mut_bindings(&mut self) -> &mut HashMap<u64, LinkedList<SExpr<'a>>> {
+    pub fn get_mut_bindings(&mut self) -> &mut HashMap<u64, LinkedList<Rc<SExpr<'a>>>> {
         &mut self.bindings
     }
 }
