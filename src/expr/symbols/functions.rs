@@ -161,7 +161,103 @@ fn eval_value<'a>(v: &Value<'a>, params: Vec<SExpr<'a>>) -> Result<SExpr<'a>, St
             }
         }
         &Value::Owned(ov) => {
-            unimplemented!()
+            match ov {
+                OwnedValue::String(str_key) => {
+                    // same as clojure (:key map)
+                    if params.len() > 1 {
+                        return Err(format!(
+                            "get from map can only take one parameter, found {}",
+                            params.len()
+                        ));
+                    }
+                    if let Some(Some(SharedValue::Map(ref m))) =
+                        params.get(0).map(|expr| expr.val())
+                    {
+                        return Ok(SExpr::owned_value(m.get(str_key).owned()));
+                    } else {
+                        return Err(format!(
+                            "When use string value as function, \
+                        only one map parameter is accepted, found {:?}",
+                            params
+                        ));
+                    }
+                }
+                OwnedValue::U64(index) => {
+                    // get element by index from vec or by key_id form map
+                    if params.len() > 1 {
+                        return Err(format!(
+                            "get by index/id can only take one parameter, found {}",
+                            params.len()
+                        ));
+                    }
+                    match params.get(0).map(|expr| expr.val()) {
+                        Some(Some(SharedValue::Map(ref m))) => {
+                            let val = m.get_by_key_id(*index).clone();
+                            return Ok(SExpr::owned_value(val.owned()));
+                        }
+                        Some(Some(SharedValue::Array(ref arr))) => {
+                            return Ok(SExpr::owned_value(
+                                arr.get(*index as usize)
+                                    .cloned()
+                                    .unwrap_or(SharedValue::Null)
+                                    .owned(),
+                            ))
+                        }
+                        _ => return Err(format!("Data type not accepted for {:?}", params)),
+                    }
+                }
+                OwnedValue::Map(ref m) => {
+                    if params.len() > 1 {
+                        return Err(format!(
+                            "get map can only take one parameter, found {}",
+                            params.len()
+                        ));
+                    }
+                    match params.get(0).map(|v| v.val()) {
+                        Some(Some(SharedValue::String(str_key))) => {
+                            return Ok(SExpr::owned_value(m.get(str_key).clone()))
+                        }
+                        Some(Some(SharedValue::U64(key_id))) => {
+                            return Ok(SExpr::owned_value(m.get_by_key_id(*key_id).clone()))
+                        }
+                        _ => {
+                            return Err(format!(
+                                "Key format not accepted, expect one string or u64\
+                                 Found {:?}",
+                                params
+                            ));
+                        }
+                    }
+                }
+                OwnedValue::Array(ref array) => {
+                    if params.len() > 1 {
+                        return Err(format!(
+                            "get map can only take one parameter, found {}",
+                            params.len()
+                        ));
+                    }
+                    match params.get(0).map(|v| v.val()) {
+                        Some(Some(SharedValue::U64(key_id))) => {
+                            return Ok(SExpr::owned_value(
+                                array
+                                    .get(*key_id as usize)
+                                    .cloned()
+                                    .unwrap_or(OwnedValue::Null),
+                            ))
+                        }
+                        _ => {
+                            return Err(format!(
+                                "Index format not accepted, expect u64\
+                                 Found {:?}",
+                                params
+                            ));
+                        }
+                    }
+                }
+                _ => {
+                    return Err(format!("value {:?} cannot be used as a function", v));
+                }
+            }
         }
     }
 }
