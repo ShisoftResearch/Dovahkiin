@@ -33,25 +33,25 @@ macro_rules! reduce {
 
 macro_rules! add_ {
     ($type: ident, $values: ident) => {{
-        return reduce!($type, $values, |result, n| { result + n })
+        return reduce!($type, $values, |result, n| { result + n });
     }};
 }
 
 macro_rules! subtract_ {
     ($type: ident, $values: ident) => {{
-        return reduce!($type, $values, |result, n| { result - n })
+        return reduce!($type, $values, |result, n| { result - n });
     }};
 }
 
 macro_rules! multiply_ {
     ($type: ident, $values: ident) => {{
-        return reduce!($type, $values, |result, n| { result * n })
+        return reduce!($type, $values, |result, n| { result * n });
     }};
 }
 
 macro_rules! divide_ {
     ($type: ident, $values: ident) => {{
-        return reduce!($type, $values, |result, n| { result / n })
+        return reduce!($type, $values, |result, n| { result / n });
     }};
 }
 

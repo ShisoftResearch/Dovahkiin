@@ -23,7 +23,11 @@ pub fn lambda_placeholder(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
     Ok(SExpr::LAMBDA(params_list, exprs))
 }
 
-pub fn eval_lambda<'a>(lambda_expr: SExpr<'a>, params: Vec<SExpr<'a>>, env: &mut Envorinment<'a>) -> Result<SExpr<'a>, String> {
+pub fn eval_lambda<'a>(
+    lambda_expr: SExpr<'a>,
+    params: Vec<SExpr<'a>>,
+    env: &mut Envorinment<'a>,
+) -> Result<SExpr<'a>, String> {
     if let SExpr::LAMBDA(ref params_list, ref body) = lambda_expr {
         {
             // bind parameters

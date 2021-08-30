@@ -7,7 +7,7 @@ pub struct Envorinment<'a> {
     pub bindings: HashMap<u64, LinkedList<Rc<SExpr<'a>>>>,
 }
 
-impl <'a> Envorinment <'a> {
+impl<'a> Envorinment<'a> {
     pub fn new() -> Self {
         Envorinment {
             bindings: HashMap::new(),
@@ -18,7 +18,10 @@ impl <'a> Envorinment <'a> {
     }
 }
 
-pub fn eval_all<'a>(exprs: Vec<SExpr<'a>>, env: &mut Envorinment<'a>) -> Result<Vec<SExpr<'a>>, String> {
+pub fn eval_all<'a>(
+    exprs: Vec<SExpr<'a>>,
+    env: &mut Envorinment<'a>,
+) -> Result<Vec<SExpr<'a>>, String> {
     let mut result = Vec::with_capacity(exprs.len());
     for expr in exprs {
         result.push(expr.eval(env)?);
@@ -35,7 +38,7 @@ pub struct Interpreter<'a> {
     env: Envorinment<'a>,
 }
 
-impl <'a> Interpreter <'a> {
+impl<'a> Interpreter<'a> {
     pub fn new() -> Self {
         Interpreter {
             env: Envorinment::new(),

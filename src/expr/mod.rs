@@ -11,17 +11,17 @@ pub mod interpreter;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Value<'a> {
     Owned(OwnedValue),
-    Shared(SharedValue<'a>)
+    Shared(SharedValue<'a>),
 }
 
-impl <'a> Value <'a> {
+impl<'a> Value<'a> {
     pub const fn null() -> Self {
         Self::Owned(OwnedValue::Null)
     }
     pub fn norm(&'a self) -> SharedValue<'a> {
         match self {
             Value::Owned(v) => v.shared(),
-            Value::Shared(v) => v.clone()
+            Value::Shared(v) => v.clone(),
         }
     }
     pub fn owned(val: OwnedValue) -> Self {
@@ -30,7 +30,7 @@ impl <'a> Value <'a> {
     pub fn into_owned_val(self) -> OwnedValue {
         match self {
             Value::Owned(v) => v,
-            Value::Shared(v) => v.owned()
+            Value::Shared(v) => v.owned(),
         }
     }
 }
@@ -45,7 +45,7 @@ pub enum SExpr<'a> {
     LAMBDA(Vec<SExpr<'a>>, Vec<SExpr<'a>>),
 }
 
-impl <'a> SExpr <'a> {
+impl<'a> SExpr<'a> {
     pub fn eval(self, env: &mut Envorinment<'a>) -> Result<SExpr<'a>, String> {
         match self {
             SExpr::List(exprs) => {
@@ -54,7 +54,11 @@ impl <'a> SExpr <'a> {
                 } else {
                     let mut iter = exprs.into_iter();
                     let func = iter.next().unwrap().eval(env)?;
-                    Ok(symbols::functions::eval_function(&func, iter.collect(), env)?)
+                    Ok(symbols::functions::eval_function(
+                        &func,
+                        iter.collect(),
+                        env,
+                    )?)
                 }
             }
             SExpr::ISymbol(symbol_id, _) => {

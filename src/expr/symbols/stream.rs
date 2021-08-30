@@ -54,14 +54,20 @@ pub fn to_vec(expr: SExpr) -> Result<SExpr, String> {
     }
 }
 
-pub fn map<'a>(func: SExpr<'a>, data: SExpr<'a>, env: &mut Envorinment<'a>) -> Result<SExpr<'a>, String> {
+pub fn map<'a>(
+    func: SExpr<'a>,
+    data: SExpr<'a>,
+    env: &mut Envorinment<'a>,
+) -> Result<SExpr<'a>, String> {
     match data {
         SExpr::Value(Value::Owned(OwnedValue::Array(_)))
-        | SExpr::Value(Value::Shared(SharedValue::Array(_))) => return map(func, to_vec(data)?, env),
+        | SExpr::Value(Value::Shared(SharedValue::Array(_))) => {
+            return map(func, to_vec(data)?, env)
+        }
         SExpr::Vec(expr_list) => {
             let mut result = Vec::with_capacity(expr_list.len());
             for expr in expr_list {
-                result.push(eval_function(&func, vec![expr.eval(env)?], env)?,)
+                result.push(eval_function(&func, vec![expr.eval(env)?], env)?)
             }
             return Ok(SExpr::Vec(result));
         }
@@ -69,10 +75,16 @@ pub fn map<'a>(func: SExpr<'a>, data: SExpr<'a>, env: &mut Envorinment<'a>) -> R
     }
 }
 
-pub fn filter<'a>(func: SExpr<'a>, data: SExpr<'a>, env: &mut Envorinment<'a>) -> Result<SExpr<'a>, String> {
+pub fn filter<'a>(
+    func: SExpr<'a>,
+    data: SExpr<'a>,
+    env: &mut Envorinment<'a>,
+) -> Result<SExpr<'a>, String> {
     match data {
         SExpr::Value(Value::Owned(OwnedValue::Array(_)))
-        | SExpr::Value(Value::Shared(SharedValue::Array(_))) => return filter(func, to_vec(data)?, env),
+        | SExpr::Value(Value::Shared(SharedValue::Array(_))) => {
+            return filter(func, to_vec(data)?, env)
+        }
         SExpr::Vec(expr_list) => {
             let mut result = Vec::with_capacity(expr_list.len());
             for expr in expr_list {

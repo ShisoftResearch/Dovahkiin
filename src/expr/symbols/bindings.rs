@@ -17,7 +17,7 @@ pub fn bind<'a>(env: &mut Envorinment<'a>, id: u64, val: SExpr<'a>) {
     bind_rc(env, id, Rc::new(val))
 }
 
-pub fn unbind<'a>(env: &mut Envorinment<'a>,id: u64) {
+pub fn unbind<'a>(env: &mut Envorinment<'a>, id: u64) {
     let binding_map = &mut env.bindings;
     binding_map
         .entry(id)
@@ -25,7 +25,10 @@ pub fn unbind<'a>(env: &mut Envorinment<'a>,id: u64) {
         .pop_front();
 }
 
-pub fn let_binding<'a>(env: &mut Envorinment<'a>, mut exprs: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
+pub fn let_binding<'a>(
+    env: &mut Envorinment<'a>,
+    mut exprs: Vec<SExpr<'a>>,
+) -> Result<SExpr<'a>, String> {
     if exprs.len() < 2 {
         return Err(format!(
             "Too few parameters for let. Required at least 2 but found {}",
@@ -72,7 +75,10 @@ pub fn let_binding<'a>(env: &mut Envorinment<'a>, mut exprs: Vec<SExpr<'a>>) -> 
     return Ok(body_result);
 }
 
-pub fn define<'a>(env: &mut Envorinment<'a>, mut exprs: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
+pub fn define<'a>(
+    env: &mut Envorinment<'a>,
+    mut exprs: Vec<SExpr<'a>>,
+) -> Result<SExpr<'a>, String> {
     let name = exprs.remove(0);
     let val = exprs.remove(0).eval(env)?;
     if let SExpr::Symbol(name) = name {

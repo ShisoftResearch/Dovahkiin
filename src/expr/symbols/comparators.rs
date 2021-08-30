@@ -11,7 +11,9 @@ pub fn equals(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
 }
 
 pub fn not_equals(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
-    return Ok(SExpr::owned_value(OwnedValue::Bool(exprs.pop() == exprs.pop())));
+    return Ok(SExpr::owned_value(OwnedValue::Bool(
+        exprs.pop() == exprs.pop(),
+    )));
 }
 
 macro_rules! reduce {

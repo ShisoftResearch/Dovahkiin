@@ -21,7 +21,11 @@ mod stream;
 pub mod utils;
 
 pub trait Symbol: Sync + Debug {
-    fn eval<'a>(&self, exprs: Vec<SExpr<'a>>, env: &mut Envorinment<'a>) -> Result<SExpr<'a>, String>;
+    fn eval<'a>(
+        &self,
+        exprs: Vec<SExpr<'a>>,
+        env: &mut Envorinment<'a>,
+    ) -> Result<SExpr<'a>, String>;
     fn is_macro(&self) -> bool;
 }
 

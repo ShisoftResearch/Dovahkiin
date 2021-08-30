@@ -1,5 +1,5 @@
-use crate::types::SharedMap;
 use crate::types::OwnedMap;
+use crate::types::SharedMap;
 
 use super::*;
 use std::collections::HashMap;
@@ -57,20 +57,22 @@ pub fn hashmap(exprs: Vec<SExpr>) -> Result<SExpr, String> {
     while let (Some(k), Some(v)) = (exprs.next(), exprs.next()) {
         if let (Some(SharedValue::String(k_str)), SExpr::Value(v)) = (k.val(), v) {
             let k_str = k_str.to_owned();
-            match v{
+            match v {
                 Value::Shared(v) => {
-                    // TODO: Try not own elements 
+                    // TODO: Try not own elements
                     hashmap.insert(k_str, v.owned());
-                },
+                }
                 Value::Owned(v) => {
                     hashmap.insert(k_str, v);
                 }
-            } 
+            }
         } else {
             return Err(format!("Wrong hashmap key value data type. Key should be a string and value should be a value"));
         }
     }
-    return Ok(SExpr::owned_value(OwnedValue::Map(OwnedMap::from_hash_map(hashmap))));
+    return Ok(SExpr::owned_value(OwnedValue::Map(
+        OwnedMap::from_hash_map(hashmap),
+    )));
 }
 
 pub fn merge<'a>(exprs: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
@@ -87,7 +89,7 @@ pub fn merge<'a>(exprs: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
                         value_map.insert(k, v.owned());
                     }
                     field_names.append(&mut fields);
-                },
+                }
                 Value::Owned(OwnedValue::Map(m)) => {
                     let map = m.map;
                     let mut fields = m.fields;

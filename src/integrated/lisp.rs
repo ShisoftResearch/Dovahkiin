@@ -12,10 +12,16 @@ pub fn get_interpreter<'a>() -> Interpreter<'a> {
     Interpreter::new()
 }
 
-pub fn eval<'a>(interpreter: &mut Interpreter<'a>, exprs: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
+pub fn eval<'a>(
+    interpreter: &mut Interpreter<'a>,
+    exprs: Vec<SExpr<'a>>,
+) -> Result<SExpr<'a>, String> {
     interpreter.eval(exprs)
 }
 
-pub fn eval_string<'a, 'b>(interpreter: &mut Interpreter<'a>, code: &'b str) -> Result<SExpr<'a>, String> {
+pub fn eval_string<'a, 'b>(
+    interpreter: &mut Interpreter<'a>,
+    code: &'b str,
+) -> Result<SExpr<'a>, String> {
     eval(interpreter, parse_to_expr(code)?)
 }
