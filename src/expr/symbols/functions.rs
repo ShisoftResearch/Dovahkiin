@@ -3,7 +3,6 @@ use crate::expr::interpreter::Envorinment;
 use super::bindings::{bind, bind_by_name};
 use super::lambda::{eval_lambda, lambda_placeholder};
 use super::*;
-use std::rc::Rc;
 
 pub fn eval_function<'a>(
     func_expr: &SExpr<'a>,
