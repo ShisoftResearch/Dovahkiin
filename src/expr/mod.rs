@@ -7,6 +7,7 @@ use self::interpreter::Envorinment;
 #[macro_use]
 pub mod symbols;
 pub mod interpreter;
+pub mod serde;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Value<'a> {
