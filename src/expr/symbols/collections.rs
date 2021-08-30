@@ -1,15 +1,23 @@
+use crate::types::OwnedMap;
+use crate::types::SharedMap;
+
 use super::*;
 use std::collections::HashMap;
-use types::custom_types::owned_map::OwnedMap;
 
 pub fn size_(vals: &Vec<SExpr>) -> Result<u64, String> {
     let mut result: u64 = 0;
     for val in vals {
-        result += match val {
+        result += match &val {
             &SExpr::Vec(ref v) => v.len(),
-            &SExpr::Value(Value::Array(ref a)) => a.len(),
-            &SExpr::Value(Value::String(ref s)) => s.len(),
-            &SExpr::Value(Value::Map(ref m)) => m.len(),
+            &SExpr::Value(val) => {
+                let v = val.norm();
+                match v {
+                    SharedValue::Array(ref a) => a.len(),
+                    SharedValue::String(ref s) => s.len(),
+                    SharedValue::Map(ref m) => m.len(),
+                    _ => return Err(format!("Cannot measure size for value {:?}", val)),
+                }
+            }
             _ => return Err(format!("Cannot measure size for {:?}", val)),
         } as u64;
     }
@@ -17,7 +25,7 @@ pub fn size_(vals: &Vec<SExpr>) -> Result<u64, String> {
 }
 
 pub fn size(vals: Vec<SExpr>) -> Result<SExpr, String> {
-    Ok(SExpr::Value(Value::U64(size_(&vals)?)))
+    Ok(SExpr::owned_value(OwnedValue::U64(size_(&vals)?)))
 }
 
 pub fn concat(lists: Vec<SExpr>) -> Result<SExpr, String> {
@@ -47,33 +55,55 @@ pub fn hashmap(exprs: Vec<SExpr>) -> Result<SExpr, String> {
     let mut exprs = exprs.into_iter();
     let mut hashmap = HashMap::new();
     while let (Some(k), Some(v)) = (exprs.next(), exprs.next()) {
-        if let (SExpr::Value(Value::String(k_str)), SExpr::Value(value)) = (k, v) {
-            hashmap.insert(k_str, value);
+        if let (Some(SharedValue::String(k_str)), SExpr::Value(v)) = (k.val(), v) {
+            let k_str = k_str.to_owned();
+            match v {
+                Value::Shared(v) => {
+                    // TODO: Try not own elements
+                    hashmap.insert(k_str, v.owned());
+                }
+                Value::Owned(v) => {
+                    hashmap.insert(k_str, v);
+                }
+            }
         } else {
             return Err(format!("Wrong hashmap key value data type. Key should be a string and value should be a value"));
         }
     }
-    return Ok(SExpr::Value(Value::Map(OwnedMap::from_hash_map(hashmap))));
+    return Ok(SExpr::owned_value(OwnedValue::Map(
+        OwnedMap::from_hash_map(hashmap),
+    )));
 }
 
-pub fn merge(exprs: Vec<SExpr>) -> Result<SExpr, String> {
+pub fn merge<'a>(exprs: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
     let mut value_map = HashMap::new();
     let mut field_names = Vec::new();
     for expr in exprs {
-        match expr {
-            SExpr::Value(Value::Map(m)) => {
-                let map = m.map;
-                let mut fields = m.fields;
-                for (k, v) in map.into_iter() {
-                    value_map.insert(k, v);
+        if let SExpr::Value(val) = expr {
+            match val {
+                Value::Shared(SharedValue::Map(m)) => {
+                    let map = m.map;
+                    let mut fields = m.fields;
+                    for (k, v) in map.into_iter() {
+                        // TODO: try not own it
+                        value_map.insert(k, v.owned());
+                    }
+                    field_names.append(&mut fields);
                 }
-                field_names.append(&mut fields);
+                Value::Owned(OwnedValue::Map(m)) => {
+                    let map = m.map;
+                    let mut fields = m.fields;
+                    for (k, v) in map.into_iter() {
+                        value_map.insert(k, v);
+                    }
+                    field_names.append(&mut fields);
+                }
+                _ => return Err(format!("Only map value can be merged. Found {:?}", val)),
             }
-            _ => return Err(format!("Only map value can be merged. Found {:?}", expr)),
         }
     }
     field_names.dedup();
-    Ok(SExpr::Value(Value::Map(OwnedMap {
+    Ok(SExpr::owned_value(OwnedValue::Map(OwnedMap {
         map: value_map,
         fields: field_names,
     })))

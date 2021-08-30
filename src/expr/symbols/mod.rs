@@ -3,7 +3,9 @@ use expr::SExpr;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt::Debug;
-pub use types::OwnedValue as Value;
+
+use super::interpreter::Envorinment;
+pub use super::*;
 
 mod arithmetic;
 pub mod bindings;
@@ -19,7 +21,11 @@ mod stream;
 pub mod utils;
 
 pub trait Symbol: Sync + Debug {
-    fn eval(&self, exprs: Vec<SExpr>) -> Result<SExpr, String>;
+    fn eval<'a>(
+        &self,
+        exprs: Vec<SExpr<'a>>,
+        env: &mut Envorinment<'a>,
+    ) -> Result<SExpr<'a>, String>;
     fn is_macro(&self) -> bool;
 }
 
@@ -54,8 +60,8 @@ macro_rules! defsymbols {
             #[derive(Debug)]
             pub struct $name;
             impl Symbol for $name {
-                fn eval(&self, exprs: Vec<SExpr>) -> Result<SExpr, String> where Self: Sized {
-                    $eval(exprs)
+                fn eval<'a>(&self, exprs: Vec<SExpr<'a>>, env: &mut Envorinment<'a>) -> Result<SExpr<'a>, String> where Self: Sized {
+                    $eval(exprs, env)
                 }
                 fn is_macro(&self) -> bool {
                     return $is_macro;
@@ -134,165 +140,165 @@ fn split_pair(mut exprs: Vec<SExpr>) -> (SExpr, SExpr) {
 }
 
 defsymbols! {
-    "if" => If, true, |exprs| {
+    "if" => If, true, |exprs, env| {
         check_params_not_least_than(2, &exprs)?;
         check_params_not_greater_than(3, &exprs)?;
-        branching::if_(exprs)
+        branching::if_(env, exprs)
     };
-    "if-not" => IfNot, true, |exprs| {
+    "if-not" => IfNot, true, |exprs, env| {
         check_params_not_least_than(2, &exprs)?;
         check_params_not_greater_than(3, &exprs)?;
-        branching::if_not(exprs)
+        branching::if_not(env, exprs)
     };
-    "when" => When, true, |exprs| {
+    "when" => When, true, |exprs, env| {
         check_num_params(2, &exprs)?;
-        branching::when(exprs)
+        branching::when(env,exprs)
     };
-    "when-not" => WhenNot, true, |exprs| {
+    "when-not" => WhenNot, true, |exprs, env| {
         check_num_params(2, &exprs)?;
-        branching::when_not(exprs)
+        branching::when_not(env,exprs)
     };
-    "=" => Equals, false, |exprs| {
+    "=" => Equals, false, |exprs, env| {
         check_params_not_least_than(2, &exprs)?;
         comparators::equals(exprs)
     };
-    "!=" => NotEquals, false, |exprs| {
+    "!=" => NotEquals, false, |exprs, env| {
         check_num_params(2, &exprs)?;
         comparators::not_equals(exprs)
     };
-    ">" => GreaterThan, false, |exprs| {
+    ">" => GreaterThan, false, |exprs, env| {
         check_params_not_least_than(2, &exprs)?;
         comparators::gt(exprs)
     };
-    ">=" => GreaterThanEquals, false, |exprs| {
+    ">=" => GreaterThanEquals, false, |exprs, env| {
         check_params_not_least_than(2, &exprs)?;
         comparators::gte(exprs)
     };
-    "<" => LessThan, false, |exprs| {
+    "<" => LessThan, false, |exprs, env| {
         check_params_not_least_than(2, &exprs)?;
         comparators::lt(exprs)
     };
-    "<=" => LessThanEquals, false, |exprs| {
+    "<=" => LessThanEquals, false, |exprs, env| {
         check_params_not_least_than(2, &exprs)?;
         comparators::lte(exprs)
     };
-    "+" => Add, false, |exprs| {
+    "+" => Add, false, |exprs, env| {
         check_params_not_empty(&exprs)?;
         arithmetic::add(exprs)
     };
-    "-" => Subtract, false, |exprs| {
+    "-" => Subtract, false, |exprs, env| {
         check_params_not_empty(&exprs)?;
         arithmetic::subtract(exprs)
     };
-    "*" => Multiply, false, |exprs| {
+    "*" => Multiply, false, |exprs, env| {
         check_params_not_empty(&exprs)?;
         arithmetic::multiply(exprs)
     };
-    "/" => Divide, false, |exprs| {
+    "/" => Divide, false, |exprs, env| {
         check_params_not_empty(&exprs)?;
         arithmetic::divide(exprs)
     };
-    "let" => Let, true, |exprs| {
-        bindings::let_binding(exprs)
+    "let" => Let, true, |exprs, env| {
+        bindings::let_binding(env, exprs)
     };
-    "lambda" => Lambda, true, |exprs| {
+    "lambda" => Lambda, true, |exprs, env| {
         check_params_not_least_than(2, &exprs)?;
         lambda::lambda_placeholder(exprs)
     };
-    "defunc" => DefineFunc, true, |exprs| {
+    "defunc" => DefineFunc, true, |exprs, env| {
         check_params_not_least_than(3, &exprs)?;
-        functions::defn(exprs)
+        functions::defn(env, exprs)
     };
-    "def" => Define, true, |exprs| {
+    "def" => Define, true, |exprs, env| {
         check_num_params(2, &exprs)?;
-        bindings::define(exprs)
+        bindings::define(env, exprs)
     };
-    "map" => Map, false, |exprs| {
-        check_num_params(2, &exprs)?;
-        let (func, data) = split_pair(exprs);
-        stream::map(func, data)
-    };
-    "filter" => Filter, false, |exprs| {
+    "map" => Map, false, |exprs, env| {
         check_num_params(2, &exprs)?;
         let (func, data) = split_pair(exprs);
-        stream::filter(func, data)
+        stream::map(func, data, env)
     };
-    "do" => Do, false, |exprs| {
-        misc::do_(exprs)
+    "filter" => Filter, false, |exprs, env| {
+        check_num_params(2, &exprs)?;
+        let (func, data) = split_pair(exprs);
+        stream::filter(func, data, env)
     };
-    "to_vec" => ToVec, false, |mut exprs| {
+    "do" => Do, false, |exprs, env| {
+        misc::do_(exprs, env)
+    };
+    "to_vec" => ToVec, false, |mut exprs, env| {
         check_num_params(1, &exprs)?;
         stream::to_vec(exprs.pop().unwrap())
     };
-    "to_array" => ToArray, false, |mut exprs| {
+    "to_array" => ToArray, false, |mut exprs, env| {
         check_num_params(1, &exprs)?;
         stream::to_array(exprs.pop().unwrap())
     };
-    "inc" => Inc, false, |mut exprs| {
+    "inc" => Inc, false, |mut exprs, env| {
         check_num_params(1, &exprs)?;
         arithmetic::inc(exprs.pop().unwrap())
     };
-    "concat" => Concat, false, |exprs| {
+    "concat" => Concat, false, |exprs, env| {
         collections::concat(exprs)
     };
-    "size" => Size, false, |exprs| {
+    "size" => Size, false, |exprs, env| {
         collections::size(exprs)
     };
-    "hash-map" => GenHashMap, false, |exprs| {
+    "hash-map" => GenHashMap, false, |exprs, env| {
         collections::hashmap(exprs)
     };
-    "merge" => MergeHashMap, false, |exprs| {
+    "merge" => MergeHashMap, false, |exprs, env| {
         collections::merge(exprs)
     };
-    "conj" => Conjuction, false, |exprs| {
+    "conj" => Conjuction, false, |exprs, env| {
         collections::conj(exprs)
     };
-    "or" => Or, true, |exprs| {
-        logic::or(exprs)
+    "or" => Or, true, |exprs, env| {
+        logic::or(exprs, env)
     };
-    "and" => And, true, |exprs| {
-        logic::and(exprs)
+    "and" => And, true, |exprs, env| {
+        logic::and(exprs, env)
     };
-    "cond" => Conditional, true, |exprs| {
-        logic::cond(exprs)
+    "cond" => Conditional, true, |exprs, env| {
+        logic::cond(exprs, env)
     };
-    "u8" => U8, false, |exprs| {
+    "u8" => U8, false, |exprs, env| {
         check_num_params(1, &exprs)?;
         num_types::u8(exprs.get(0).cloned().unwrap())
     };
-    "u16" => U16, false, |exprs| {
+    "u16" => U16, false, |exprs, env| {
         check_num_params(1, &exprs)?;
         num_types::u16(exprs.get(0).cloned().unwrap())
     };
-    "u32" => U32, false, |exprs| {
+    "u32" => U32, false, |exprs, env| {
         check_num_params(1, &exprs)?;
         num_types::u32(exprs.get(0).cloned().unwrap())
     };
-    "u64" => U64, false, |exprs| {
+    "u64" => U64, false, |exprs, env| {
         check_num_params(1, &exprs)?;
         num_types::u64(exprs.get(0).cloned().unwrap())
     };
-    "i8" => I8, false, |exprs| {
+    "i8" => I8, false, |exprs, env| {
         check_num_params(1, &exprs)?;
         num_types::i8(exprs.get(0).cloned().unwrap())
     };
-    "i16" => I16, false, |exprs| {
+    "i16" => I16, false, |exprs, env| {
         check_num_params(1, &exprs)?;
         num_types::i16(exprs.get(0).cloned().unwrap())
     };
-    "i32" => I32, false, |exprs| {
+    "i32" => I32, false, |exprs, env| {
         check_num_params(1, &exprs)?;
         num_types::i32(exprs.get(0).cloned().unwrap())
     };
-    "i64" => I64, false, |exprs| {
+    "i64" => I64, false, |exprs, env| {
         check_num_params(1, &exprs)?;
         num_types::i64(exprs.get(0).cloned().unwrap())
     };
-    "f32" => F32, false, |exprs| {
+    "f32" => F32, false, |exprs, env| {
         check_num_params(1, &exprs)?;
         num_types::f32(exprs.get(0).cloned().unwrap())
     };
-    "f64" => F64, false, |exprs| {
+    "f64" => F64, false, |exprs, env| {
         check_num_params(1, &exprs)?;
         num_types::f64(exprs.get(0).cloned().unwrap())
     }

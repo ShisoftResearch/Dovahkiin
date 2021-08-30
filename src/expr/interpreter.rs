@@ -1,59 +1,50 @@
 use expr::symbols::misc;
 use expr::SExpr;
-use std::cell::RefCell;
-use std::cell::RefMut;
 use std::collections::{HashMap, LinkedList};
 use std::rc::Rc;
-
-thread_local!(pub static ENV: RefCell<Rc<Envorinment>> = RefCell::new(Rc::new(Envorinment::new())));
-
 #[derive(Debug)]
-pub struct Envorinment {
-    pub bindings: RefCell<HashMap<u64, LinkedList<Rc<SExpr>>>>,
+pub struct Envorinment<'a> {
+    pub bindings: HashMap<u64, LinkedList<Rc<SExpr<'a>>>>,
 }
 
-impl Envorinment {
-    pub fn new() -> Envorinment {
+impl<'a> Envorinment<'a> {
+    pub fn new() -> Self {
         Envorinment {
-            bindings: RefCell::new(HashMap::new()),
+            bindings: HashMap::new(),
         }
     }
-    pub fn get_mut_bindings(&self) -> RefMut<HashMap<u64, LinkedList<Rc<SExpr>>>> {
-        self.bindings.borrow_mut()
+    pub fn get_mut_bindings(&mut self) -> &mut HashMap<u64, LinkedList<Rc<SExpr<'a>>>> {
+        &mut self.bindings
     }
 }
 
-pub fn eval_all(exprs: Vec<SExpr>) -> Result<Vec<SExpr>, String> {
+pub fn eval_all<'a>(
+    exprs: Vec<SExpr<'a>>,
+    env: &mut Envorinment<'a>,
+) -> Result<Vec<SExpr<'a>>, String> {
     let mut result = Vec::with_capacity(exprs.len());
     for expr in exprs {
-        result.push(expr.eval()?);
+        result.push(expr.eval(env)?);
     }
     Ok(result)
 }
 
-pub fn do_eval(exprs: Vec<SExpr>) -> Result<SExpr, String> {
-    misc::do_(exprs)
+pub fn do_eval<'a>(exprs: Vec<SExpr<'a>>, env: &mut Envorinment<'a>) -> Result<SExpr<'a>, String> {
+    misc::do_(exprs, env)
 }
 
 #[derive(Debug)]
-pub struct Interpreter {
-    env: Rc<Envorinment>,
+pub struct Interpreter<'a> {
+    env: Envorinment<'a>,
 }
 
-impl Interpreter {
-    pub fn new() -> Interpreter {
+impl<'a> Interpreter<'a> {
+    pub fn new() -> Self {
         Interpreter {
-            env: Rc::new(Envorinment::new()),
+            env: Envorinment::new(),
         }
     }
-    pub fn set_env(&self) {
-        ENV.with(|env| {
-            let mut env_borrowed = env.borrow_mut();
-            *env_borrowed = self.env.clone();
-        });
-    }
-    pub fn eval(&self, exprs: Vec<SExpr>) -> Result<SExpr, String> {
-        self.set_env();
-        do_eval(exprs)
+    pub fn eval(&mut self, exprs: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
+        do_eval(exprs, &mut self.env)
     }
 }

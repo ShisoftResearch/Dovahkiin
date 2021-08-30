@@ -1,9 +1,9 @@
 use super::*;
 
-pub fn do_(exprs: Vec<SExpr>) -> Result<SExpr, String> {
-    let mut result = SExpr::Value(Value::Null);
+pub fn do_<'a>(exprs: Vec<SExpr<'a>>, env: &mut Envorinment<'a>) -> Result<SExpr<'a>, String> {
+    let mut result = SExpr::Value(Value::null());
     for expr in exprs {
-        result = expr.eval()?;
+        result = expr.eval(env)?;
     }
     return Ok(result);
 }
