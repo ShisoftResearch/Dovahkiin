@@ -12,15 +12,15 @@ pub fn eval_function<'a>(
 ) -> Result<SExpr<'a>, String> {
     match func_expr {
         &SExpr::ISymbol(symbol_id, ref name) => {
-            let env_bind_ref: Option<Rc<SExpr>>;
+            let env_bind;
             let bindings = env.get_mut_bindings();
-            env_bind_ref = if let Some(binding_list) = bindings.get(&symbol_id) {
+            env_bind = if let Some(binding_list) = bindings.get(&symbol_id) {
                 binding_list.front().cloned()
             } else {
                 None
             };
-            if let Some(env_bind) = env_bind_ref {
-                return eval_lambda((&*env_bind).clone(), params, env);
+            if let Some(env_bind) = env_bind {
+                return eval_lambda(env_bind, params, env);
             } else {
                 // internal functions
                 let symbols = ISYMBOL_MAP.map.borrow();

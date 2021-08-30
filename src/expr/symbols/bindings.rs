@@ -3,18 +3,13 @@ use crate::expr::interpreter::Envorinment;
 use super::super::Value;
 use super::*;
 use std::collections::LinkedList;
-use std::rc::Rc;
 
-pub fn bind_rc<'a>(env: &mut Envorinment<'a>, id: u64, val_rc: Rc<SExpr<'a>>) {
+pub fn bind<'a>(env: &mut Envorinment<'a>, id: u64, val: SExpr<'a>) {
     let binding_map = &mut env.bindings;
     binding_map
         .entry(id)
         .or_insert_with(|| LinkedList::new())
-        .push_front(val_rc);
-}
-
-pub fn bind<'a>(env: &mut Envorinment<'a>, id: u64, val: SExpr<'a>) {
-    bind_rc(env, id, Rc::new(val))
+        .push_front(val);
 }
 
 pub fn unbind<'a>(env: &mut Envorinment<'a>, id: u64) {

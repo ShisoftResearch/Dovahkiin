@@ -62,7 +62,7 @@ impl<'a> SExpr<'a> {
                 }
             }
             SExpr::ISymbol(symbol_id, _) => {
-                let env_bind_ref: Option<Rc<SExpr>>;
+                let env_bind_ref;
                 let bindings = env.get_mut_bindings();
                 env_bind_ref = if let Some(binding_list) = bindings.get(&symbol_id) {
                     binding_list.front().cloned()
