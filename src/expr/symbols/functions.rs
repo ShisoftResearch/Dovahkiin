@@ -6,13 +6,13 @@ use super::*;
 use std::rc::Rc;
 
 pub fn eval_function<'a>(
-    func_expr: &'a SExpr<'a>,
+    func_expr: &SExpr<'a>,
     params: Vec<SExpr<'a>>,
     env: &mut Envorinment<'a>,
 ) -> Result<SExpr<'a>, String> {
-    match &func_expr {
+    match func_expr {
         &SExpr::ISymbol(symbol_id, ref name) => {
-            let mut env_bind_ref: Option<Rc<SExpr>> = None;
+            let env_bind_ref: Option<Rc<SExpr>>;
             let bindings = env.get_mut_bindings();
             env_bind_ref = if let Some(binding_list) = bindings.get(&symbol_id) {
                 binding_list.front().cloned()
@@ -48,15 +48,21 @@ pub fn eval_function<'a>(
             }
         }
         &SExpr::Symbol(ref symbol_name) => {
-            return eval_function(
-                &SExpr::ISymbol(hash_str(symbol_name), symbol_name.clone()),
-                params,
-                env,
-            )
+            let symbol_id = hash_str(symbol_name);
+            let symbol_name = symbol_name.clone();
+            return eval_function(&SExpr::ISymbol(symbol_id, symbol_name), params, env);
         }
         &SExpr::LAMBDA(_, _) => return eval_lambda(func_expr, params, env),
-        &SExpr::Value(ref v) => {
-            match v.norm() {
+        &SExpr::Value(ref v) => return eval_value(v, params),
+        _ => {}
+    }
+    return Err(format!("{:?} is not a function", func_expr));
+}
+
+fn eval_value<'a>(v: &Value<'a>, params: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
+    match &v {
+        &Value::Shared(sv) => {
+            match sv {
                 SharedValue::String(str_key) => {
                     // same as clojure (:key map)
                     if params.len() > 1 {
@@ -65,8 +71,10 @@ pub fn eval_function<'a>(
                             params.len()
                         ));
                     }
-                    if let Some(Some(SharedValue::Map(ref m))) = params.get(0).map(|expr| expr.val()) {
-                        return Ok(SExpr::shared_value(m.get(str_key).clone()));
+                    if let Some(Some(SharedValue::Map(ref m))) =
+                        params.get(0).map(|expr| expr.val())
+                    {
+                        return Ok(SExpr::owned_value(m.get(str_key).owned()));
                     } else {
                         return Err(format!(
                             "When use string value as function, \
@@ -85,16 +93,20 @@ pub fn eval_function<'a>(
                     }
                     match params.get(0).map(|expr| expr.val()) {
                         Some(Some(SharedValue::Map(ref m))) => {
-                            return Ok(SExpr::shared_value(m.get_by_key_id(*index).clone()));
+                            let val = m.get_by_key_id(**index).clone();
+                            return Ok(SExpr::owned_value(val.owned()));
                         }
                         Some(Some(SharedValue::Array(ref arr))) => {
-                            return Ok(SExpr::shared_value(
-                                arr.get(*index as usize).cloned().unwrap_or(SharedValue::Null),
+                            return Ok(SExpr::owned_value(
+                                arr.get(**index as usize)
+                                    .cloned()
+                                    .unwrap_or(SharedValue::Null)
+                                    .owned(),
                             ))
                         }
                         _ => return Err(format!("Data type not accepted for {:?}", params)),
                     }
-                },
+                }
                 SharedValue::Map(ref m) => {
                     if params.len() > 1 {
                         return Err(format!(
@@ -117,7 +129,7 @@ pub fn eval_function<'a>(
                             ));
                         }
                     }
-                },
+                }
                 SharedValue::Array(ref array) => {
                     if params.len() > 1 {
                         return Err(format!(
@@ -128,7 +140,10 @@ pub fn eval_function<'a>(
                     match params.get(0).map(|v| v.val()) {
                         Some(Some(SharedValue::U64(key_id))) => {
                             return Ok(SExpr::shared_value(
-                                array.get(*key_id as usize).cloned().unwrap_or(SharedValue::Null),
+                                array
+                                    .get(*key_id as usize)
+                                    .cloned()
+                                    .unwrap_or(SharedValue::Null),
                             ))
                         }
                         _ => {
@@ -140,12 +155,15 @@ pub fn eval_function<'a>(
                         }
                     }
                 }
-                _ => {}
+                _ => {
+                    return Err(format!("value {:?} cannot be used as a function", v));
+                }
             }
         }
-        _ => {}
+        &Value::Owned(ov) => {
+            unimplemented!()
+        }
     }
-    return Err(format!("{:?} is not a function", func_expr));
 }
 
 pub fn defn<'a>(env: &mut Envorinment<'a>, mut exprs: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {

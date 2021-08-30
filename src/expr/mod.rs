@@ -18,7 +18,7 @@ impl <'a> Value <'a> {
     pub const fn null() -> Self {
         Self::Owned(OwnedValue::Null)
     }
-    pub fn norm(&self) -> SharedValue {
+    pub fn norm(&'a self) -> SharedValue<'a> {
         match self {
             Value::Owned(v) => v.shared(),
             Value::Shared(v) => v.clone()
@@ -58,7 +58,7 @@ impl <'a> SExpr <'a> {
                 }
             }
             SExpr::ISymbol(symbol_id, _) => {
-                let mut env_bind_ref: Option<Rc<SExpr>> = None;
+                let env_bind_ref: Option<Rc<SExpr>>;
                 let bindings = env.get_mut_bindings();
                 env_bind_ref = if let Some(binding_list) = bindings.get(&symbol_id) {
                     binding_list.front().cloned()
@@ -81,15 +81,15 @@ impl <'a> SExpr <'a> {
     pub fn shared_value(val: SharedValue<'a>) -> Self {
         Self::Value(Value::Shared(val))
     }
-    pub fn val(&self) -> Option<SharedValue> {
+    pub fn val(&'a self) -> Option<SharedValue<'a>> {
         if let SExpr::Value(v) = self {
             Some(v.norm())
         } else {
             None
         }
     }
-    pub fn norm(self) -> Self {
-        if let SExpr::Value(Value::Owned(owned)) = self {
+    pub fn norm(&'a self) -> Self {
+        if let SExpr::Value(Value::Owned(ref owned)) = self {
             SExpr::Value(Value::Shared(owned.shared()))
         } else {
             self.clone()

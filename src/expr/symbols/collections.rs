@@ -1,4 +1,5 @@
 use crate::types::SharedMap;
+use crate::types::OwnedMap;
 
 use super::*;
 use std::collections::HashMap;
@@ -54,33 +55,53 @@ pub fn hashmap(exprs: Vec<SExpr>) -> Result<SExpr, String> {
     let mut exprs = exprs.into_iter();
     let mut hashmap = HashMap::new();
     while let (Some(k), Some(v)) = (exprs.next(), exprs.next()) {
-        if let (Some(SharedValue::String(k_str)), Some(val)) = (k.val(), v.val()) {
-            hashmap.insert(k_str.to_owned(), val.clone());
+        if let (Some(SharedValue::String(k_str)), SExpr::Value(v)) = (k.val(), v) {
+            let k_str = k_str.to_owned();
+            match v{
+                Value::Shared(v) => {
+                    // TODO: Try not own elements 
+                    hashmap.insert(k_str, v.owned());
+                },
+                Value::Owned(v) => {
+                    hashmap.insert(k_str, v);
+                }
+            } 
         } else {
             return Err(format!("Wrong hashmap key value data type. Key should be a string and value should be a value"));
         }
     }
-    return Ok(SExpr::shared_value(SharedValue::Map(SharedMap::from_hash_map(hashmap))));
+    return Ok(SExpr::owned_value(OwnedValue::Map(OwnedMap::from_hash_map(hashmap))));
 }
 
-pub fn merge(exprs: Vec<SExpr>) -> Result<SExpr, String> {
+pub fn merge<'a>(exprs: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
     let mut value_map = HashMap::new();
     let mut field_names = Vec::new();
     for expr in exprs {
-        match expr.val() {
-            Some(SharedValue::Map(m)) => {
-                let map = m.map;
-                let mut fields = m.fields;
-                for (k, v) in map.into_iter() {
-                    value_map.insert(k, v);
+        if let SExpr::Value(val) = expr {
+            match val {
+                Value::Shared(SharedValue::Map(m)) => {
+                    let map = m.map;
+                    let mut fields = m.fields;
+                    for (k, v) in map.into_iter() {
+                        // TODO: try not own it
+                        value_map.insert(k, v.owned());
+                    }
+                    field_names.append(&mut fields);
+                },
+                Value::Owned(OwnedValue::Map(m)) => {
+                    let map = m.map;
+                    let mut fields = m.fields;
+                    for (k, v) in map.into_iter() {
+                        value_map.insert(k, v);
+                    }
+                    field_names.append(&mut fields);
                 }
-                field_names.append(&mut fields);
+                _ => return Err(format!("Only map value can be merged. Found {:?}", val)),
             }
-            _ => return Err(format!("Only map value can be merged. Found {:?}", expr)),
         }
     }
     field_names.dedup();
-    Ok(SExpr::shared_value(SharedValue::Map(SharedMap {
+    Ok(SExpr::owned_value(OwnedValue::Map(OwnedMap {
         map: value_map,
         fields: field_names,
     })))
