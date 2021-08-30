@@ -20,7 +20,7 @@ pub fn eval_function<'a>(
                 None
             };
             if let Some(env_bind) = env_bind_ref {
-                return eval_lambda(&*env_bind, params, env);
+                return eval_lambda((&*env_bind).clone(), params, env);
             } else {
                 // internal functions
                 let symbols = ISYMBOL_MAP.map.borrow();
@@ -52,7 +52,7 @@ pub fn eval_function<'a>(
             let symbol_name = symbol_name.clone();
             return eval_function(&SExpr::ISymbol(symbol_id, symbol_name), params, env);
         }
-        &SExpr::LAMBDA(_, _) => return eval_lambda(func_expr, params, env),
+        &SExpr::LAMBDA(_, _) => return eval_lambda(func_expr.clone(), params, env),
         &SExpr::Value(ref v) => return eval_value(v, params),
         _ => {}
     }

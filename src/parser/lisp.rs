@@ -4,7 +4,7 @@ use lexer::lisp::Token;
 use std::vec::IntoIter;
 use types::OwnedValue as Value;
 
-fn parse_list(iter: &mut IntoIter<Token>) -> Result<SExpr, String> {
+fn parse_list<'a>(iter: &mut IntoIter<Token>) -> Result<SExpr<'a>, String> {
     let mut contents = Vec::new();
     while let Some(token) = iter.next() {
         match token {
@@ -19,7 +19,7 @@ fn parse_list(iter: &mut IntoIter<Token>) -> Result<SExpr, String> {
     Err(String::from("Unexpected EOF, expect ')'"))
 }
 
-fn parse_vec(iter: &mut IntoIter<Token>) -> Result<SExpr, String> {
+fn parse_vec<'a>(iter: &mut IntoIter<Token>) -> Result<SExpr<'a>, String> {
     let mut contents = Vec::new();
     while let Some(token) = iter.next() {
         match token {
@@ -78,7 +78,7 @@ fn parse_string<'a>(str: String) -> SExpr<'a> {
     SExpr::owned_value(Value::String(str))
 }
 
-fn parse_token(token: Token, iter: &mut IntoIter<Token>) -> Result<SExpr, String> {
+fn parse_token<'a>(token: Token, iter: &mut IntoIter<Token>) -> Result<SExpr<'a>, String> {
     match token {
         Token::LeftParentheses => Ok(parse_list(iter)?), // list
         Token::Symbol(name) => Ok(parse_symbol(name)),
