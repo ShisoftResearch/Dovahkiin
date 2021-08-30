@@ -4,6 +4,10 @@ use super::super::Value;
 use super::*;
 use std::collections::LinkedList;
 
+pub fn bind_by_name<'a, 'b>(env: &mut Envorinment<'a>, name: &'b str, val: SExpr<'a>) {
+    bind(env, hash_str(name), val)
+}
+
 pub fn bind<'a>(env: &mut Envorinment<'a>, id: u64, val: SExpr<'a>) {
     let binding_map = &mut env.bindings;
     binding_map
@@ -77,7 +81,7 @@ pub fn define<'a>(
     let name = exprs.remove(0);
     let val = exprs.remove(0).eval(env)?;
     if let SExpr::Symbol(name) = name {
-        bind(env, hash_str(&name), val);
+        bind_by_name(env, &name, val);
     } else if let SExpr::ISymbol(id, _) = name {
         bind(env, id, val)
     } else {

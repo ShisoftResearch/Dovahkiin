@@ -1,6 +1,6 @@
 use crate::expr::interpreter::Envorinment;
 
-use super::bindings::bind;
+use super::bindings::{bind, bind_by_name};
 use super::lambda::{eval_lambda, lambda_placeholder};
 use super::*;
 use std::rc::Rc;
@@ -266,7 +266,7 @@ pub fn defn<'a>(env: &mut Envorinment<'a>, mut exprs: Vec<SExpr<'a>>) -> Result<
     let name = exprs.remove(0);
     let lambda = lambda_placeholder(exprs)?;
     if let SExpr::Symbol(name) = name {
-        bind(env, hash_str(&name), lambda);
+        bind_by_name(env, &name, lambda);
     } else if let SExpr::ISymbol(id, _) = name {
         bind(env, id, lambda);
     } else {
