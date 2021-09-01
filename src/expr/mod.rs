@@ -100,4 +100,11 @@ impl<'a> SExpr<'a> {
             self.clone()
         }
     }
+    pub fn is_empty(&self) -> bool {
+        match self {
+            &SExpr::List(ref l) => l.is_empty(),
+            &SExpr::Vec(ref v) => v.is_empty(),
+            _ => false
+        }
+    }
 }

@@ -36,4 +36,11 @@ impl Expr {
         Expr::Vec(v) => SExpr::Vec(v.into_iter().map(|e| e.to_sexpr()).collect())
       }
     }
+    pub fn is_empty(&self) -> bool {
+      match self {
+          &Expr::List(ref l) => l.is_empty(),
+          &Expr::Vec(ref v) => v.is_empty(),
+          _ => false
+      }
+  }
 }
