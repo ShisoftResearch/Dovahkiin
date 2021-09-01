@@ -3,6 +3,7 @@ use expr::SExpr;
 use std::collections::{HashMap, LinkedList};
 use std::rc::Rc;
 
+use super::symbols::bindings::bind;
 use super::symbols::bindings::bind_by_name;
 #[derive(Debug)]
 pub struct Envorinment<'a> {
@@ -51,5 +52,8 @@ impl<'a> Interpreter<'a> {
     }
     pub fn bind<'b>(&mut self, name: &'b str, expr: SExpr<'a>) {
         bind_by_name(&mut self.env, name, expr)
+    }
+    pub fn bind_by_id(&mut self, id: u64, expr: SExpr<'a>) {
+        bind(&mut self.env, id, expr)
     }
 }
