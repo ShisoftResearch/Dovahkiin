@@ -56,4 +56,7 @@ impl<'a> Interpreter<'a> {
     pub fn bind_by_id(&mut self, id: u64, expr: SExpr<'a>) {
         bind(&mut self.env, id, expr)
     }
+    pub fn get_env(&mut self) -> &mut Envorinment<'a> {
+        &mut self.env
+    }
 }

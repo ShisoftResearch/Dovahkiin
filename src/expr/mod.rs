@@ -93,6 +93,16 @@ impl<'a> SExpr<'a> {
             None
         }
     }
+    pub fn owned_val(self) -> Option<OwnedValue> {
+        if let SExpr::Value(v) = self {
+            match v {
+                Value::Owned(v) => Some(v),
+                Value::Shared(v) => Some(v.owned())
+            }
+        } else {
+            None
+        }
+    }
     pub fn norm(&'a self) -> Self {
         if let SExpr::Value(Value::Owned(ref owned)) = self {
             SExpr::Value(Value::Shared(owned.shared()))
