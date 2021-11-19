@@ -5,7 +5,7 @@ use crate::expr::Value;
 
 use super::SExpr;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub enum Expr {
     Symbol(u64, String),
     Value(OwnedValue),
