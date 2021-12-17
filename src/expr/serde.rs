@@ -29,18 +29,22 @@ impl Expr {
     }
 
     pub fn to_sexpr<'a>(self) -> SExpr<'a> {
-      match self {
-        Expr::Symbol(i, s) => SExpr::ISymbol(i, s),
-        Expr::Value(v) => SExpr::Value(Value::Owned(v)),
-        Expr::List(l) => SExpr::List(l.into_iter().map(|e| e.to_sexpr()).collect()),
-        Expr::Vec(v) => SExpr::Vec(v.into_iter().map(|e| e.to_sexpr()).collect())
-      }
+        match self {
+            Expr::Symbol(i, s) => SExpr::ISymbol(i, s),
+            Expr::Value(v) => SExpr::Value(Value::Owned(v)),
+            Expr::List(l) => SExpr::List(l.into_iter().map(|e| e.to_sexpr()).collect()),
+            Expr::Vec(v) => SExpr::Vec(v.into_iter().map(|e| e.to_sexpr()).collect()),
+        }
     }
     pub fn is_empty(&self) -> bool {
-      match self {
-          &Expr::List(ref l) => l.is_empty(),
-          &Expr::Vec(ref v) => v.is_empty(),
-          _ => false
-      }
-  }
+        match self {
+            &Expr::List(ref l) => l.is_empty(),
+            &Expr::Vec(ref v) => v.is_empty(),
+            _ => false,
+        }
+    }
+
+    pub fn nothing() -> Self {
+      Self::List(vec![])
+    }
 }
