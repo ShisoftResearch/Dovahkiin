@@ -1,6 +1,9 @@
 use std::borrow::Borrow;
 use std::rc::Rc;
+use bifrost_hasher::hash_str;
 use types::{OwnedValue, SharedValue};
+
+use crate::parser::lisp::ParserExpr;
 
 use self::interpreter::Envorinment;
 
@@ -116,5 +119,23 @@ impl<'a> SExpr<'a> {
             &SExpr::Vec(ref v) => v.is_empty(),
             _ => false
         }
+    }
+}
+
+impl ParserExpr for SExpr<'_> {
+    fn list(data: Vec<Self>) -> Self {
+        Self::List(data)
+    }
+
+    fn vec(data: Vec<Self>) -> Self {
+        Self::Vec(data)
+    }
+
+    fn symbol(name: String) -> Self {
+        Self::ISymbol(hash_str(&name), name)
+    }
+
+    fn owned_val(val: OwnedValue) -> Self {
+        Self::owned_value(val)
     }
 }

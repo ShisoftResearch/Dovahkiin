@@ -3,7 +3,7 @@ use types::OwnedValue;
 
 use crate::expr::Value;
 
-use super::SExpr;
+use super::{SExpr, symbols::ParserExpr};
 
 #[derive(Serialize, Deserialize, Clone)]
 pub enum Expr {
@@ -46,5 +46,23 @@ impl Expr {
 
     pub fn nothing() -> Self {
       Self::List(vec![])
+    }
+}
+
+impl ParserExpr for Expr {
+    fn list(data: Vec<Self>) -> Self {
+        Self::List(data)
+    }
+
+    fn vec(data: Vec<Self>) -> Self {
+        Self::Vec(data)
+    }
+
+    fn symbol(name: String) -> Self {
+        Self::Symbol(hash_str(&name), name)
+    }
+
+    fn owned_val(val: OwnedValue) -> Self {
+        Self::Value(val)
     }
 }

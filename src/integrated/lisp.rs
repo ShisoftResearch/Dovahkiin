@@ -3,9 +3,16 @@ use expr::SExpr;
 use lexer::lisp as lisp_lexer;
 use parser::lisp as lisp_parser;
 
-pub fn parse_to_expr<'a, 'b>(code: &'b str) -> Result<Vec<SExpr<'a>>, String> {
+use crate::expr::serde::Expr;
+
+pub fn parse_to_sexpr<'a, 'b>(code: &'b str) -> Result<Vec<SExpr<'a>>, String> {
     let tokens = lisp_lexer::tokenize_str(code)?;
-    lisp_parser::parse_to_sexpr(tokens)
+    lisp_parser::SExprParser::parse_to_expr(tokens)
+}
+
+pub fn parse_to_serde_expr<'b>(code: &'b str) -> Result<Vec<Expr>, String> {
+    let tokens = lisp_lexer::tokenize_str(code)?;
+    lisp_parser::SerdeExprParser::parse_to_expr(tokens)
 }
 
 pub fn get_interpreter<'a>() -> Interpreter<'a> {
@@ -23,5 +30,5 @@ pub fn eval_string<'a, 'b>(
     interpreter: &mut Interpreter<'a>,
     code: &'b str,
 ) -> Result<SExpr<'a>, String> {
-    eval(interpreter, parse_to_expr(code)?)
+    eval(interpreter, parse_to_sexpr(code)?)
 }
