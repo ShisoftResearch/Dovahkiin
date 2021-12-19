@@ -138,3 +138,13 @@ pub fn scoping() {
         SExpr::owned_value(OwnedValue::U32(2))
     );
 }
+
+#[test]
+pub fn or() {
+    let mut interpreter = lisp::get_interpreter();
+    let str_function = "(let [x 2u64] (or (= x 1u64) (= x 2u64)))";
+    assert_eq!(
+        lisp::eval_string(&mut interpreter, str_function).unwrap(),
+        SExpr::owned_value(OwnedValue::Bool(true))
+    );
+}

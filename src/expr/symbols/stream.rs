@@ -89,7 +89,7 @@ pub fn filter<'a>(
             let mut result = Vec::with_capacity(expr_list.len());
             for expr in expr_list {
                 let val = expr.eval(env)?;
-                if is_true(eval_function(&func, vec![val.clone()], env)?) {
+                if is_true(&eval_function(&func, vec![val.clone()], env)?) {
                     result.push(val)
                 }
             }

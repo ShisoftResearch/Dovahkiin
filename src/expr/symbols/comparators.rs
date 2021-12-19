@@ -1,8 +1,13 @@
+use log::trace;
+
 use super::*;
 
 pub fn equals(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
-    let last = exprs.pop().unwrap();
+    let last_expr = exprs.pop().unwrap();
+    let last = last_expr.val();
     for expr in exprs {
+        let expr = expr.val();
+        trace!("Comparing {:?} with {:?}", expr, last);
         if expr != last {
             return Ok(SExpr::owned_value(OwnedValue::Bool(false)));
         }
@@ -11,9 +16,11 @@ pub fn equals(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
 }
 
 pub fn not_equals(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
-    return Ok(SExpr::owned_value(OwnedValue::Bool(
-        exprs.pop() == exprs.pop(),
-    )));
+    return Ok(SExpr::owned_value(OwnedValue::Bool({
+        let l = exprs.pop();
+        let r = exprs.pop();
+        l.as_ref().map(|e| e.val()) == r.as_ref().map(|e| e.val())
+    })));
 }
 
 macro_rules! reduce {
