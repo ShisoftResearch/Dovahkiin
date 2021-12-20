@@ -34,6 +34,9 @@ impl Id {
             lower: 0,
         }
     }
+    pub const fn max_id() -> Id {
+        Id { higher: !0, lower: !0 }
+    }
     pub fn is_unit_id(&self) -> bool {
         self.higher == 0 && self.lower == 0
     }
