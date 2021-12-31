@@ -261,6 +261,18 @@ macro_rules! define_types {
                     _ => Type::NA
                 }
             }
+            pub fn size(&self) -> Option<usize> {
+                match self {
+                    $(
+                        Type::$e => if $io::fixed_size() {
+                            Some($io::type_size())
+                        } else {
+                            None
+                        },
+                    )*
+                    _ => None
+                }
+            }
         }
 
         mod type_id {
