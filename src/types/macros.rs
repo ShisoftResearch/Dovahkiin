@@ -425,6 +425,7 @@ macro_rules! define_types {
             pub fn len(&self) -> Option<usize> {
                 match self {
                     OwnedValue::Array(ref array) => Some(array.len()),
+                    OwnedValue::Map(ref map) => Some(map.len()),
                     $(OwnedValue::PrimArray(OwnedPrimArray::$e(ref vec)) => Some(vec.len()),)*
                     _ => None
                 }
@@ -762,6 +763,7 @@ macro_rules! define_types {
             pub fn len(&self) -> Option<usize> {
                 match self {
                     SharedValue::Array(ref array) => Some(array.len()),
+                    SharedValue::Map(ref map) => Some(map.len()),
                     $(SharedValue::PrimArray(SharedPrimArray::$e(ref vec)) => Some(vec.len()),)*
                     _ => None
                 }
