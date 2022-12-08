@@ -13,6 +13,7 @@ pub use crate::types::custom_types::owned_map::*;
 pub use crate::types::custom_types::pos::*;
 pub use crate::types::custom_types::shared_map::*;
 pub use crate::types::owned_value::*;
+pub use crate::types::custom_types::map::Map;
 
 gen_primitive_types_io!(
     bool:   bool_io       big_end_cast!();

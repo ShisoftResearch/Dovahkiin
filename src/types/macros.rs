@@ -392,7 +392,7 @@ macro_rules! define_types {
                     $(
                         OwnedValue::PrimArray(OwnedPrimArray::$e(ref vec)) => SharedValue::PrimArray(SharedPrimArray::$e($io::vec_to_read_ref(vec))),
                     )*
-                    OwnedValue::Map(ref map) => SharedValue::Map(map.to_shared()),
+                    OwnedValue::Map(ref map) => SharedValue::Map(map.shared()),
                     OwnedValue::Null => SharedValue::Null,
                     OwnedValue::NA => SharedValue::NA,
                 }
@@ -846,9 +846,8 @@ macro_rules! define_types {
             // TODO: elaborate it
         }
 
-        pub type GenericValue = dyn Value;
-
         pub trait Value {
+            type Map: Map;
             $(
                 fn $fn(&self) -> Option<$t>;
             )*
@@ -862,9 +861,13 @@ macro_rules! define_types {
             fn base_size(&self) -> usize;
             fn prim_array_data_size(&self) -> Option<u8>;
             fn uni_array(&self) -> Option<Vec<&Self>>;
+            fn map(&self) -> Option<&Self::Map>;
         }
 
         impl Value for OwnedValue {
+
+            type Map = OwnedMap;
+
             $(
                 fn $fn(&self) -> Option<$t> {
                     OwnedValue::$fn(self).map(|v| v.to_owned())
@@ -910,6 +913,12 @@ macro_rules! define_types {
                     &OwnedValue::Null
                 }
             }
+            fn map(&self) -> Option<&OwnedMap> {
+                match self {
+                    OwnedValue::Map(map) => Some(map),
+                    _ => None
+                }
+            }
         }
 
         impl Index<usize> for OwnedValue {
@@ -936,6 +945,9 @@ macro_rules! define_types {
         }
 
         impl <'a> Value for SharedValue<'a> {
+
+            type Map = SharedMap<'a>;
+
             $(
                 fn $fn(&self) -> Option<$t> {
                     SharedValue::$fn(self).map(|v| v.to_owned().into())
@@ -954,7 +966,7 @@ macro_rules! define_types {
                 SharedValue::hashes(self)
             }
             fn base_type(&self) -> Type {
-                SharedValue::base_type(self)
+                SharedValue::base_type(&self)
             }
             fn index_of(&self, index: usize) -> &Self {
                 &self[index]
@@ -979,6 +991,12 @@ macro_rules! define_types {
                     map.get_in_by_ids(ids.iter())
                 } else {
                     &SharedValue::Null
+                }
+            }
+            fn map(&self) -> Option<&SharedMap<'a>> {
+                match self {
+                    SharedValue::Map(map) => Some(map),
+                    _ => None
                 }
             }
         }

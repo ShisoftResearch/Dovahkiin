@@ -1,5 +1,4 @@
-use crate::types::OwnedMap;
-use crate::types::SharedMap;
+use crate::types::{Map, OwnedMap};
 
 use super::*;
 use std::collections::HashMap;

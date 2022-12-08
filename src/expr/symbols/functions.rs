@@ -1,4 +1,5 @@
 use crate::expr::interpreter::Envorinment;
+use crate::types::Map;
 
 use super::bindings::{bind, bind_by_name};
 use super::lambda::{eval_lambda, lambda_placeholder};
