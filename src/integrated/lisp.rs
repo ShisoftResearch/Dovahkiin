@@ -1,7 +1,7 @@
-use expr::interpreter::Interpreter;
-use expr::SExpr;
-use lexer::lisp as lisp_lexer;
-use parser::lisp as lisp_parser;
+use crate::expr::interpreter::Interpreter;
+use crate::expr::SExpr;
+use crate::lexer::lisp as lisp_lexer;
+use crate::parser::lisp as lisp_parser;
 
 use crate::expr::serde::Expr;
 

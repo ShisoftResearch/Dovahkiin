@@ -1,3 +1,4 @@
+
 macro_rules! gen_primitive_types_io {
     (
         $($t:ty: $tmod:ident $feat_writer: expr);*
@@ -85,7 +86,7 @@ macro_rules! gen_compound_types_io {
     ) => (
             $(
                 pub mod $tmod {
-                    use types::*;
+                    use crate::types::*;
 
                     pub type Slice<'a> = &'a [$t];
                     pub type ReadRef<'a> = &'a $t;
@@ -150,7 +151,7 @@ macro_rules! gen_variable_types_io {
     ) => (
             $(
                 pub mod $tmod {
-                    use types::*;
+                    use crate::types::*;
 
                     pub type Slice<'a> = Vec<ReadRef<'a>>;
                     pub type ReadRef<'a> = &'a $rt;
@@ -851,16 +852,16 @@ macro_rules! define_types {
             $(
                 fn $fn(&self) -> Option<$t>;
             )*
-            fn get_in_by_ids(&self, ids: &Vec<u64>) -> &dyn Value;
+            fn get_in_by_ids(&self, ids: &Vec<u64>) -> &Self;
             fn feature(&self) -> [u8; 8];
             fn features(&self) -> Vec<[u8; 8]>;
             fn hash(&self) -> [u8; 8];
             fn hashes(&self) -> Vec<[u8; 8]>;
             fn base_type_id(&self) -> u32;
-            fn index_of(&self, index: usize) -> &dyn Value;
+            fn index_of(&self, index: usize) -> &Self;
             fn base_size(&self) -> usize;
             fn prim_array_data_size(&self) -> Option<u8>;
-            fn uni_array(&self) -> Option<Vec<&dyn Value>>;
+            fn uni_array(&self) -> Option<Vec<&Self>>;
         }
 
         impl Value for OwnedValue {
@@ -884,7 +885,7 @@ macro_rules! define_types {
             fn base_type_id(&self) -> u32 {
                 OwnedValue::base_type_id(&self)
             }
-            fn index_of(&self, index: usize) -> &dyn Value {
+            fn index_of(&self, index: usize) -> &Self {
                 &self[index]
             }
             fn base_size(&self) -> usize {
@@ -896,13 +897,13 @@ macro_rules! define_types {
                     _ => None,
                 }
             }
-            fn uni_array(&self) -> Option<Vec<&dyn Value>> {
+            fn uni_array(&self) -> Option<Vec<&Self>> {
                 match self {
-                    OwnedValue::Array(arr) => Some(arr.iter().map(|v| v as &dyn Value).collect()),
+                    OwnedValue::Array(arr) => Some(arr.iter().map(|v| v as &Self).collect()),
                     _ => None
                 }
             }
-            fn get_in_by_ids(&self, ids: &Vec<u64>) -> &dyn Value {
+            fn get_in_by_ids(&self, ids: &Vec<u64>) -> &Self {
                 if let OwnedValue::Map(map) = &self {
                     map.get_in_by_ids(ids.iter())
                 } else {
@@ -955,7 +956,7 @@ macro_rules! define_types {
             fn base_type_id(&self) -> u32 {
                 SharedValue::base_type_id(&self)
             }
-            fn index_of(&self, index: usize) -> &dyn Value {
+            fn index_of(&self, index: usize) -> &Self {
                 &self[index]
             }
             fn base_size(&self) -> usize {
@@ -967,13 +968,13 @@ macro_rules! define_types {
                     _ => None,
                 }
             }
-            fn uni_array(&self) -> Option<Vec<&dyn Value>> {
+            fn uni_array(&self) -> Option<Vec<&Self>> {
                 match self {
-                    SharedValue::Array(arr) => Some(arr.iter().map(|v| v as &dyn Value).collect()),
+                    SharedValue::Array(arr) => Some(arr.iter().map(|v| v as &Self).collect()),
                     _ => None
                 }
             }
-            fn get_in_by_ids(&self, ids: &Vec<u64>) -> &dyn Value {
+            fn get_in_by_ids(&self, ids: &Vec<u64>) -> &Self {
                 if let SharedValue::Map(map) = &self {
                     map.get_in_by_ids(ids.iter())
                 } else {

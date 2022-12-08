@@ -1,5 +1,5 @@
 use bifrost_hasher::hash_str;
-use types::OwnedValue;
+use crate::types::OwnedValue;
 
 use crate::expr::Value;
 

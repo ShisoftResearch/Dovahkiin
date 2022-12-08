@@ -1,7 +1,7 @@
 use bifrost_hasher::hash_str;
-use lexer::lisp::Token;
+use crate::lexer::lisp::Token;
+use crate::types::OwnedValue as Value;
 use std::{vec::IntoIter, marker::PhantomData};
-use types::OwnedValue as Value;
 
 use crate::expr::{SExpr, serde::Expr};
 

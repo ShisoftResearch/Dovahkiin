@@ -69,7 +69,7 @@ impl<'a> IndexMut<&'a str> for Value {
     fn index_mut<'b>(&'b mut self, index: &'a str) -> &'b mut Self::Output {
         match self {
             &mut Value::Map(ref mut map) => map.get_mut(index),
-            _ => panic!(DATA_TYPE_DONT_SUPPORT_INDEXING),
+            _ => panic!("{}", DATA_TYPE_DONT_SUPPORT_INDEXING),
         }
     }
 }
@@ -79,7 +79,7 @@ impl IndexMut<usize> for Value {
         match self {
             &mut Value::Array(ref mut array) => array.get_mut(index).expect(MISSING_ARRAY_ITEM),
             &mut Value::Map(ref mut map) => map.get_mut_by_key_id(index as u64),
-            _ => panic!(DATA_TYPE_DONT_SUPPORT_INDEXING),
+            _ => panic!("{}", DATA_TYPE_DONT_SUPPORT_INDEXING),
         }
     }
 }
@@ -91,7 +91,7 @@ impl IndexMut<u64> for Value {
             &mut Value::Array(ref mut array) => {
                 array.get_mut(index as usize).expect(MISSING_ARRAY_ITEM)
             }
-            _ => panic!(DATA_TYPE_DONT_SUPPORT_INDEXING),
+            _ => panic!("{}", DATA_TYPE_DONT_SUPPORT_INDEXING),
         }
     }
 }

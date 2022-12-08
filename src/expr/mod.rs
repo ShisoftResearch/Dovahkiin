@@ -1,8 +1,7 @@
 use std::borrow::Borrow;
 use std::rc::Rc;
 use bifrost_hasher::hash_str;
-use types::{OwnedValue, SharedValue};
-
+use crate::types::{OwnedValue, SharedValue};
 use crate::parser::lisp::ParserExpr;
 
 use self::interpreter::Envorinment;

@@ -71,7 +71,7 @@ mod test {
     use std::cmp::Ordering;
     use std::collections::BTreeMap;
     use std::collections::HashMap;
-    use types::custom_types::id::Id;
+    use crate::types::custom_types::id::Id;
 
     #[test]
     fn compare() {

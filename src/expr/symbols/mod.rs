@@ -1,5 +1,5 @@
 use bifrost_hasher::hash_str;
-use expr::SExpr;
+use crate::expr::SExpr;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt::Debug;

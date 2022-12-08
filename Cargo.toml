@@ -2,6 +2,7 @@
 name = "dovahkiin"
 version = "0.1.0"
 authors = ["Hao Shi <shisoftgenius@gmail.com>"]
+edition = "2021"
 
 [lib]
 name = "dovahkiin"

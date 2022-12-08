@@ -1,5 +1,5 @@
-use expr::symbols::misc;
-use expr::SExpr;
+use crate::expr::symbols::misc;
+use crate::expr::SExpr;
 use std::collections::{HashMap, LinkedList};
 use std::rc::Rc;
 

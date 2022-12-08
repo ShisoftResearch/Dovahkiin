@@ -66,8 +66,8 @@ lazy_static! {
 }
 
 macro_rules! defpattern {
-    ($name: ident: $($pattern: pat)|*) => {macro_rules! $name {
-        () => {$($pattern)|*}
+    ($name: ident: $($pattern: pat)*) => {macro_rules! $name {
+        () => {$($pattern)*}
     }};
 }
 
