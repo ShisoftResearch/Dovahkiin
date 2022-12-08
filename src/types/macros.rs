@@ -857,7 +857,7 @@ macro_rules! define_types {
             fn features(&self) -> Vec<[u8; 8]>;
             fn hash(&self) -> [u8; 8];
             fn hashes(&self) -> Vec<[u8; 8]>;
-            fn base_type_id(&self) -> u32;
+            fn base_type(&self) -> Type;
             fn index_of(&self, index: usize) -> &Self;
             fn base_size(&self) -> usize;
             fn prim_array_data_size(&self) -> Option<u8>;
@@ -882,8 +882,8 @@ macro_rules! define_types {
             fn hashes(&self) -> Vec<[u8; 8]> {
                 OwnedValue::hashes(self)
             }
-            fn base_type_id(&self) -> u32 {
-                OwnedValue::base_type_id(&self)
+            fn base_type(&self) -> Type {
+                OwnedValue::base_type(self)
             }
             fn index_of(&self, index: usize) -> &Self {
                 &self[index]
@@ -953,8 +953,8 @@ macro_rules! define_types {
             fn hashes(&self) -> Vec<[u8; 8]> {
                 SharedValue::hashes(self)
             }
-            fn base_type_id(&self) -> u32 {
-                SharedValue::base_type_id(&self)
+            fn base_type(&self) -> Type {
+                SharedValue::base_type(self)
             }
             fn index_of(&self, index: usize) -> &Self {
                 &self[index]
