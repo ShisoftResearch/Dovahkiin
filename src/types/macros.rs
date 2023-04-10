@@ -38,6 +38,9 @@ macro_rules! gen_primitive_types_io {
                     pub const fn type_size() -> usize {
                         mem::size_of::<$t>()
                     }
+                    pub const fn type_align() -> usize {
+                        mem::align_of::<$t>()
+                    }
                     pub fn size_at(_: usize) -> usize {
                         type_size()
                     }
@@ -114,6 +117,9 @@ macro_rules! gen_compound_types_io {
                     pub const fn type_size() -> usize {
                         std::mem::size_of::<$t>()
                     }
+                    pub const fn type_align() -> usize {
+                        std::mem::align_of::<$t>()
+                    }
                     pub const fn fixed_size() -> bool {
                         true
                     }
@@ -177,6 +183,9 @@ macro_rules! gen_variable_types_io {
                     }
                     pub fn type_size() -> usize {
                         panic!("variable type does not have type size")
+                    }
+                    pub const fn type_align() -> usize {
+                        panic!("variable type does not have type align")
                     }
                     pub const fn fixed_size() -> bool {
                         false
@@ -600,6 +609,16 @@ macro_rules! define_types {
                 $(
                     Type::$e => {
                         $io::type_size()
+                    },
+                )*
+                _ => panic!("type {:?} does not supported for size_of", t)
+           }
+        }
+        pub fn align_of_type(t: Type) -> usize {
+            match t {
+                $(
+                    Type::$e => {
+                        $io::type_align()
                     },
                 )*
                 _ => panic!("type {:?} does not supported for size_of", t)
