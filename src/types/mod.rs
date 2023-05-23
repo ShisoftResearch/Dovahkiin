@@ -149,7 +149,10 @@ gen_variable_types_io!(
         r
     },
     |val: &str| { u64_io::feature(&::bifrost_hasher::hash_str(val)) },
-    |val: &'a String| { val.as_str() }
+    |val: &'a String| { val.as_str() },
+    {
+        std::mem::align_of::<u32>()
+    }
 );
 
 gen_variable_types_io!(
@@ -192,7 +195,10 @@ gen_variable_types_io!(
         hasher.write(val);
         u64_io::feature(&hasher.finish())
     },
-    |val: &'a Bytes| { val.data.as_slice() }
+    |val: &'a Bytes| { val.data.as_slice() },
+    {
+        std::mem::align_of::<u32>()
+    }
 );
 
 gen_variable_types_io!(
@@ -235,7 +241,10 @@ gen_variable_types_io!(
         hasher.write(&val);
         u64_io::feature(&hasher.finish())
     },
-    |val: &'a SmallBytes| { val.data.as_slice() }
+    |val: &'a SmallBytes| { val.data.as_slice() },
+    {
+        std::mem::align_of::<u8>()
+    }
 );
 
 define_types!(

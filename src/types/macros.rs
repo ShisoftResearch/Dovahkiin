@@ -152,7 +152,8 @@ macro_rules! gen_variable_types_io {
             $val_size:expr,
             $feat: expr,
             $hash: expr,
-            $as_ref: expr
+            $as_ref: expr,
+            $alignment: expr
         );*
     ) => (
             $(
@@ -185,7 +186,7 @@ macro_rules! gen_variable_types_io {
                         panic!("variable type does not have type size")
                     }
                     pub const fn type_align() -> usize {
-                        panic!("variable type does not have type align")
+                        $alignment
                     }
                     pub const fn fixed_size() -> bool {
                         false
