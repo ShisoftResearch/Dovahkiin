@@ -622,6 +622,7 @@ macro_rules! define_types {
                         $io::type_align()
                     },
                 )*
+                 Type::Map => 0,
                 _ => panic!("type {:?} does not supported for size_of", t)
            }
         }
