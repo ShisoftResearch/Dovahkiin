@@ -1,4 +1,5 @@
 use bifrost_hasher::hash_str;
+use bifrost_plugins::hash_ident;
 use crate::expr::SExpr;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -72,10 +73,26 @@ macro_rules! defsymbols {
             pub static ref ISYMBOL_MAP: ISymbolMap = {
                 let mut symbol_map: HashMap<u64, Box<dyn Symbol>> = HashMap::new();
                 $(
-                    symbol_map.insert(hash_str($sym), Box::new($name));
+                    symbol_map.insert(hash_ident!($sym), Box::new($name));
                 )*
                 ISymbolMap::new(symbol_map)
             };
+        }
+        #[derive(Copy, Clone)]
+        pub enum SysSymbols {
+            $(
+                $name = hash_ident!($sym),
+            )*    
+        }
+        impl SysSymbols {
+            pub fn from_id(id: u64) -> Self {
+                match id {
+                    $(
+                        hash_ident!($sym) => Self::$name,
+                    )*
+                    _ => panic!("Invalid system symbol id: {}", id)
+                }
+            }
         }
     };
 }
