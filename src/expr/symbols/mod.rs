@@ -97,11 +97,11 @@ macro_rules! defsymbols {
     };
 }
 
-pub fn new_symbol<'a, S>(symbol_id: &'a str, symbol_impl: S) -> Result<(), ()>
+pub fn new_symbol<'a, S>(symbol_name: &'a str, symbol_impl: S) -> Result<(), ()>
 where
     S: Symbol + 'static,
 {
-    ISYMBOL_MAP.insert(symbol_id, symbol_impl)
+    ISYMBOL_MAP.insert(symbol_name, symbol_impl)
 }
 
 fn check_num_params(num: usize, params: &Vec<SExpr>) -> Result<(), String> {

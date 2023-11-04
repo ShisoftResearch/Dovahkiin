@@ -45,6 +45,7 @@ pub enum SExpr<'a> {
     Value(Value<'a>),
     List(Vec<SExpr<'a>>),
     Vec(Vec<SExpr<'a>>),
+    META(Vec<SExpr<'a>>),
     LAMBDA(Vec<SExpr<'a>>, Vec<SExpr<'a>>),
 }
 

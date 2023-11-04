@@ -11,6 +11,16 @@ pub enum Expr {
     Value(OwnedValue),
     List(Vec<Expr>),
     Vec(Vec<Expr>),
+    META(Vec<Expr>),
+    LAMBDA(Vec<Expr>, Vec<Expr>),
+}
+
+fn sexpr_list_to_expr_list(list: Vec<SExpr>) -> Vec<Expr> {
+    list.into_iter().map(|e| Expr::from_sexpr(e)).collect()
+}
+
+fn expr_list_to_sexpr_list<'a>(list: Vec<Expr>) -> Vec<SExpr<'a>> {
+    list.into_iter().map(|e| e.to_sexpr()).collect()
 }
 
 impl Expr {
@@ -22,9 +32,15 @@ impl Expr {
                 Value::Owned(o) => o,
                 Value::Shared(s) => s.owned(),
             }),
-            SExpr::List(l) => Self::List(l.into_iter().map(|e| Expr::from_sexpr(e)).collect()),
-            SExpr::Vec(v) => Self::Vec(v.into_iter().map(|e| Expr::from_sexpr(e)).collect()),
-            SExpr::LAMBDA(_, _) => unreachable!(),
+            SExpr::List(l) => Self::List(sexpr_list_to_expr_list(l)),
+            SExpr::Vec(v) => Self::Vec(sexpr_list_to_expr_list(v)),
+            SExpr::META(v) => Self::META(sexpr_list_to_expr_list(v)),
+            SExpr::LAMBDA(p, b) => {
+                Self::LAMBDA(
+                    sexpr_list_to_expr_list(p),
+                    sexpr_list_to_expr_list(b)
+                )
+            },
         }
     }
 
@@ -32,8 +48,15 @@ impl Expr {
         match self {
             Expr::Symbol(i, s) => SExpr::ISymbol(i, s),
             Expr::Value(v) => SExpr::Value(Value::Owned(v)),
-            Expr::List(l) => SExpr::List(l.into_iter().map(|e| e.to_sexpr()).collect()),
-            Expr::Vec(v) => SExpr::Vec(v.into_iter().map(|e| e.to_sexpr()).collect()),
+            Expr::List(l) => SExpr::List(expr_list_to_sexpr_list(l)),
+            Expr::Vec(v) => SExpr::Vec(expr_list_to_sexpr_list(v)),
+            Expr::META(v) => SExpr::META(expr_list_to_sexpr_list(v)),
+            Expr::LAMBDA(p, b) => {
+                SExpr::LAMBDA(
+                    expr_list_to_sexpr_list(p),
+                    expr_list_to_sexpr_list(b)
+                )
+            },
         }
     }
     pub fn is_empty(&self) -> bool {
