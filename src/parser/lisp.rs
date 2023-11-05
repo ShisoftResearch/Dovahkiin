@@ -9,6 +9,7 @@ pub trait ParserExpr: Sized {
     fn list(data: Vec<Self>) -> Self;
     fn vec(data: Vec<Self>) -> Self;
     fn symbol(name: String) -> Self;
+    fn keyword(name: String) -> Self;
     fn owned_val(val: Value) -> Self;
 }
 
@@ -52,6 +53,10 @@ impl <E: ParserExpr> Parser <E> {
     
     fn parse_symbol<'a>(name: String) -> E {
         E::symbol(name)
+    }
+
+    fn parse_keyword<'a>(name: String) -> E {
+        E::keyword(name)
     }
     
     fn parse_int<'a>(num_str: String, unit: String) -> Result<E, String> {
@@ -102,6 +107,7 @@ impl <E: ParserExpr> Parser <E> {
             Token::FloatNumber(num, unit) => Ok(Self::parse_float(num, unit)?),
             Token::String(str) => Ok(Self::parse_string(str)),
             Token::LeftVecParentheses => Ok(Self::parse_vec(iter)?),
+            Token::Keyword(str) => Ok(Self::parse_keyword(str)),
             _ => Err(format!("Unexpected start token {}", token.to_string())),
         }
     }

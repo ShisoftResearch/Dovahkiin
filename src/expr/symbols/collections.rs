@@ -1,3 +1,5 @@
+use log::kv;
+
 use crate::types::{Map, OwnedMap};
 
 use super::*;
@@ -54,19 +56,35 @@ pub fn hashmap(exprs: Vec<SExpr>) -> Result<SExpr, String> {
     let mut exprs = exprs.into_iter();
     let mut hashmap = HashMap::new();
     while let (Some(k), Some(v)) = (exprs.next(), exprs.next()) {
-        if let (Some(SharedValue::String(k_str)), SExpr::Value(v)) = (k.val(), v) {
-            let k_str = k_str.to_owned();
-            match v {
-                Value::Shared(v) => {
-                    // TODO: Try not own elements
-                    hashmap.insert(k_str, v.owned());
-                }
-                Value::Owned(v) => {
-                    hashmap.insert(k_str, v);
+        match (k, v) {
+            (SExpr::Value(k_val), SExpr::Value(v)) => {
+                let k_norm = k_val.norm();
+                let k_str_opt = k_norm.string();
+                match (k_str_opt, v) {
+                    (Some(k_str), Value::Shared(v)) => {
+                        // TODO: Try not own elements
+                        hashmap.insert(k_str.to_owned(), v.owned());
+                    }
+                    (Some(k_str), Value::Owned(v)) => {
+                        hashmap.insert(k_str.to_owned(), v);
+                    }
+                    (None, _) => return Err(format!("Only string key is allowed, got {:?}", k_val)),
                 }
             }
-        } else {
-            return Err(format!("Wrong hashmap key value data type. Key should be a string and value should be a value"));
+            (SExpr::Keyword(_, kw), SExpr::Value(v)) => {
+                match v {
+                    Value::Shared(v) => {
+                        // TODO: Try not own elements
+                        hashmap.insert(kw, v.owned());
+                    }
+                    Value::Owned(v) => {
+                        hashmap.insert(kw, v);
+                    }
+                } 
+            }
+            _ => {
+                return Err(format!("Wrong hashmap key value data type. Key should be a string or keyword and value should be a value"));
+            }
         }
     }
     return Ok(SExpr::owned_value(OwnedValue::Map(

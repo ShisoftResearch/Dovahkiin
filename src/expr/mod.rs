@@ -42,6 +42,7 @@ impl<'a> Value<'a> {
 pub enum SExpr<'a> {
     Symbol(String),
     ISymbol(u64, String),
+    Keyword(u64, String),
     Value(Value<'a>),
     List(Vec<SExpr<'a>>),
     Vec(Vec<SExpr<'a>>),
@@ -137,5 +138,9 @@ impl ParserExpr for SExpr<'_> {
 
     fn owned_val(val: OwnedValue) -> Self {
         Self::owned_value(val)
+    }
+
+    fn keyword(name: String) -> Self {
+        Self::Keyword(hash_str(&name), name)
     }
 }

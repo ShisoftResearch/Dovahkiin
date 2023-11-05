@@ -11,6 +11,7 @@ pub enum Expr {
     Value(OwnedValue),
     List(Vec<Expr>),
     Vec(Vec<Expr>),
+    Keyword(u64, String),
     META(Vec<Expr>),
     LAMBDA(Vec<Expr>, Vec<Expr>),
 }
@@ -28,6 +29,7 @@ impl Expr {
         match sexpr {
             SExpr::Symbol(s) => Self::Symbol(hash_str(&s), s),
             SExpr::ISymbol(i, s) => Self::Symbol(i, s),
+            SExpr::Keyword(id, name) => Self::Keyword(id, name),
             SExpr::Value(v) => Self::Value(match v {
                 Value::Owned(o) => o,
                 Value::Shared(s) => s.owned(),
@@ -47,6 +49,7 @@ impl Expr {
     pub fn to_sexpr<'a>(self) -> SExpr<'a> {
         match self {
             Expr::Symbol(i, s) => SExpr::ISymbol(i, s),
+            Expr::Keyword(id, name) => SExpr::Keyword(id, name),
             Expr::Value(v) => SExpr::Value(Value::Owned(v)),
             Expr::List(l) => SExpr::List(expr_list_to_sexpr_list(l)),
             Expr::Vec(v) => SExpr::Vec(expr_list_to_sexpr_list(v)),
@@ -83,6 +86,10 @@ impl ParserExpr for Expr {
 
     fn symbol(name: String) -> Self {
         Self::Symbol(hash_str(&name), name)
+    }
+
+    fn keyword(name: String) -> Self {
+        Self::Keyword(hash_str(&name), name)
     }
 
     fn owned_val(val: OwnedValue) -> Self {

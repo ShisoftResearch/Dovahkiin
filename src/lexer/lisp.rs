@@ -10,6 +10,7 @@ pub enum Token {
     String(String),
     LeftVecParentheses,
     RightVecParentheses,
+    Keyword(String)
     // Quote
 }
 
@@ -24,6 +25,7 @@ impl ToString for Token {
             &Token::String(ref s) => format!("\"{}\"", s),
             &Token::LeftVecParentheses => String::from("["),
             &Token::RightVecParentheses => String::from("]"),
+            &Token::Keyword(ref s) => format!(":{}", s)
         }
     }
 }
@@ -224,8 +226,7 @@ fn read_string(iter: &mut CharIter) -> Result<Token, String> {
     return Ok(Token::String(chars.into_iter().collect()));
 }
 
-fn read_symbol(first: char, iter: &mut CharIter) -> Result<Token, String> {
-    let mut chars = vec![first];
+fn read_ident_str(chars: &mut Vec<char>, iter: &mut CharIter) {
     while let Some(c) = iter.next() {
         match c {
             ' ' | '\t' | '\r' | '\n' | '(' | ')' | '[' | ']' | '\'' => {
@@ -236,7 +237,18 @@ fn read_symbol(first: char, iter: &mut CharIter) -> Result<Token, String> {
             }
         }
     }
+}
+
+fn read_symbol(first: char, iter: &mut CharIter) -> Result<Token, String> {
+    let mut chars = vec![first];
+    read_ident_str(&mut chars, iter);
     return Ok(Token::Symbol(chars.into_iter().collect()));
+}
+
+fn read_keyword(iter: &mut CharIter) -> Result<Token, String> {
+    let mut chars = vec![]; // Emit the colon part
+    read_ident_str(&mut chars, iter);
+    return Ok(Token::Keyword(chars.into_iter().collect()));
 }
 
 pub fn tokenize_chars_iter(iter: &mut CharIter) -> Result<Vec<Token>, String> {
@@ -282,6 +294,9 @@ pub fn tokenize_chars_iter(iter: &mut CharIter) -> Result<Vec<Token>, String> {
             '"' => {
                 // string
                 tokens.push(read_string(iter)?);
+            }
+            ':' => {
+                tokens.push(read_keyword(iter)?)
             }
             _ => {
                 // symbol with utf8 chars including emojis
