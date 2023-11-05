@@ -79,7 +79,7 @@ defpattern!(NUMBER_PATTERN: '0'..='9');
 fn readout_whitespaces(iter: &mut CharIter) {
     while let Some(c) = iter.next() {
         match c {
-            ' ' | '\t' | '\r' | '\n' => {}
+            ' ' | '\t' | '\r' | '\n' | ',' => {}
             _ => {
                 break;
             }
@@ -141,7 +141,7 @@ fn read_number(first: char, iter: &mut CharIter) -> Result<Token, String> {
             'u' | 'i' | 'f' => {
                 unit_chars.push(c);
             }
-            ' ' | '\t' | '\r' | '\n' => {
+            ' ' | '\t' | '\r' | '\n' | ',' => {
                 break;
             }
             _ => return Err(format!("Unexpected token '{}' for number", c)),
@@ -229,7 +229,7 @@ fn read_string(iter: &mut CharIter) -> Result<Token, String> {
 fn read_ident_str(chars: &mut Vec<char>, iter: &mut CharIter) {
     while let Some(c) = iter.next() {
         match c {
-            ' ' | '\t' | '\r' | '\n' | '(' | ')' | '[' | ']' | '\'' => {
+            ' ' | '\t' | '\r' | '\n' | '(' | ')' | '[' | ']' | '\'' | ',' => {
                 break;
             }
             _ => {
@@ -255,7 +255,7 @@ pub fn tokenize_chars_iter(iter: &mut CharIter) -> Result<Vec<Token>, String> {
     let mut tokens = Vec::new();
     while let Some(c) = iter.current() {
         match c {
-            ' ' | '\t' | '\r' | '\n' => {
+            ' ' | '\t' | '\r' | '\n' | ',' => {
                 // whitespaces
                 // will do nothing
                 readout_whitespaces(iter);

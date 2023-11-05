@@ -1,6 +1,6 @@
 use dovahkiin::expr::{SExpr, Value};
 use dovahkiin::integrated::lisp;
-use dovahkiin::types::OwnedValue;
+use dovahkiin::types::{OwnedValue, Map};
 
 extern crate dovahkiin;
 
@@ -146,5 +146,20 @@ pub fn or() {
     assert_eq!(
         lisp::eval_string(&mut interpreter, str_function).unwrap(),
         SExpr::owned_value(OwnedValue::Bool(true))
+    );
+}
+
+#[test]
+pub fn keyword() { 
+    let mut interpreter = lisp::get_interpreter();
+    let str_exp = "(hash-map [:x 123u32, :y 456u64])";
+    let map_expr = lisp::eval_string(&mut interpreter, str_exp).unwrap();
+    let map_val = map_expr.val().unwrap();
+    let map = map_val.Map().unwrap();
+    assert_eq!(
+        map.get("x").u32().unwrap(), &123
+    );
+    assert_eq!(
+        map.get("y").u64().unwrap(), &456
     );
 }

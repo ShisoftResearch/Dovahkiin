@@ -46,8 +46,17 @@ pub fn concat(lists: Vec<SExpr>) -> Result<SExpr, String> {
     return Ok(SExpr::Vec(result));
 }
 
-pub fn hashmap(exprs: Vec<SExpr>) -> Result<SExpr, String> {
-    if exprs.len() & 2 == 0 {
+pub fn hashmap(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
+    if exprs.len() == 1 {
+        match exprs.into_iter().next().unwrap() {
+            SExpr::Vec(l) | SExpr::List(l) => {
+                exprs = l
+            },
+            v => {
+                return Err(format!("Single patameter only support list and seq, found {:?}", v))
+            }
+        }
+    } else if exprs.len() & 2 == 0 {
         return Err(format!(
             "Map require even number of parameters. Found {}",
             exprs.len()
