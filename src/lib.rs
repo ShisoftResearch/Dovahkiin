@@ -1,5 +1,4 @@
 #![feature(exact_size_is_empty)]
-#![feature(plugin)]
 #![crate_type = "lib"]
 
 extern crate log;
