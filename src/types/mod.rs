@@ -5,6 +5,7 @@ pub mod owned_value;
 
 use serde::Deserialize;
 use std::{ops::Index, vec::IntoIter};
+use ahash;
 
 pub use crate::types::custom_types::any::*;
 pub use crate::types::custom_types::bytes::*;
@@ -37,7 +38,7 @@ gen_compound_types_io! (
     }, {
         |val: &Pos2d32| {
             use std::hash::Hasher;
-            let mut hasher = twox_hash::XxHash::default();
+            let mut hasher = ahash::AHasher::default();
             hasher.write(&f32_io::feature(&val.x));
             hasher.write(&f32_io::feature(&val.y));
             u64_io::feature(&hasher.finish())
@@ -50,7 +51,7 @@ gen_compound_types_io! (
     }, {
         |val: &Pos2d64| {
             use std::hash::Hasher;
-            let mut hasher = twox_hash::XxHash::default();
+            let mut hasher = ahash::AHasher::default();
             hasher.write(&f64_io::feature(&val.x));
             hasher.write(&f64_io::feature(&val.y));
             u64_io::feature(&hasher.finish())
@@ -65,7 +66,7 @@ gen_compound_types_io! (
     }, {
         |val: &Pos3d32| {
             use std::hash::Hasher;
-            let mut hasher = twox_hash::XxHash::default();
+            let mut hasher = ahash::AHasher::default();
             hasher.write(&f32_io::feature(&val.x));
             hasher.write(&f32_io::feature(&val.y));
             hasher.write(&f32_io::feature(&val.z));
@@ -79,7 +80,7 @@ gen_compound_types_io! (
     }, {
         |val: &Pos3d64| {
             use std::hash::Hasher;
-            let mut hasher = twox_hash::XxHash::default();
+            let mut hasher = ahash::AHasher::default();
             hasher.write(&f64_io::feature(&val.x));
             hasher.write(&f64_io::feature(&val.y));
             hasher.write(&f64_io::feature(&val.z));
@@ -98,7 +99,7 @@ gen_compound_types_io! (
     }, {
         |val: &Id| {
             use std::hash::Hasher;
-            let mut hasher = twox_hash::XxHash::default();
+            let mut hasher = ahash::AHasher::default();
             hasher.write(&u64_io::feature(&val.higher));
             hasher.write(&u64_io::feature(&val.lower));
             u64_io::feature(&hasher.finish())
@@ -191,7 +192,7 @@ gen_variable_types_io!(
     },
     |val: &[u8]| {
         use std::hash::Hasher;
-        let mut hasher = twox_hash::XxHash::default();
+        let mut hasher = ahash::AHasher::default();
         hasher.write(val);
         u64_io::feature(&hasher.finish())
     },
@@ -237,7 +238,7 @@ gen_variable_types_io!(
     },
     |val: &[u8]| {
         use std::hash::Hasher;
-        let mut hasher = twox_hash::XxHash::default();
+        let mut hasher = ahash::AHasher::default();
         hasher.write(&val);
         u64_io::feature(&hasher.finish())
     },

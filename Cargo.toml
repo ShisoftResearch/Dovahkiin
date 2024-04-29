@@ -19,4 +19,4 @@ bifrost_plugins = { git = "https://github.com/shisoft/bifrost", branch = "develo
 bifrost_hasher = { git = "https://github.com/shisoft/bifrost", branch = "develop" }
 lazy_static = "*"
 log = "*"
-twox-hash = "1"
+ahash = "0.8.11"

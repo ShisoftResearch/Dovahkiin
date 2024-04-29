@@ -3,7 +3,7 @@ use std::hash::Hash;
 use std::iter::Iterator;
 use std::ops::{Index, IndexMut};
 use std::vec::IntoIter;
-use std::{collections::HashMap, hash::Hasher};
+use std::collections::HashMap;
 
 type Value = OwnedValue;
 
