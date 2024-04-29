@@ -867,11 +867,14 @@ macro_rules! define_types {
             // TODO: elaborate it
         }
 
-        pub trait Value {
+        pub trait Valued {}
+
+        $(
+            impl Valued for $t {}
+        )*
+
+        pub trait Value: ToTypped + Sized {
             type Map: Map;
-            $(
-                fn $fn(&self) -> Option<$t>;
-            )*
             fn get_in_by_ids(&self, ids: &Vec<u64>) -> &Self;
             fn feature(&self) -> [u8; 8];
             fn features(&self) -> Vec<[u8; 8]>;
@@ -885,15 +888,34 @@ macro_rules! define_types {
             fn map(&self) -> Option<&Self::Map>;
         }
 
+        pub trait FromValue<V> where Self: Sized {
+            fn get_from_value(value: &V) -> Option<Self>;
+        }
+
+        $(
+            impl FromValue<OwnedValue> for $t {
+                fn get_from_value(value: &OwnedValue) -> Option<$t> {
+                    OwnedValue::$fn(value).map(|v| v.to_owned())
+                }
+            }
+        )*
+
+
+        pub trait ToTypped: Sized {
+            fn to_typped<T: FromValue<Self>>(&self) -> Option<T>;
+        }
+
+        impl ToTypped for OwnedValue {
+            fn to_typped<T: FromValue<Self>>(&self) -> Option<T> {
+                // OwnedValue::$fn(value).map(|v| v.to_owned())
+                T::get_from_value(self)
+            }
+        }
+
         impl Value for OwnedValue {
 
             type Map = OwnedMap;
 
-            $(
-                fn $fn(&self) -> Option<$t> {
-                    OwnedValue::$fn(self).map(|v| v.to_owned())
-                }
-            )*
             fn feature(&self) -> [u8; 8] {
                 OwnedValue::feature(self)
             }
@@ -965,15 +987,25 @@ macro_rules! define_types {
             }
         }
 
+        $(
+            impl <'a> FromValue<SharedValue<'a>> for $t {
+                fn get_from_value(value: &SharedValue<'a>) -> Option<$t> {
+                    SharedValue::$fn(value).map(|v| v.to_owned().into())
+                }
+            }
+        )*
+
+        impl <'a> ToTypped for SharedValue<'a> {
+            fn to_typped<T: FromValue<Self>>(&self) -> Option<T> {
+                // OwnedValue::$fn(value).map(|v| v.to_owned())
+                T::get_from_value(self)
+            }
+        }
+
         impl <'a> Value for SharedValue<'a> {
 
             type Map = SharedMap<'a>;
 
-            $(
-                fn $fn(&self) -> Option<$t> {
-                    SharedValue::$fn(self).map(|v| v.to_owned().into())
-                }
-            )*
             fn feature(&self) -> [u8; 8] {
                 SharedValue::feature(self)
             }
