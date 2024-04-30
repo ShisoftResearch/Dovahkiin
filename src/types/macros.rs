@@ -873,7 +873,8 @@ macro_rules! define_types {
             impl Valued for $t {}
         )*
 
-        pub trait Value: ToTypped + Sized {
+        use std::hash::Hash;
+        pub trait Value: ToTypped + Hash + Sized {
             type Map: Map;
             type Out: Value;
 
@@ -1067,6 +1068,12 @@ macro_rules! define_types {
             }
         }
 
+        impl <'a> Hash for SharedValue<'a> {
+            fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+                <OwnedValue as Hash>::hash(&self.owned(), state)
+            }
+        }
+
         impl <'a> Index<usize> for SharedValue<'a> {
             type Output = Self;
 
@@ -1166,6 +1173,12 @@ macro_rules! define_types {
                     OwnedValue::Map(map) => Some(map),
                     _ => None
                 }
+            }
+        }
+
+        impl Hash for OwnedValueRef {
+            fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+                <OwnedValue as Hash>::hash(&**self, state)
             }
         }
 
