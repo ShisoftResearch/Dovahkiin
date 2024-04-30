@@ -875,16 +875,19 @@ macro_rules! define_types {
 
         pub trait Value: ToTypped + Sized {
             type Map: Map;
-            fn get_in_by_ids(&self, ids: &Vec<u64>) -> &Self;
+            type Out: Value;
+
+            fn get<V: FromValue<Self>>(&self) -> Option<V>;
+            fn get_in_by_ids(&self, ids: &Vec<u64>) -> &Self::Out;
             fn feature(&self) -> [u8; 8];
             fn features(&self) -> Vec<[u8; 8]>;
             fn hash(&self) -> [u8; 8];
             fn hashes(&self) -> Vec<[u8; 8]>;
             fn base_type(&self) -> Type;
-            fn index_of(&self, index: usize) -> &Self;
+            fn index_of(&self, index: usize) -> &Self::Out;
             fn base_size(&self) -> usize;
             fn prim_array_data_size(&self) -> Option<u8>;
-            fn uni_array(&self) -> Option<Vec<&Self>>;
+            fn uni_array(&self) -> Option<Vec<&Self::Out>>;
             fn map(&self) -> Option<&Self::Map>;
         }
 
@@ -915,6 +918,11 @@ macro_rules! define_types {
         impl Value for OwnedValue {
 
             type Map = OwnedMap;
+            type Out = Self;
+
+            fn get<V: FromValue<Self>>(&self) -> Option<V> {
+                V::get_from_value(self)
+            }
 
             fn feature(&self) -> [u8; 8] {
                 OwnedValue::feature(self)
@@ -1005,6 +1013,11 @@ macro_rules! define_types {
         impl <'a> Value for SharedValue<'a> {
 
             type Map = SharedMap<'a>;
+            type Out = Self;
+
+            fn get<V: FromValue<Self>>(&self) -> Option<V> {
+                V::get_from_value(self)
+            }
 
             fn feature(&self) -> [u8; 8] {
                 SharedValue::feature(self)
@@ -1081,6 +1094,78 @@ macro_rules! define_types {
         impl <'a> Default for SharedValue<'a> {
             fn default() -> Self {
                 Self::NA
+            }
+        }
+
+        use crate::types::referred::OwnedValueRef;
+        $(
+            impl FromValue<OwnedValueRef> for $t {
+                fn get_from_value(value: &OwnedValueRef) -> Option<$t> {
+                    OwnedValue::$fn(&*value).map(|v| v.to_owned())
+                }
+            }
+        )*
+        impl <'a> ToTypped for OwnedValueRef {
+            fn to_typped<T: FromValue<Self>>(&self) -> Option<T> {
+                // OwnedValue::$fn(value).map(|v| v.to_owned())
+                T::get_from_value(self)
+            }
+        }
+
+        impl Value for OwnedValueRef {
+
+            type Map = OwnedMap;
+            type Out = OwnedValue;
+
+            fn get<V: FromValue<Self>>(&self) -> Option<V> {
+                V::get_from_value(&*self)
+            }
+
+            fn feature(&self) -> [u8; 8] {
+                OwnedValue::feature(&*self)
+            }
+            fn features(&self) -> Vec<[u8; 8]> {
+                OwnedValue::features(&**self)
+            }
+            fn hash(&self) -> [u8; 8] {
+                OwnedValue::hash(&*self)
+            }
+            fn hashes(&self) -> Vec<[u8; 8]> {
+                OwnedValue::hashes(&*self)
+            }
+            fn base_type(&self) -> Type {
+                OwnedValue::base_type(&*self)
+            }
+            fn index_of(&self, index: usize) -> &Self::Out {
+                &self[index]
+            }
+            fn base_size(&self) -> usize {
+                OwnedValue::base_size(&*self)
+            }
+            fn prim_array_data_size(&self) -> Option<u8> {
+                match &**self {
+                    OwnedValue::PrimArray(ref arr) => Some(arr.data_size()),
+                    _ => None,
+                }
+            }
+            fn uni_array(&self) -> Option<Vec<&Self::Out>> {
+                match &**self {
+                    OwnedValue::Array(arr) => Some(arr.iter().map(|v| v as &Self::Out).collect()),
+                    _ => None
+                }
+            }
+            fn get_in_by_ids(&self, ids: &Vec<u64>) -> &Self::Out {
+                if let OwnedValue::Map(map) = &**self {
+                    map.get_in_by_ids(ids.iter())
+                } else {
+                    &OwnedValue::Null
+                }
+            }
+            fn map(&self) -> Option<&OwnedMap> {
+                match &**self {
+                    OwnedValue::Map(map) => Some(map),
+                    _ => None
+                }
             }
         }
 
