@@ -874,7 +874,7 @@ macro_rules! define_types {
         )*
 
         use std::hash::Hash;
-        pub trait Value: ToTypped + Hash + Sized {
+        pub trait Value: ToTypped + Sized {
             type Map: Map;
             type Out: Value;
 
