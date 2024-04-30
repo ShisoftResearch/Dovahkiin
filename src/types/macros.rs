@@ -1182,5 +1182,13 @@ macro_rules! define_types {
             }
         }
 
+        impl PartialEq for OwnedValueRef {
+            fn eq(&self, other: &Self) -> bool {
+                <OwnedValue as PartialEq>::eq(&**self, &**other)
+            }
+        }
+
+        impl Eq for OwnedValueRef {}
+
     );
 }
