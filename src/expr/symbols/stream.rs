@@ -8,7 +8,7 @@ pub fn to_array<'a>(expr: SExpr<'a>) -> Result<SExpr<'a>, String> {
             let mut array = Vec::new();
             for expr in vec {
                 if let SExpr::Value(val) = expr {
-                    array.push(val.into_owned_val())
+                    array.push(val.into_owned())
                 } else {
                     return Err(format!("Data {:?} cannot be value", expr));
                 }

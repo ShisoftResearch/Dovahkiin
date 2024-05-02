@@ -1,7 +1,7 @@
 use super::*;
 
 pub fn u64(value: SExpr) -> Result<SExpr, String> {
-    match value.val() {
+    match value.shared_val() {
         Some(SharedValue::U8(num)) => Ok(SExpr::owned_value(OwnedValue::U64(*num as u64))),
         Some(SharedValue::U16(num)) => Ok(SExpr::owned_value(OwnedValue::U64(*num as u64))),
         Some(SharedValue::U32(num)) => Ok(SExpr::owned_value(OwnedValue::U64(*num as u64))),
@@ -17,7 +17,7 @@ pub fn u64(value: SExpr) -> Result<SExpr, String> {
 }
 
 pub fn u32(value: SExpr) -> Result<SExpr, String> {
-    match value.val() {
+    match value.shared_val() {
         Some(SharedValue::U8(num)) => Ok(SExpr::owned_value(OwnedValue::U32(*num as u32))),
         Some(SharedValue::U16(num)) => Ok(SExpr::owned_value(OwnedValue::U32(*num as u32))),
         Some(SharedValue::U32(num)) => Ok(SExpr::owned_value(OwnedValue::U32(*num as u32))),
@@ -33,7 +33,7 @@ pub fn u32(value: SExpr) -> Result<SExpr, String> {
 }
 
 pub fn u16(value: SExpr) -> Result<SExpr, String> {
-    match value.val() {
+    match value.shared_val() {
         Some(SharedValue::U8(num)) => Ok(SExpr::owned_value(OwnedValue::U16(*num as u16))),
         Some(SharedValue::U16(num)) => Ok(SExpr::owned_value(OwnedValue::U16(*num as u16))),
         Some(SharedValue::U32(num)) => Ok(SExpr::owned_value(OwnedValue::U16(*num as u16))),
@@ -49,7 +49,7 @@ pub fn u16(value: SExpr) -> Result<SExpr, String> {
 }
 
 pub fn u8(value: SExpr) -> Result<SExpr, String> {
-    match value.val() {
+    match value.shared_val() {
         Some(SharedValue::U8(num)) => Ok(SExpr::owned_value(OwnedValue::U8(*num as u8))),
         Some(SharedValue::U16(num)) => Ok(SExpr::owned_value(OwnedValue::U8(*num as u8))),
         Some(SharedValue::U32(num)) => Ok(SExpr::owned_value(OwnedValue::U8(*num as u8))),
@@ -65,7 +65,7 @@ pub fn u8(value: SExpr) -> Result<SExpr, String> {
 }
 
 pub fn i64(value: SExpr) -> Result<SExpr, String> {
-    match value.val() {
+    match value.shared_val() {
         Some(SharedValue::U8(num)) => Ok(SExpr::owned_value(OwnedValue::I64(*num as i64))),
         Some(SharedValue::U16(num)) => Ok(SExpr::owned_value(OwnedValue::I64(*num as i64))),
         Some(SharedValue::U32(num)) => Ok(SExpr::owned_value(OwnedValue::I64(*num as i64))),
@@ -81,7 +81,7 @@ pub fn i64(value: SExpr) -> Result<SExpr, String> {
 }
 
 pub fn i32(value: SExpr) -> Result<SExpr, String> {
-    match value.val() {
+    match value.shared_val() {
         Some(SharedValue::U8(num)) => Ok(SExpr::owned_value(OwnedValue::I32(*num as i32))),
         Some(SharedValue::U16(num)) => Ok(SExpr::owned_value(OwnedValue::I32(*num as i32))),
         Some(SharedValue::U32(num)) => Ok(SExpr::owned_value(OwnedValue::I32(*num as i32))),
@@ -97,7 +97,7 @@ pub fn i32(value: SExpr) -> Result<SExpr, String> {
 }
 
 pub fn i16(value: SExpr) -> Result<SExpr, String> {
-    match value.val() {
+    match value.shared_val() {
         Some(SharedValue::U8(num)) => Ok(SExpr::owned_value(OwnedValue::I16(*num as i16))),
         Some(SharedValue::U16(num)) => Ok(SExpr::owned_value(OwnedValue::I16(*num as i16))),
         Some(SharedValue::U32(num)) => Ok(SExpr::owned_value(OwnedValue::I16(*num as i16))),
@@ -113,7 +113,7 @@ pub fn i16(value: SExpr) -> Result<SExpr, String> {
 }
 
 pub fn i8(value: SExpr) -> Result<SExpr, String> {
-    match value.val() {
+    match value.shared_val() {
         Some(SharedValue::U8(num)) => Ok(SExpr::owned_value(OwnedValue::I8(*num as i8))),
         Some(SharedValue::U16(num)) => Ok(SExpr::owned_value(OwnedValue::I8(*num as i8))),
         Some(SharedValue::U32(num)) => Ok(SExpr::owned_value(OwnedValue::I8(*num as i8))),
@@ -129,7 +129,7 @@ pub fn i8(value: SExpr) -> Result<SExpr, String> {
 }
 
 pub fn f32(value: SExpr) -> Result<SExpr, String> {
-    match value.val() {
+    match value.shared_val() {
         Some(SharedValue::U8(num)) => Ok(SExpr::owned_value(OwnedValue::F32(*num as f32))),
         Some(SharedValue::U16(num)) => Ok(SExpr::owned_value(OwnedValue::F32(*num as f32))),
         Some(SharedValue::U32(num)) => Ok(SExpr::owned_value(OwnedValue::F32(*num as f32))),
@@ -145,7 +145,7 @@ pub fn f32(value: SExpr) -> Result<SExpr, String> {
 }
 
 pub fn f64(value: SExpr) -> Result<SExpr, String> {
-    match value.val() {
+    match value.shared_val() {
         Some(SharedValue::U8(num)) => Ok(SExpr::owned_value(OwnedValue::F64(*num as f64))),
         Some(SharedValue::U16(num)) => Ok(SExpr::owned_value(OwnedValue::F64(*num as f64))),
         Some(SharedValue::U32(num)) => Ok(SExpr::owned_value(OwnedValue::F64(*num as f64))),

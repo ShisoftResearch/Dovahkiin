@@ -11,7 +11,7 @@ pub fn size_(vals: &Vec<SExpr>) -> Result<u64, String> {
         result += match &val {
             &SExpr::Vec(ref v) => v.len(),
             &SExpr::Value(val) => {
-                let v = val.norm();
+                let v = val.shared();
                 match v {
                     SharedValue::Array(ref a) => a.len(),
                     SharedValue::String(ref s) => s.len(),
@@ -67,7 +67,7 @@ pub fn hashmap(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
     while let (Some(k), Some(v)) = (exprs.next(), exprs.next()) {
         match (k, v) {
             (SExpr::Value(k_val), SExpr::Value(v)) => {
-                let k_norm = k_val.norm();
+                let k_norm = k_val.shared();
                 let k_str_opt = k_norm.string();
                 match (k_str_opt, v) {
                     (Some(k_str), Value::Shared(v)) => {
@@ -76,6 +76,9 @@ pub fn hashmap(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
                     }
                     (Some(k_str), Value::Owned(v)) => {
                         hashmap.insert(k_str.to_owned(), v);
+                    }
+                    (Some(k_str), Value::Ref(v)) => {
+                        hashmap.insert(k_str.to_owned(), (&*v).to_owned());
                     }
                     (None, _) => return Err(format!("Only string key is allowed, got {:?}", k_val)),
                 }
@@ -88,6 +91,9 @@ pub fn hashmap(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
                     }
                     Value::Owned(v) => {
                         hashmap.insert(kw, v);
+                    }
+                    Value::Ref(v) => {
+                        hashmap.insert(kw, (&*v).to_owned());
                     }
                 } 
             }

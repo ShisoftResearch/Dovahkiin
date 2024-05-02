@@ -1,6 +1,7 @@
 use std::borrow::Borrow;
 use std::rc::Rc;
 use bifrost_hasher::hash_str;
+use crate::types::referred::OwnedValueRef;
 use crate::types::{OwnedValue, SharedValue};
 use crate::parser::lisp::ParserExpr;
 
@@ -15,25 +16,35 @@ pub mod serde;
 pub enum Value<'a> {
     Owned(OwnedValue),
     Shared(SharedValue<'a>),
+    Ref(OwnedValueRef)
 }
 
 impl<'a> Value<'a> {
     pub const fn null() -> Self {
         Self::Owned(OwnedValue::Null)
     }
-    pub fn norm(&'a self) -> SharedValue<'a> {
+    pub fn shared(&'a self) -> SharedValue<'a> {
         match self {
             Value::Owned(v) => v.shared(),
             Value::Shared(v) => v.clone(),
+            Value::Ref(v) => v.shared()
         }
     }
     pub fn owned(val: OwnedValue) -> Self {
         Value::Owned(val)
     }
-    pub fn into_owned_val(self) -> OwnedValue {
+    pub fn into_owned(self) -> OwnedValue {
         match self {
             Value::Owned(v) => v,
             Value::Shared(v) => v.owned(),
+            Value::Ref(v) => (&*v).clone()
+        }
+    }
+    pub fn into_ref(self) -> OwnedValueRef {
+        match self {
+            Value::Owned(v) => OwnedValueRef::new(v),
+            Value::Shared(v) => OwnedValueRef::new(v.owned()),
+            Value::Ref(v) => v
         }
     }
 }
@@ -90,9 +101,9 @@ impl<'a> SExpr<'a> {
     pub fn shared_value(val: SharedValue<'a>) -> Self {
         Self::Value(Value::Shared(val))
     }
-    pub fn val(&'a self) -> Option<SharedValue<'a>> {
+    pub fn shared_val(&'a self) -> Option<SharedValue<'a>> {
         if let SExpr::Value(v) = self {
-            Some(v.norm())
+            Some(v.shared())
         } else {
             None
         }
@@ -101,17 +112,18 @@ impl<'a> SExpr<'a> {
         if let SExpr::Value(v) = self {
             match v {
                 Value::Owned(v) => Some(v),
-                Value::Shared(v) => Some(v.owned())
+                Value::Shared(v) => Some(v.owned()),
+                Value::Ref(v) => Some((&*v).clone())
             }
         } else {
             None
         }
     }
-    pub fn norm(&'a self) -> Self {
-        if let SExpr::Value(Value::Owned(ref owned)) = self {
-            SExpr::Value(Value::Shared(owned.shared()))
-        } else {
-            self.clone()
+    pub fn shared(&'a self) -> Self {
+        match self {
+            SExpr::Value(Value::Owned(ref owned)) =>  SExpr::Value(Value::Shared(owned.shared())),
+            SExpr::Value(Value::Ref(ref owned)) =>  SExpr::Value(Value::Shared(owned.shared())),
+            _ => self.clone()
         }
     }
     pub fn is_empty(&self) -> bool {

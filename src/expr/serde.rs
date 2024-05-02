@@ -33,6 +33,7 @@ impl Expr {
             SExpr::Value(v) => Self::Value(match v {
                 Value::Owned(o) => o,
                 Value::Shared(s) => s.owned(),
+                Value::Ref(r) => (&*r).clone()
             }),
             SExpr::List(l) => Self::List(sexpr_list_to_expr_list(l)),
             SExpr::Vec(v) => Self::Vec(sexpr_list_to_expr_list(v)),

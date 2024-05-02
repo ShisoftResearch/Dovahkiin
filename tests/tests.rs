@@ -154,7 +154,7 @@ pub fn keyword() {
     let mut interpreter = lisp::get_interpreter();
     let str_exp = "(hash-map [:x 123u32, :y 456u64])";
     let map_expr = lisp::eval_string(&mut interpreter, str_exp).unwrap();
-    let map_val = map_expr.val().unwrap();
+    let map_val = map_expr.shared_val().unwrap();
     let map = map_val.Map().unwrap();
     assert_eq!(
         map.get("x").u32().unwrap(), &123

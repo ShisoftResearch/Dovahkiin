@@ -4,9 +4,9 @@ use super::*;
 
 pub fn equals(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
     let last_expr = exprs.pop().unwrap();
-    let last = last_expr.val();
+    let last = last_expr.shared_val();
     for expr in exprs {
-        let expr = expr.val();
+        let expr = expr.shared_val();
         trace!("Comparing {:?} with {:?}", expr, last);
         if expr != last {
             return Ok(SExpr::owned_value(OwnedValue::Bool(false)));
@@ -19,17 +19,17 @@ pub fn not_equals(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
     return Ok(SExpr::owned_value(OwnedValue::Bool({
         let l = exprs.pop();
         let r = exprs.pop();
-        l.as_ref().map(|e| e.val()) == r.as_ref().map(|e| e.val())
+        l.as_ref().map(|e| e.shared_val()) == r.as_ref().map(|e| e.shared_val())
     })));
 }
 
 macro_rules! reduce {
     ($type: ident, $values: ident, $exp: expr) => {{
         if let Some((first, elements)) = $values.split_first() {
-            if let Some(SharedValue::$type(first)) = first.val() {
+            if let Some(SharedValue::$type(first)) = first.shared_val() {
                 let mut last = first;
                 for val in elements {
-                    if let Some(SharedValue::$type(n)) = val.val() {
+                    if let Some(SharedValue::$type(n)) = val.shared_val() {
                         if $exp(last, n) {
                             last = n;
                         } else {
@@ -82,7 +82,7 @@ macro_rules! gte_ {
 }
 
 pub fn lt(values: Vec<SExpr>) -> Result<SExpr, String> {
-    match values.get(0).unwrap().val() {
+    match values.get(0).unwrap().shared_val() {
         Some(SharedValue::U8(_)) => lt_!(U8, values),
         Some(SharedValue::U16(_)) => lt_!(U16, values),
         Some(SharedValue::U32(_)) => lt_!(U32, values),
@@ -98,7 +98,7 @@ pub fn lt(values: Vec<SExpr>) -> Result<SExpr, String> {
 }
 
 pub fn lte(values: Vec<SExpr>) -> Result<SExpr, String> {
-    match values.get(0).unwrap().val() {
+    match values.get(0).unwrap().shared_val() {
         Some(SharedValue::U8(_)) => lte_!(U8, values),
         Some(SharedValue::U16(_)) => lte_!(U16, values),
         Some(SharedValue::U32(_)) => lte_!(U32, values),
@@ -114,7 +114,7 @@ pub fn lte(values: Vec<SExpr>) -> Result<SExpr, String> {
 }
 
 pub fn gt(values: Vec<SExpr>) -> Result<SExpr, String> {
-    match values.get(0).unwrap().val() {
+    match values.get(0).unwrap().shared_val() {
         Some(SharedValue::U8(_)) => gt_!(U8, values),
         Some(SharedValue::U16(_)) => gt_!(U16, values),
         Some(SharedValue::U32(_)) => gt_!(U32, values),
@@ -130,7 +130,7 @@ pub fn gt(values: Vec<SExpr>) -> Result<SExpr, String> {
 }
 
 pub fn gte(values: Vec<SExpr>) -> Result<SExpr, String> {
-    match values.get(0).unwrap().val() {
+    match values.get(0).unwrap().shared_val() {
         Some(SharedValue::U8(_)) => gte_!(U8, values),
         Some(SharedValue::U16(_)) => gte_!(U16, values),
         Some(SharedValue::U32(_)) => gte_!(U32, values),

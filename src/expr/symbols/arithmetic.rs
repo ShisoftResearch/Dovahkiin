@@ -2,11 +2,11 @@ use super::*;
 
 macro_rules! reduce {
     ($type: ident, $values: ident, $exp: expr) => {{
-        if let Some((Some(first), elements)) = $values.split_first().map(|(f, es)| (f.val(), es)) {
+        if let Some((Some(first), elements)) = $values.split_first().map(|(f, es)| (f.shared_val(), es)) {
             if let SharedValue::$type(n) = first {
                 let mut result = *n;
                 for val in elements {
-                    let val = val.val();
+                    let val = val.shared_val();
                     if let Some(SharedValue::$type(n)) = val {
                         result = $exp(result, n);
                     } else {
@@ -56,7 +56,7 @@ macro_rules! divide_ {
 }
 
 pub fn add(values: Vec<SExpr>) -> Result<SExpr, String> {
-    match values.get(0).unwrap().val() {
+    match values.get(0).unwrap().shared_val() {
         Some(SharedValue::U8(_)) => add_!(U8, values),
         Some(SharedValue::U16(_)) => add_!(U16, values),
         Some(SharedValue::U32(_)) => add_!(U32, values),
@@ -72,7 +72,7 @@ pub fn add(values: Vec<SExpr>) -> Result<SExpr, String> {
 }
 
 pub fn subtract(values: Vec<SExpr>) -> Result<SExpr, String> {
-    match values.get(0).unwrap().val() {
+    match values.get(0).unwrap().shared_val() {
         Some(SharedValue::U8(_)) => subtract_!(U8, values),
         Some(SharedValue::U16(_)) => subtract_!(U16, values),
         Some(SharedValue::U32(_)) => subtract_!(U32, values),
@@ -88,7 +88,7 @@ pub fn subtract(values: Vec<SExpr>) -> Result<SExpr, String> {
 }
 
 pub fn multiply(values: Vec<SExpr>) -> Result<SExpr, String> {
-    match values.get(0).unwrap().val() {
+    match values.get(0).unwrap().shared_val() {
         Some(SharedValue::U8(_)) => multiply_!(U8, values),
         Some(SharedValue::U16(_)) => multiply_!(U16, values),
         Some(SharedValue::U32(_)) => multiply_!(U32, values),
@@ -104,7 +104,7 @@ pub fn multiply(values: Vec<SExpr>) -> Result<SExpr, String> {
 }
 
 pub fn divide(values: Vec<SExpr>) -> Result<SExpr, String> {
-    match values.get(0).unwrap().val() {
+    match values.get(0).unwrap().shared_val() {
         Some(SharedValue::U8(_)) => divide_!(U8, values),
         Some(SharedValue::U16(_)) => divide_!(U16, values),
         Some(SharedValue::U32(_)) => divide_!(U32, values),
@@ -120,7 +120,7 @@ pub fn divide(values: Vec<SExpr>) -> Result<SExpr, String> {
 }
 
 pub fn inc(value: SExpr) -> Result<SExpr, String> {
-    let value = match value.val() {
+    let value = match value.shared_val() {
         Some(SharedValue::U8(v)) => SExpr::owned_value(OwnedValue::U8(v + 1)),
         Some(SharedValue::U16(v)) => SExpr::owned_value(OwnedValue::U16(v + 1)),
         Some(SharedValue::U32(v)) => SExpr::owned_value(OwnedValue::U32(v + 1)),
