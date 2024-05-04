@@ -1,5 +1,5 @@
-use std::{collections::HashMap, slice::Iter};
-
+use std::slice::Iter;
+use ahash::HashMap;
 use crate::types::{Value, key_hash, SharedMap, OwnedMap};
 
 pub trait Map {

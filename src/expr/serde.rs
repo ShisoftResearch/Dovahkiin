@@ -96,4 +96,25 @@ impl ParserExpr for Expr {
     fn owned_val(val: OwnedValue) -> Self {
         Self::Value(val)
     }
+    
+    fn into_val(self) -> Result<OwnedValue, String> {
+        match self {
+            Expr::Symbol(_, s) => Ok(OwnedValue::String(s)),
+            Expr::Value(v) => Ok(v),
+            Expr::List(l) => array_from_exprs(l),
+            Expr::Vec(l) => array_from_exprs(l),
+            Expr::Keyword(_, s) => Ok(OwnedValue::String(s)),
+            Expr::META(m) => Err(format!("Cannot have meta as value {:?}", m)),
+            Expr::LAMBDA(i, o) => Err(format!("Cannot have lambda as value {:?} -> {:?}", i, o)),
+        }
+    }
+}
+
+fn array_from_exprs(l: Vec<Expr>) -> Result<OwnedValue, String> {
+    let mut res = vec![];
+    for ele in l.into_iter().map(Expr::into_val) {
+        let val = ele?;
+        res.push(val);
+    }
+    return Ok(OwnedValue::Array(res));
 }

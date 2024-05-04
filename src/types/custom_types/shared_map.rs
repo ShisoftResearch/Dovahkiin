@@ -1,7 +1,7 @@
 use super::super::*;
 use super::map::Map;
 use bifrost_hasher::hash_str;
-use std::collections::HashMap;
+use ahash::{HashMap, HashMapExt};
 use std::iter::Iterator;
 use std::slice::Iter;
 
@@ -16,7 +16,7 @@ impl<'v> Map for SharedMap<'v> {
 
     fn new() -> Self {
         Self {
-            map: HashMap::new(),
+            map: HashMap::with_capacity(8),
             fields: Vec::new(),
         }
     }

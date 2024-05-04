@@ -2,7 +2,7 @@ use crate::types::SharedMap;
 
 use super::map::Map;
 use super::{super::*, shared_map::key_hash};
-use std::collections::HashMap;
+use ahash::{HashMap, HashMapExt};
 use std::fmt;
 use std::iter::Iterator;
 use std::slice::Iter;
@@ -19,7 +19,7 @@ impl Map for OwnedMap {
 
     fn new() -> Self {
         Self {
-            map: HashMap::new(),
+            map: HashMap::with_capacity(8),
             fields: Vec::new(),
         }
     }

@@ -1,6 +1,6 @@
 use dovahkiin::expr::{SExpr, Value};
 use dovahkiin::integrated::lisp;
-use dovahkiin::types::{OwnedValue, Map};
+use dovahkiin::types::{Map, OwnedValue, SharedValue};
 
 extern crate dovahkiin;
 
@@ -162,4 +162,43 @@ pub fn keyword() {
     assert_eq!(
         map.get("y").u64().unwrap(), &456
     );
+}
+
+#[test]
+pub fn map() { 
+    let mut interpreter = lisp::get_interpreter();
+    let str_exp = "{:x 123u32, :y 456u64}";
+    let map_expr = lisp::eval_string(&mut interpreter, str_exp).unwrap();
+    let map_val = map_expr.shared_val().unwrap();
+    let map = map_val.Map().unwrap();
+    assert_eq!(
+        map.get("x").u32().unwrap(), &123
+    );
+    assert_eq!(
+        map.get("y").u64().unwrap(), &456
+    );
+}
+
+#[test]
+pub fn map_vec() { 
+    let mut interpreter = lisp::get_interpreter();
+    let str_exp = "{:x 123u32, :y [456u64, 789u64]}";
+    let map_expr = lisp::eval_string(&mut interpreter, str_exp).unwrap();
+    let map_val = map_expr.shared_val().unwrap();
+    let map = map_val.Map().unwrap();
+    assert_eq!(
+        map.get("x").u32().unwrap(), &123
+    );
+    let y = map.get("y");
+    match y {
+        SharedValue::Array(arr) => {
+            assert_eq!(
+                arr[0].u64().unwrap(), &456
+            );
+            assert_eq!(
+                arr[1].u64().unwrap(), &789
+            );
+        }
+        _ => panic!()
+    }
 }

@@ -8,8 +8,10 @@ pub enum Token {
     IntNumber(String, String),
     FloatNumber(String, String),
     String(String),
-    LeftVecParentheses,
-    RightVecParentheses,
+    LeftSquareBracket,
+    RightSquareBracket,
+    LeftCurlyBracket,
+    RightCurlyBracket,
     Keyword(String)
     // Quote
 }
@@ -23,8 +25,10 @@ impl ToString for Token {
             &Token::IntNumber(ref n, ref u) => format!("{}{}", n, u),
             &Token::FloatNumber(ref n, ref u) => format!("{}{}", n, u),
             &Token::String(ref s) => format!("\"{}\"", s),
-            &Token::LeftVecParentheses => String::from("["),
-            &Token::RightVecParentheses => String::from("]"),
+            &Token::LeftSquareBracket => String::from("["),
+            &Token::RightSquareBracket => String::from("]"),
+            &Token::LeftCurlyBracket => String::from("{"),
+            &Token::RightCurlyBracket => String::from("}"),
             &Token::Keyword(ref s) => format!(":{}", s)
         }
     }
@@ -229,7 +233,7 @@ fn read_string(iter: &mut CharIter) -> Result<Token, String> {
 fn read_ident_str(chars: &mut Vec<char>, iter: &mut CharIter) {
     while let Some(c) = iter.next() {
         match c {
-            ' ' | '\t' | '\r' | '\n' | '(' | ')' | '[' | ']' | '\'' | ',' => {
+            ' ' | '\t' | '\r' | '\n' | '(' | ')' | '[' | ']' | '{' | '}' | '\'' | ',' => {
                 break;
             }
             _ => {
@@ -269,11 +273,19 @@ pub fn tokenize_chars_iter(iter: &mut CharIter) -> Result<Vec<Token>, String> {
                 iter.next();
             }
             '[' => {
-                tokens.push(Token::LeftVecParentheses);
+                tokens.push(Token::LeftSquareBracket);
                 iter.next();
             }
             ']' => {
-                tokens.push(Token::RightVecParentheses);
+                tokens.push(Token::RightSquareBracket);
+                iter.next();
+            }
+            '{' => {
+                tokens.push(Token::LeftCurlyBracket);
+                iter.next();
+            }
+            '}' => {
+                tokens.push(Token::RightCurlyBracket);
                 iter.next();
             }
             NUMBER_PATTERN!() => {

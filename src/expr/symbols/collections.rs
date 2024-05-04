@@ -1,9 +1,7 @@
-use log::kv;
-
 use crate::types::{Map, OwnedMap};
 
 use super::*;
-use std::collections::HashMap;
+use ahash::{HashMap, HashMapExt};
 
 pub fn size_(vals: &Vec<SExpr>) -> Result<u64, String> {
     let mut result: u64 = 0;
@@ -63,7 +61,7 @@ pub fn hashmap(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
         ));
     }
     let mut exprs = exprs.into_iter();
-    let mut hashmap = HashMap::new();
+    let mut hashmap = HashMap::with_capacity(8);
     while let (Some(k), Some(v)) = (exprs.next(), exprs.next()) {
         match (k, v) {
             (SExpr::Value(k_val), SExpr::Value(v)) => {

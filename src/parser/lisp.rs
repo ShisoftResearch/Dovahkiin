@@ -1,6 +1,8 @@
-use crate::lexer::lisp::Token;
-use crate::types::OwnedValue as Value;
-use std::{vec::IntoIter, marker::PhantomData};
+use ahash::{HashMap, HashMapExt};
+
+use crate::{lexer::lisp::Token, types::OwnedMap};
+use crate::types::{Map, OwnedValue as Value};
+use std::{marker::PhantomData, mem, vec::IntoIter};
 
 use crate::expr::{SExpr, serde::Expr};
 
@@ -10,6 +12,7 @@ pub trait ParserExpr: Sized {
     fn symbol(name: String) -> Self;
     fn keyword(name: String) -> Self;
     fn owned_val(val: Value) -> Self;
+    fn into_val(self) -> Result<Value, String>;
 }
 
 pub struct Parser<E: ParserExpr> {
@@ -39,11 +42,46 @@ impl <E: ParserExpr> Parser <E> {
         let mut contents = Vec::new();
         while let Some(token) = iter.next() {
             match token {
-                Token::RightVecParentheses => {
+                Token::RightSquareBracket => {
                     return Ok(E::vec(contents));
                 }
                 _ => {
                     contents.push(Self::parse_token(token, iter)?);
+                }
+            }
+        }
+        Err(String::from("Unexpected EOF, expect ']'"))
+    }
+
+    fn parse_map<'a>(iter: &mut IntoIter<Token>) -> Result<E, String> {
+        let mut contents: HashMap<String, Value> = HashMap::with_capacity(4);
+        let mut visited = 0;
+        let mut last_key = String::from("");
+        while let Some(token) = iter.next() {
+            match token {
+                Token::RightCurlyBracket => {
+                    // return Ok(E::map(contents));
+                    let owned_map = OwnedMap::from_hash_map(contents);
+                    return Ok(E::owned_val(Value::Map(owned_map)));
+                }
+                _ => {
+                    if visited & 1 == 0 {
+                        // parse key
+                        match token {
+                            Token::Symbol(k) |
+                            Token::String(k) |
+                            Token::Keyword(k) => {
+                                last_key = k;
+                            }
+                            _ => return Err(format!("Expecting map key with string but get {:?}", token))
+                        }
+                    } else {
+                        let key = mem::replace(&mut last_key, String::from(""));
+                        let val = Self::parse_token(token, iter)?;
+                        let owned_val = val.into_val()?;
+                        contents.insert(key, owned_val);
+                    }
+                    visited += 1;
                 }
             }
         }
@@ -105,7 +143,8 @@ impl <E: ParserExpr> Parser <E> {
             Token::IntNumber(num, unit) => Ok(Self::parse_int(num, unit)?),
             Token::FloatNumber(num, unit) => Ok(Self::parse_float(num, unit)?),
             Token::String(str) => Ok(Self::parse_string(str)),
-            Token::LeftVecParentheses => Ok(Self::parse_vec(iter)?),
+            Token::LeftSquareBracket => Ok(Self::parse_vec(iter)?),
+            Token::LeftCurlyBracket => Ok(Self::parse_map(iter)?),
             Token::Keyword(str) => Ok(Self::parse_keyword(str)),
             _ => Err(format!("Unexpected start token {}", token.to_string())),
         }

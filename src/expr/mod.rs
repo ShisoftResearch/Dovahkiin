@@ -155,4 +155,26 @@ impl ParserExpr for SExpr<'_> {
     fn keyword(name: String) -> Self {
         Self::Keyword(hash_str(&name), name)
     }
+    
+    fn into_val(self) -> Result<OwnedValue, String> {
+        match self {
+            SExpr::Symbol(s) => Ok(OwnedValue::String(s)),
+            SExpr::ISymbol(_, s) => Ok(OwnedValue::String(s)),
+            SExpr::Value(v) => Ok(v.into_owned()),
+            SExpr::List(l) => array_from_exprs(l),
+            SExpr::Vec(l) => array_from_exprs(l),
+            SExpr::Keyword(_, s) => Ok(OwnedValue::String(s)),
+            SExpr::META(m) => Err(format!("Cannot have meta as value {:?}", m)),
+            SExpr::LAMBDA(i, o) => Err(format!("Cannot have lambda as value {:?} -> {:?}", i, o)),
+        }
+    }
+}
+
+fn array_from_exprs(l: Vec<SExpr>) -> Result<OwnedValue, String> {
+    let mut res = vec![];
+    for ele in l.into_iter().map(SExpr::into_val) {
+        let val = ele?;
+        res.push(val);
+    }
+    return Ok(OwnedValue::Array(res));
 }
