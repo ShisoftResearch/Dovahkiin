@@ -1,4 +1,3 @@
-use bifrost_hasher::hash_str;
 use crate::lexer::lisp::Token;
 use crate::types::OwnedValue as Value;
 use std::{vec::IntoIter, marker::PhantomData};
