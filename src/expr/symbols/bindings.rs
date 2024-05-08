@@ -10,10 +10,15 @@ pub fn bind_by_name<'a, 'b>(env: &mut Envorinment<'a>, name: &'b str, val: SExpr
 
 pub fn bind<'a>(env: &mut Envorinment<'a>, id: u64, val: SExpr<'a>) {
     let binding_map = &mut env.bindings;
+    let bind_val = if let SExpr::Value(v) = val {
+        SExpr::Value(Value::Ref(v.into_ref())) // Get to ref so cloning won't cost much
+    } else {
+        val
+    };
     binding_map
         .entry(id)
         .or_insert_with(|| LinkedList::new())
-        .push_front(Rc::new(val));
+        .push_front(Rc::new(bind_val));
 }
 
 pub fn unbind<'a>(env: &mut Envorinment<'a>, id: u64) {

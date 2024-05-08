@@ -134,8 +134,8 @@ pub fn scoping() {
                         (let [x 2u32] (y))";
     // 2 for dynamic scoping, 1 for lexical scoping. Dovahkiin is dynamic scoping
     assert_eq!(
-        lisp::eval_string(&mut interpreter, str_function).unwrap(),
-        SExpr::owned_value(OwnedValue::U32(2))
+        lisp::eval_string(&mut interpreter, str_function).unwrap().owned_val().unwrap(),
+        OwnedValue::U32(2)
     );
 }
 
