@@ -1,7 +1,7 @@
 use super::bindings::*;
 use super::*;
-pub fn lambda_placeholder(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
-    let params = exprs.remove(0);
+pub fn lambda_placeholder<'a>(mut exprs: impl Iterator<Item = SExpr<'a>>) -> Result<SExpr<'a>, String> {
+    let params = exprs.next().unwrap();
     let params_list = if let SExpr::Vec(symbols) = params {
         let mut list = Vec::new();
         for symbol in symbols {
@@ -20,7 +20,7 @@ pub fn lambda_placeholder(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
     } else {
         return Err(format!("lambda form should be vector, found {:?}", params));
     };
-    Ok(SExpr::LAMBDA(params_list, exprs))
+    Ok(SExpr::LAMBDA(params_list, exprs.collect()))
 }
 
 pub fn eval_lambda<'a>(

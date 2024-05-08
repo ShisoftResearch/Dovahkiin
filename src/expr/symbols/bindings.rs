@@ -26,7 +26,7 @@ pub fn unbind<'a>(env: &mut Envorinment<'a>, id: u64) {
 
 pub fn let_binding<'a>(
     env: &mut Envorinment<'a>,
-    mut exprs: Vec<SExpr<'a>>,
+    exprs: Vec<SExpr<'a>>,
 ) -> Result<SExpr<'a>, String> {
     if exprs.len() < 2 {
         return Err(format!(
@@ -34,9 +34,10 @@ pub fn let_binding<'a>(
             exprs.len()
         ));
     }
+    let mut exprs = exprs.into_iter();
     let mut binded_ids = Vec::new();
     {
-        let form_expr = exprs.remove(0);
+        let form_expr = exprs.next().unwrap();
         let form = if let SExpr::Vec(vec) = form_expr {
             vec
         } else {
@@ -76,10 +77,11 @@ pub fn let_binding<'a>(
 
 pub fn define<'a>(
     env: &mut Envorinment<'a>,
-    mut exprs: Vec<SExpr<'a>>,
+    exprs: Vec<SExpr<'a>>,
 ) -> Result<SExpr<'a>, String> {
-    let name = exprs.remove(0);
-    let val = exprs.remove(0).eval(env)?;
+    let mut exprs = exprs.into_iter();
+    let name = exprs.next().unwrap();
+    let val = exprs.next().unwrap().eval(env)?;
     if let SExpr::Symbol(name) = name {
         bind_by_name(env, &name, val);
     } else if let SExpr::ISymbol(id, _) = name {

@@ -139,10 +139,13 @@ pub fn merge<'a>(exprs: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
     })))
 }
 
-pub fn conj(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
-    let list = stream::to_vec(exprs.remove(0));
+pub fn conj(exprs: Vec<SExpr>) -> Result<SExpr, String> {
+    let mut exprs = exprs.into_iter();
+    let list = stream::to_vec(exprs.next().unwrap());
     if let Ok(SExpr::Vec(mut vec)) = list {
-        vec.append(&mut exprs);
+        for item in exprs {
+            vec.push(item);
+        }
         return Ok(SExpr::Vec(vec));
     } else {
         return Err(format!("Cannot concat. {:?}", list));

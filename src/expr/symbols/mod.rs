@@ -175,52 +175,52 @@ defsymbols! {
         check_num_params(2, &exprs)?;
         branching::when_not(env,exprs)
     };
-    "=" => Equals, false, |exprs, env| {
+    "=" => Equals, false, |exprs, _env| {
         check_params_not_least_than(2, &exprs)?;
         comparators::equals(exprs)
     };
-    "!=" => NotEquals, false, |exprs, env| {
+    "!=" => NotEquals, false, |exprs, _env| {
         check_num_params(2, &exprs)?;
         comparators::not_equals(exprs)
     };
-    ">" => GreaterThan, false, |exprs, env| {
+    ">" => GreaterThan, false, |exprs, _env| {
         check_params_not_least_than(2, &exprs)?;
         comparators::gt(exprs)
     };
-    ">=" => GreaterThanEquals, false, |exprs, env| {
+    ">=" => GreaterThanEquals, false, |exprs, _env| {
         check_params_not_least_than(2, &exprs)?;
         comparators::gte(exprs)
     };
-    "<" => LessThan, false, |exprs, env| {
+    "<" => LessThan, false, |exprs, _env| {
         check_params_not_least_than(2, &exprs)?;
         comparators::lt(exprs)
     };
-    "<=" => LessThanEquals, false, |exprs, env| {
+    "<=" => LessThanEquals, false, |exprs, _env| {
         check_params_not_least_than(2, &exprs)?;
         comparators::lte(exprs)
     };
-    "+" => Add, false, |exprs, env| {
+    "+" => Add, false, |exprs, _env| {
         check_params_not_empty(&exprs)?;
         arithmetic::add(exprs)
     };
-    "-" => Subtract, false, |exprs, env| {
+    "-" => Subtract, false, |exprs, _env| {
         check_params_not_empty(&exprs)?;
         arithmetic::subtract(exprs)
     };
-    "*" => Multiply, false, |exprs, env| {
+    "*" => Multiply, false, |exprs, _env| {
         check_params_not_empty(&exprs)?;
         arithmetic::multiply(exprs)
     };
-    "/" => Divide, false, |exprs, env| {
+    "/" => Divide, false, |exprs, _env| {
         check_params_not_empty(&exprs)?;
         arithmetic::divide(exprs)
     };
     "let" => Let, true, |exprs, env| {
         bindings::let_binding(env, exprs)
     };
-    "lambda" => Lambda, true, |exprs, env| {
+    "lambda" => Lambda, true, |exprs, _env| {
         check_params_not_least_than(2, &exprs)?;
-        lambda::lambda_placeholder(exprs)
+        lambda::lambda_placeholder(exprs.into_iter())
     };
     "defunc" => DefineFunc, true, |exprs, env| {
         check_params_not_least_than(3, &exprs)?;
@@ -243,31 +243,31 @@ defsymbols! {
     "do" => Do, false, |exprs, env| {
         misc::do_(exprs, env)
     };
-    "to_vec" => ToVec, false, |mut exprs, env| {
+    "to_vec" => ToVec, false, |mut exprs, _env| {
         check_num_params(1, &exprs)?;
         stream::to_vec(exprs.pop().unwrap())
     };
-    "to_array" => ToArray, false, |mut exprs, env| {
+    "to_array" => ToArray, false, |mut exprs, _env| {
         check_num_params(1, &exprs)?;
         stream::to_array(exprs.pop().unwrap())
     };
-    "inc" => Inc, false, |mut exprs, env| {
+    "inc" => Inc, false, |mut exprs, _env| {
         check_num_params(1, &exprs)?;
         arithmetic::inc(exprs.pop().unwrap())
     };
-    "concat" => Concat, false, |exprs, env| {
+    "concat" => Concat, false, |exprs, _env| {
         collections::concat(exprs)
     };
-    "size" => Size, false, |exprs, env| {
+    "size" => Size, false, |exprs, _env| {
         collections::size(exprs)
     };
-    "hash-map" => GenHashMap, false, |exprs, env| {
+    "hash-map" => GenHashMap, false, |exprs, _env| {
         collections::hashmap(exprs)
     };
-    "merge" => MergeHashMap, false, |exprs, env| {
+    "merge" => MergeHashMap, false, |exprs, _env| {
         collections::merge(exprs)
     };
-    "conj" => Conjuction, false, |exprs, env| {
+    "conj" => Conjuction, false, |exprs, _env| {
         collections::conj(exprs)
     };
     "or" => Or, true, |exprs, env| {
@@ -279,44 +279,44 @@ defsymbols! {
     "cond" => Conditional, true, |exprs, env| {
         logic::cond(exprs, env)
     };
-    "u8" => U8, false, |exprs, env| {
+    "u8" => U8, false, |mut exprs, _env| {
         check_num_params(1, &exprs)?;
-        num_types::u8(exprs.get(0).cloned().unwrap())
+        num_types::u8(exprs.pop().unwrap())
     };
-    "u16" => U16, false, |exprs, env| {
+    "u16" => U16, false, |mut exprs, _env| {
         check_num_params(1, &exprs)?;
-        num_types::u16(exprs.get(0).cloned().unwrap())
+        num_types::u16(exprs.pop().unwrap())
     };
-    "u32" => U32, false, |exprs, env| {
+    "u32" => U32, false, |mut exprs, _env| {
         check_num_params(1, &exprs)?;
-        num_types::u32(exprs.get(0).cloned().unwrap())
+        num_types::u32(exprs.pop().unwrap())
     };
-    "u64" => U64, false, |exprs, env| {
+    "u64" => U64, false, |mut exprs, _env| {
         check_num_params(1, &exprs)?;
-        num_types::u64(exprs.get(0).cloned().unwrap())
+        num_types::u64(exprs.pop().unwrap())
     };
-    "i8" => I8, false, |exprs, env| {
+    "i8" => I8, false, |mut exprs, _env| {
         check_num_params(1, &exprs)?;
-        num_types::i8(exprs.get(0).cloned().unwrap())
+        num_types::i8(exprs.pop().unwrap())
     };
-    "i16" => I16, false, |exprs, env| {
+    "i16" => I16, false, |mut exprs, _env| {
         check_num_params(1, &exprs)?;
-        num_types::i16(exprs.get(0).cloned().unwrap())
+        num_types::i16(exprs.pop().unwrap())
     };
-    "i32" => I32, false, |exprs, env| {
+    "i32" => I32, false, |mut exprs, _env| {
         check_num_params(1, &exprs)?;
-        num_types::i32(exprs.get(0).cloned().unwrap())
+        num_types::i32(exprs.pop().unwrap())
     };
-    "i64" => I64, false, |exprs, env| {
+    "i64" => I64, false, |mut exprs, _env| {
         check_num_params(1, &exprs)?;
-        num_types::i64(exprs.get(0).cloned().unwrap())
+        num_types::i64(exprs.pop().unwrap())
     };
-    "f32" => F32, false, |exprs, env| {
+    "f32" => F32, false, |mut exprs, _env| {
         check_num_params(1, &exprs)?;
-        num_types::f32(exprs.get(0).cloned().unwrap())
+        num_types::f32(exprs.pop().unwrap())
     };
-    "f64" => F64, false, |exprs, env| {
+    "f64" => F64, false, |mut exprs, _env| {
         check_num_params(1, &exprs)?;
-        num_types::f64(exprs.get(0).cloned().unwrap())
+        num_types::f64(exprs.pop().unwrap())
     }
 }
