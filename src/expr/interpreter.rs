@@ -59,4 +59,7 @@ impl<'a> Interpreter<'a> {
     pub fn get_env(&mut self) -> &mut Envorinment<'a> {
         &mut self.env
     }
+    pub fn clear(&mut self) {
+        self.env.bindings.clear();
+    }
 }
