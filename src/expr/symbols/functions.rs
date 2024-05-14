@@ -61,19 +61,16 @@ pub fn eval_function<'a>(
 
 fn eval_value<'a>(v: &Value<'a>, params: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
     match &v {
-        &Value::Shared(sv) => {
-            eval_shared_value(sv, params)
-        }
-        &Value::Ref(ov) => {
-            eval_owned_value(&**ov, params)
-        }
-        &Value::Owned(ov) => {
-            eval_owned_value(ov, params)
-        }
+        &Value::Shared(sv) => eval_shared_value(sv, params),
+        &Value::Ref(ov) => eval_owned_value(&**ov, params),
+        &Value::Owned(ov) => eval_owned_value(ov, params),
     }
 }
 
-fn eval_shared_value<'a>(sv: &SharedValue<'a>, params: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
+fn eval_shared_value<'a>(
+    sv: &SharedValue<'a>,
+    params: Vec<SExpr<'a>>,
+) -> Result<SExpr<'a>, String> {
     match sv {
         SharedValue::String(str_key) => {
             // same as clojure (:key map)
@@ -83,8 +80,7 @@ fn eval_shared_value<'a>(sv: &SharedValue<'a>, params: Vec<SExpr<'a>>) -> Result
                     params.len()
                 ));
             }
-            if let Some(Some(SharedValue::Map(ref m))) =
-                params.get(0).map(|expr| expr.shared_val())
+            if let Some(Some(SharedValue::Map(ref m))) = params.get(0).map(|expr| expr.shared_val())
             {
                 return Ok(SExpr::owned_value(m.get(str_key).owned()));
             } else {
@@ -183,8 +179,7 @@ fn eval_owned_value<'a>(ov: &OwnedValue, params: Vec<SExpr<'a>>) -> Result<SExpr
                     params.len()
                 ));
             }
-            if let Some(Some(SharedValue::Map(ref m))) =
-                params.get(0).map(|expr| expr.shared_val())
+            if let Some(Some(SharedValue::Map(ref m))) = params.get(0).map(|expr| expr.shared_val())
             {
                 return Ok(SExpr::owned_value(m.get(str_key).owned()));
             } else {

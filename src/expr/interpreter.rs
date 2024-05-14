@@ -1,3 +1,5 @@
+use bifrost_hasher::hash_str;
+
 use crate::expr::symbols::misc;
 use crate::expr::SExpr;
 use std::collections::{HashMap, LinkedList};
@@ -61,5 +63,14 @@ impl<'a> Interpreter<'a> {
     }
     pub fn clear(&mut self) {
         self.env.bindings.clear();
+    }
+    pub fn unbind<'b>(&mut self, name: &'b str) -> Option<SExpr<'a>> {
+        self.env
+            .bindings
+            .remove(&hash_str(name))
+            .and_then(|mut list| {
+                list.pop_front()
+                    .map(|rc| Rc::<SExpr<'_>>::into_inner(rc).unwrap())
+            })
     }
 }

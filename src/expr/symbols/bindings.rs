@@ -80,10 +80,7 @@ pub fn let_binding<'a>(
     return Ok(body_result);
 }
 
-pub fn define<'a>(
-    env: &mut Envorinment<'a>,
-    exprs: Vec<SExpr<'a>>,
-) -> Result<SExpr<'a>, String> {
+pub fn define<'a>(env: &mut Envorinment<'a>, exprs: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
     let mut exprs = exprs.into_iter();
     let name = exprs.next().unwrap();
     let val = exprs.next().unwrap().eval(env)?;

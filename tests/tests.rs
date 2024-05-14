@@ -134,7 +134,10 @@ pub fn scoping() {
                         (let [x 2u32] (y))";
     // 2 for dynamic scoping, 1 for lexical scoping. Dovahkiin is dynamic scoping
     assert_eq!(
-        lisp::eval_string(&mut interpreter, str_function).unwrap().owned_val().unwrap(),
+        lisp::eval_string(&mut interpreter, str_function)
+            .unwrap()
+            .owned_val()
+            .unwrap(),
         OwnedValue::U32(2)
     );
 }
@@ -150,55 +153,41 @@ pub fn or() {
 }
 
 #[test]
-pub fn keyword() { 
+pub fn keyword() {
     let mut interpreter = lisp::get_interpreter();
     let str_exp = "(hash-map [:x 123u32, :y 456u64])";
     let map_expr = lisp::eval_string(&mut interpreter, str_exp).unwrap();
     let map_val = map_expr.shared_val().unwrap();
     let map = map_val.Map().unwrap();
-    assert_eq!(
-        map.get("x").u32().unwrap(), &123
-    );
-    assert_eq!(
-        map.get("y").u64().unwrap(), &456
-    );
+    assert_eq!(map.get("x").u32().unwrap(), &123);
+    assert_eq!(map.get("y").u64().unwrap(), &456);
 }
 
 #[test]
-pub fn map() { 
+pub fn map() {
     let mut interpreter = lisp::get_interpreter();
     let str_exp = "{:x 123u32, :y 456u64}";
     let map_expr = lisp::eval_string(&mut interpreter, str_exp).unwrap();
     let map_val = map_expr.shared_val().unwrap();
     let map = map_val.Map().unwrap();
-    assert_eq!(
-        map.get("x").u32().unwrap(), &123
-    );
-    assert_eq!(
-        map.get("y").u64().unwrap(), &456
-    );
+    assert_eq!(map.get("x").u32().unwrap(), &123);
+    assert_eq!(map.get("y").u64().unwrap(), &456);
 }
 
 #[test]
-pub fn map_vec() { 
+pub fn map_vec() {
     let mut interpreter = lisp::get_interpreter();
     let str_exp = "{:x 123u32, :y [456u64, 789u64]}";
     let map_expr = lisp::eval_string(&mut interpreter, str_exp).unwrap();
     let map_val = map_expr.shared_val().unwrap();
     let map = map_val.Map().unwrap();
-    assert_eq!(
-        map.get("x").u32().unwrap(), &123
-    );
+    assert_eq!(map.get("x").u32().unwrap(), &123);
     let y = map.get("y");
     match y {
         SharedValue::Array(arr) => {
-            assert_eq!(
-                arr[0].u64().unwrap(), &456
-            );
-            assert_eq!(
-                arr[1].u64().unwrap(), &789
-            );
+            assert_eq!(arr[0].u64().unwrap(), &456);
+            assert_eq!(arr[1].u64().unwrap(), &789);
         }
-        _ => panic!()
+        _ => panic!(),
     }
 }

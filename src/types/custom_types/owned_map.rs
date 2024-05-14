@@ -14,7 +14,6 @@ pub struct OwnedMap {
 }
 
 impl Map for OwnedMap {
-
     type Value = OwnedValue;
 
     fn new() -> Self {

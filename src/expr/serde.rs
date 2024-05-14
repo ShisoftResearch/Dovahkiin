@@ -1,9 +1,9 @@
-use bifrost_hasher::hash_str;
 use crate::types::OwnedValue;
+use bifrost_hasher::hash_str;
 
 use crate::expr::Value;
 
-use super::{SExpr, symbols::ParserExpr};
+use super::{symbols::ParserExpr, SExpr};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum Expr {
@@ -33,17 +33,14 @@ impl Expr {
             SExpr::Value(v) => Self::Value(match v {
                 Value::Owned(o) => o,
                 Value::Shared(s) => s.owned(),
-                Value::Ref(r) => (&*r).clone()
+                Value::Ref(r) => (&*r).clone(),
             }),
             SExpr::List(l) => Self::List(sexpr_list_to_expr_list(l)),
             SExpr::Vec(v) => Self::Vec(sexpr_list_to_expr_list(v)),
             SExpr::META(v) => Self::META(sexpr_list_to_expr_list(v)),
             SExpr::LAMBDA(p, b) => {
-                Self::LAMBDA(
-                    sexpr_list_to_expr_list(p),
-                    sexpr_list_to_expr_list(b)
-                )
-            },
+                Self::LAMBDA(sexpr_list_to_expr_list(p), sexpr_list_to_expr_list(b))
+            }
         }
     }
 
@@ -56,11 +53,8 @@ impl Expr {
             Expr::Vec(v) => SExpr::Vec(expr_list_to_sexpr_list(v)),
             Expr::META(v) => SExpr::META(expr_list_to_sexpr_list(v)),
             Expr::LAMBDA(p, b) => {
-                SExpr::LAMBDA(
-                    expr_list_to_sexpr_list(p),
-                    expr_list_to_sexpr_list(b)
-                )
-            },
+                SExpr::LAMBDA(expr_list_to_sexpr_list(p), expr_list_to_sexpr_list(b))
+            }
         }
     }
     pub fn is_empty(&self) -> bool {
@@ -72,7 +66,7 @@ impl Expr {
     }
 
     pub fn nothing() -> Self {
-      Self::List(vec![])
+        Self::List(vec![])
     }
 }
 
@@ -96,7 +90,7 @@ impl ParserExpr for Expr {
     fn owned_val(val: OwnedValue) -> Self {
         Self::Value(val)
     }
-    
+
     fn into_val(self) -> Result<OwnedValue, String> {
         match self {
             Expr::Symbol(_, s) => Ok(OwnedValue::String(s)),

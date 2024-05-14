@@ -1,6 +1,8 @@
 use super::bindings::*;
 use super::*;
-pub fn lambda_placeholder<'a>(mut exprs: impl Iterator<Item = SExpr<'a>>) -> Result<SExpr<'a>, String> {
+pub fn lambda_placeholder<'a>(
+    mut exprs: impl Iterator<Item = SExpr<'a>>,
+) -> Result<SExpr<'a>, String> {
     let params = exprs.next().unwrap();
     let params_list = if let SExpr::Vec(symbols) = params {
         let mut list = Vec::new();

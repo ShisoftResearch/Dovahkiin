@@ -2,7 +2,9 @@ use super::*;
 
 macro_rules! reduce {
     ($type: ident, $values: ident, $exp: expr) => {{
-        if let Some((Some(first), elements)) = $values.split_first().map(|(f, es)| (f.shared_val(), es)) {
+        if let Some((Some(first), elements)) =
+            $values.split_first().map(|(f, es)| (f.shared_val(), es))
+        {
             if let SharedValue::$type(n) = first {
                 let mut result = *n;
                 for val in elements {

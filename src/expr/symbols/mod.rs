@@ -1,6 +1,6 @@
+use crate::expr::SExpr;
 use bifrost_hasher::hash_str;
 use bifrost_plugins::hash_ident;
-use crate::expr::SExpr;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt::Debug;
@@ -82,7 +82,7 @@ macro_rules! defsymbols {
         pub enum SysSymbols {
             $(
                 $name = hash_ident!($sym),
-            )*    
+            )*
         }
         impl SysSymbols {
             pub fn from_id(id: u64) -> Self {

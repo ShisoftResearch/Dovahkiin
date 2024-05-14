@@ -47,11 +47,12 @@ pub fn concat(lists: Vec<SExpr>) -> Result<SExpr, String> {
 pub fn hashmap(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
     if exprs.len() == 1 {
         match exprs.into_iter().next().unwrap() {
-            SExpr::Vec(l) | SExpr::List(l) => {
-                exprs = l
-            },
+            SExpr::Vec(l) | SExpr::List(l) => exprs = l,
             v => {
-                return Err(format!("Single patameter only support list and seq, found {:?}", v))
+                return Err(format!(
+                    "Single patameter only support list and seq, found {:?}",
+                    v
+                ))
             }
         }
     } else if exprs.len() & 2 == 0 {
@@ -78,7 +79,9 @@ pub fn hashmap(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
                     (Some(k_str), Value::Ref(v)) => {
                         hashmap.insert(k_str.to_owned(), (&*v).to_owned());
                     }
-                    (None, _) => return Err(format!("Only string key is allowed, got {:?}", k_val)),
+                    (None, _) => {
+                        return Err(format!("Only string key is allowed, got {:?}", k_val))
+                    }
                 }
             }
             (SExpr::Keyword(_, kw), SExpr::Value(v)) => {
@@ -93,7 +96,7 @@ pub fn hashmap(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
                     Value::Ref(v) => {
                         hashmap.insert(kw, (&*v).to_owned());
                     }
-                } 
+                }
             }
             _ => {
                 return Err(format!("Wrong hashmap key value data type. Key should be a string or keyword and value should be a value"));

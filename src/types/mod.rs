@@ -4,18 +4,18 @@ pub mod custom_types;
 pub mod owned_value;
 pub mod referred;
 
+use ahash;
 use serde::Deserialize;
 use std::{ops::Index, vec::IntoIter};
-use ahash;
 
 pub use crate::types::custom_types::any::*;
 pub use crate::types::custom_types::bytes::*;
 pub use crate::types::custom_types::id::*;
+pub use crate::types::custom_types::map::Map;
 pub use crate::types::custom_types::owned_map::*;
 pub use crate::types::custom_types::pos::*;
 pub use crate::types::custom_types::shared_map::*;
 pub use crate::types::owned_value::*;
-pub use crate::types::custom_types::map::Map;
 
 gen_primitive_types_io!(
     bool:   bool_io       big_end_cast!();
@@ -152,9 +152,7 @@ gen_variable_types_io!(
     },
     |val: &str| { u64_io::feature(&::bifrost_hasher::hash_str(val)) },
     |val: &'a String| { val.as_str() },
-    {
-        std::mem::align_of::<u32>()
-    }
+    { std::mem::align_of::<u32>() }
 );
 
 gen_variable_types_io!(
@@ -198,9 +196,7 @@ gen_variable_types_io!(
         u64_io::feature(&hasher.finish())
     },
     |val: &'a Bytes| { val.data.as_slice() },
-    {
-        std::mem::align_of::<u32>()
-    }
+    { std::mem::align_of::<u32>() }
 );
 
 gen_variable_types_io!(
@@ -244,9 +240,7 @@ gen_variable_types_io!(
         u64_io::feature(&hasher.finish())
     },
     |val: &'a SmallBytes| { val.data.as_slice() },
-    {
-        std::mem::align_of::<u8>()
-    }
+    { std::mem::align_of::<u8>() }
 );
 
 define_types!(

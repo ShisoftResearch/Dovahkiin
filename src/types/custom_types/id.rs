@@ -35,7 +35,10 @@ impl Id {
         }
     }
     pub const fn max_id() -> Id {
-        Id { higher: !0, lower: !0 }
+        Id {
+            higher: !0,
+            lower: !0,
+        }
     }
     pub fn is_unit_id(&self) -> bool {
         self.higher == 0 && self.lower == 0
@@ -68,10 +71,10 @@ impl Default for Id {
 
 #[cfg(test)]
 mod test {
+    use crate::types::custom_types::id::Id;
     use std::cmp::Ordering;
     use std::collections::BTreeMap;
     use std::collections::HashMap;
-    use crate::types::custom_types::id::Id;
 
     #[test]
     fn compare() {

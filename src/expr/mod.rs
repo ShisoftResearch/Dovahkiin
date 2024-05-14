@@ -1,9 +1,9 @@
-use std::borrow::Borrow;
-use std::rc::Rc;
-use bifrost_hasher::hash_str;
+use crate::parser::lisp::ParserExpr;
 use crate::types::referred::OwnedValueRef;
 use crate::types::{OwnedValue, SharedValue};
-use crate::parser::lisp::ParserExpr;
+use bifrost_hasher::hash_str;
+use std::borrow::Borrow;
+use std::rc::Rc;
 
 use self::interpreter::Envorinment;
 
@@ -16,7 +16,7 @@ pub mod serde;
 pub enum Value<'a> {
     Owned(OwnedValue),
     Shared(SharedValue<'a>),
-    Ref(OwnedValueRef)
+    Ref(OwnedValueRef),
 }
 
 impl<'a> Value<'a> {
@@ -27,7 +27,7 @@ impl<'a> Value<'a> {
         match self {
             Value::Owned(v) => v.shared(),
             Value::Shared(v) => v.clone(),
-            Value::Ref(v) => v.shared()
+            Value::Ref(v) => v.shared(),
         }
     }
     pub fn owned(val: OwnedValue) -> Self {
@@ -37,14 +37,14 @@ impl<'a> Value<'a> {
         match self {
             Value::Owned(v) => v,
             Value::Shared(v) => v.owned(),
-            Value::Ref(v) => (&*v).clone()
+            Value::Ref(v) => (&*v).clone(),
         }
     }
     pub fn into_ref(self) -> OwnedValueRef {
         match self {
             Value::Owned(v) => OwnedValueRef::new(v),
             Value::Shared(v) => OwnedValueRef::new(v.owned()),
-            Value::Ref(v) => v
+            Value::Ref(v) => v,
         }
     }
 }
@@ -113,7 +113,7 @@ impl<'a> SExpr<'a> {
             match v {
                 Value::Owned(v) => Some(v),
                 Value::Shared(v) => Some(v.owned()),
-                Value::Ref(v) => Some((&*v).clone())
+                Value::Ref(v) => Some((&*v).clone()),
             }
         } else {
             None
@@ -121,16 +121,16 @@ impl<'a> SExpr<'a> {
     }
     pub fn shared(&'a self) -> Self {
         match self {
-            SExpr::Value(Value::Owned(ref owned)) =>  SExpr::Value(Value::Shared(owned.shared())),
-            SExpr::Value(Value::Ref(ref owned)) =>  SExpr::Value(Value::Shared(owned.shared())),
-            _ => self.clone()
+            SExpr::Value(Value::Owned(ref owned)) => SExpr::Value(Value::Shared(owned.shared())),
+            SExpr::Value(Value::Ref(ref owned)) => SExpr::Value(Value::Shared(owned.shared())),
+            _ => self.clone(),
         }
     }
     pub fn is_empty(&self) -> bool {
         match self {
             &SExpr::List(ref l) => l.is_empty(),
             &SExpr::Vec(ref v) => v.is_empty(),
-            _ => false
+            _ => false,
         }
     }
 }
@@ -155,7 +155,7 @@ impl ParserExpr for SExpr<'_> {
     fn keyword(name: String) -> Self {
         Self::Keyword(hash_str(&name), name)
     }
-    
+
     fn into_val(self) -> Result<OwnedValue, String> {
         match self {
             SExpr::Symbol(s) => Ok(OwnedValue::String(s)),

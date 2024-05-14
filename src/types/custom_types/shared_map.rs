@@ -1,7 +1,7 @@
 use super::super::*;
 use super::map::Map;
-use bifrost_hasher::hash_str;
 use ahash::{HashMap, HashMapExt};
+use bifrost_hasher::hash_str;
 use std::iter::Iterator;
 use std::slice::Iter;
 
@@ -11,7 +11,6 @@ pub struct SharedMap<'v> {
     pub fields: Vec<String>,
 }
 impl<'v> Map for SharedMap<'v> {
-
     type Value = SharedValue<'v>;
 
     fn new() -> Self {
@@ -106,7 +105,7 @@ impl<'v> Map for SharedMap<'v> {
     fn get_in_mut(&mut self, keys: &[&'static str]) -> Option<&mut Self::Value> {
         self.get_in_mut_by_key_ids(Self::strs_to_ids(keys).iter())
     }
-    
+
     fn update_in_by_key_ids<U>(&mut self, keys: Iter<u64>, update: U) -> Option<()>
     where
         U: FnOnce(&mut Self::Value),
@@ -140,7 +139,7 @@ impl<'v> Map for SharedMap<'v> {
     fn set_in(&mut self, keys: &[&'static str], value: Self::Value) -> Option<()> {
         self.set_in_by_key_ids(Self::strs_to_ids(keys).iter(), value)
     }
-    
+
     fn into_string_map(self) -> HashMap<String, Self::Value> {
         let mut id_map: HashMap<u64, String> = self
             .fields

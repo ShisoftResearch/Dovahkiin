@@ -12,8 +12,7 @@ pub enum Token {
     RightSquareBracket,
     LeftCurlyBracket,
     RightCurlyBracket,
-    Keyword(String)
-    // Quote
+    Keyword(String), // Quote
 }
 
 impl ToString for Token {
@@ -29,7 +28,7 @@ impl ToString for Token {
             &Token::RightSquareBracket => String::from("]"),
             &Token::LeftCurlyBracket => String::from("{"),
             &Token::RightCurlyBracket => String::from("}"),
-            &Token::Keyword(ref s) => format!(":{}", s)
+            &Token::Keyword(ref s) => format!(":{}", s),
         }
     }
 }
@@ -307,9 +306,7 @@ pub fn tokenize_chars_iter(iter: &mut CharIter) -> Result<Vec<Token>, String> {
                 // string
                 tokens.push(read_string(iter)?);
             }
-            ':' => {
-                tokens.push(read_keyword(iter)?)
-            }
+            ':' => tokens.push(read_keyword(iter)?),
             _ => {
                 // symbol with utf8 chars including emojis
                 tokens.push(read_symbol(c, iter)?);

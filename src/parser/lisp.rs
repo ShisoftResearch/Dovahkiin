@@ -1,10 +1,10 @@
 use ahash::{HashMap, HashMapExt};
 
-use crate::{lexer::lisp::Token, types::OwnedMap};
 use crate::types::{Map, OwnedValue as Value};
+use crate::{lexer::lisp::Token, types::OwnedMap};
 use std::{marker::PhantomData, mem, vec::IntoIter};
 
-use crate::expr::{SExpr, serde::Expr};
+use crate::expr::{serde::Expr, SExpr};
 
 pub trait ParserExpr: Sized {
     fn list(data: Vec<Self>) -> Self;
@@ -16,13 +16,13 @@ pub trait ParserExpr: Sized {
 }
 
 pub struct Parser<E: ParserExpr> {
-    _p: PhantomData<E>
+    _p: PhantomData<E>,
 }
 
 pub type SExprParser<'a> = Parser<SExpr<'a>>;
 pub type SerdeExprParser = Parser<Expr>;
 
-impl <E: ParserExpr> Parser <E> {
+impl<E: ParserExpr> Parser<E> {
     fn parse_list<'a>(iter: &mut IntoIter<Token>) -> Result<E, String> {
         let mut contents = Vec::new();
         while let Some(token) = iter.next() {
@@ -37,7 +37,7 @@ impl <E: ParserExpr> Parser <E> {
         }
         Err(String::from("Unexpected EOF, expect ')'"))
     }
-    
+
     fn parse_vec<'a>(iter: &mut IntoIter<Token>) -> Result<E, String> {
         let mut contents = Vec::new();
         while let Some(token) = iter.next() {
@@ -68,12 +68,15 @@ impl <E: ParserExpr> Parser <E> {
                     if visited & 1 == 0 {
                         // parse key
                         match token {
-                            Token::Symbol(k) |
-                            Token::String(k) |
-                            Token::Keyword(k) => {
+                            Token::Symbol(k) | Token::String(k) | Token::Keyword(k) => {
                                 last_key = k;
                             }
-                            _ => return Err(format!("Expecting map key with string but get {:?}", token))
+                            _ => {
+                                return Err(format!(
+                                    "Expecting map key with string but get {:?}",
+                                    token
+                                ))
+                            }
                         }
                     } else {
                         let key = mem::replace(&mut last_key, String::from(""));
@@ -87,7 +90,7 @@ impl <E: ParserExpr> Parser <E> {
         }
         Err(String::from("Unexpected EOF, expect ']'"))
     }
-    
+
     fn parse_symbol<'a>(name: String) -> E {
         E::symbol(name)
     }
@@ -95,7 +98,7 @@ impl <E: ParserExpr> Parser <E> {
     fn parse_keyword<'a>(name: String) -> E {
         E::keyword(name)
     }
-    
+
     fn parse_int<'a>(num_str: String, unit: String) -> Result<E, String> {
         match unit.as_ref() {
             "u8" => num_str.parse::<u8>().map(Value::U8),
@@ -116,7 +119,7 @@ impl <E: ParserExpr> Parser <E> {
         })
         .map(E::owned_val)
     }
-    
+
     fn parse_float<'a>(num_str: String, unit: String) -> Result<E, String> {
         match unit.as_ref() {
             "f32" => num_str.parse::<f32>().map(Value::F32),
@@ -131,11 +134,11 @@ impl <E: ParserExpr> Parser <E> {
         })
         .map(E::owned_val)
     }
-    
+
     fn parse_string<'a>(str: String) -> E {
         E::owned_val(Value::String(str))
     }
-    
+
     fn parse_token<'a>(token: Token, iter: &mut IntoIter<Token>) -> Result<E, String> {
         match token {
             Token::LeftParentheses => Ok(Self::parse_list(iter)?), // list
@@ -149,7 +152,7 @@ impl <E: ParserExpr> Parser <E> {
             _ => Err(format!("Unexpected start token {}", token.to_string())),
         }
     }
-    
+
     pub fn parse_to_expr<'a>(tokens: Vec<Token>) -> Result<Vec<E>, String> {
         let mut exprs: Vec<E> = Vec::new();
         let mut iter = tokens.into_iter();
@@ -157,5 +160,5 @@ impl <E: ParserExpr> Parser <E> {
             exprs.push(Self::parse_token(token, &mut iter)?)
         }
         Ok(exprs)
-    }    
+    }
 }

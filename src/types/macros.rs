@@ -1,4 +1,3 @@
-
 macro_rules! gen_primitive_types_io {
     (
         $($t:ty: $tmod:ident $feat_writer: expr);*
