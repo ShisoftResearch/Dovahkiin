@@ -85,12 +85,12 @@ macro_rules! defsymbols {
             )*
         }
         impl SysSymbol {
-            pub fn from_id(id: u64) -> Self {
+            pub fn from_id(id: u64) -> Option<Self> {
                 match id {
                     $(
-                        hash_ident!($sym) => Self::$name,
+                        hash_ident!($sym) => Some(Self::$name),
                     )*
-                    _ => panic!("Invalid system symbol id: {}", id)
+                    _ => None
                 }
             }
         }
