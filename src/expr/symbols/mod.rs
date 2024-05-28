@@ -78,7 +78,8 @@ macro_rules! defsymbols {
                 ISymbolMap::new(symbol_map)
             };
         }
-        #[derive(Copy, Clone)]
+        
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
         pub enum SysSymbol {
             $(
                 $name = hash_ident!($sym),
