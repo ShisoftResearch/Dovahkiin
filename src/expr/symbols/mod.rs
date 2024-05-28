@@ -1,4 +1,3 @@
-use crate::expr::SExpr;
 use bifrost_hasher::hash_str;
 use bifrost_plugins::hash_ident;
 use std::cell::RefCell;
@@ -78,7 +77,7 @@ macro_rules! defsymbols {
                 ISymbolMap::new(symbol_map)
             };
         }
-        
+
         #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
         pub enum SysSymbol {
             $(
