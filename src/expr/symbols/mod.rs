@@ -79,12 +79,12 @@ macro_rules! defsymbols {
             };
         }
         #[derive(Copy, Clone)]
-        pub enum SysSymbols {
+        pub enum SysSymbol {
             $(
                 $name = hash_ident!($sym),
             )*
         }
-        impl SysSymbols {
+        impl SysSymbol {
             pub fn from_id(id: u64) -> Self {
                 match id {
                     $(
