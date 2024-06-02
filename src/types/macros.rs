@@ -428,7 +428,7 @@ macro_rules! define_types {
                     _ => None
                 }
             }
-            pub fn get_uint(&self) -> Option<isize> {
+            pub fn get_uint(&self) -> Option<usize> {
                 match self {
                     Self::U8(v) => Some(*v as _),
                     Self::U16(v) => Some(*v as _),
