@@ -268,7 +268,7 @@ fn eval_owned_value<'a>(ov: &OwnedValue, params: Vec<SExpr<'a>>) -> Result<SExpr
     }
 }
 
-pub fn defn<'a>(env: &mut Envorinment<'a>, mut exprs: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
+pub fn defn<'a>(env: &mut Envorinment<'a>, exprs: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
     let mut exprs = exprs.into_iter();
     let name = exprs.next().unwrap();
     let lambda = lambda_placeholder(exprs)?;
