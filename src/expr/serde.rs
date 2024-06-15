@@ -7,6 +7,7 @@ use super::{symbols::ParserExpr, SExpr};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum Expr {
+    NA,
     Symbol(u64, String),
     Value(OwnedValue),
     List(Vec<Expr>),
@@ -55,6 +56,7 @@ impl Expr {
             Expr::LAMBDA(p, b) => {
                 SExpr::LAMBDA(expr_list_to_sexpr_list(p), expr_list_to_sexpr_list(b))
             }
+            Expr::NA => unreachable!(),
         }
     }
     pub fn is_empty(&self) -> bool {
@@ -100,6 +102,7 @@ impl ParserExpr for Expr {
             Expr::Keyword(_, s) => Ok(OwnedValue::String(s)),
             Expr::META(m) => Err(format!("Cannot have meta as value {:?}", m)),
             Expr::LAMBDA(i, o) => Err(format!("Cannot have lambda as value {:?} -> {:?}", i, o)),
+            Expr::NA => Ok(OwnedValue::NA)
         }
     }
 }
