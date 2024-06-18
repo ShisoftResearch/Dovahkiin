@@ -13,7 +13,7 @@ pub enum Expr {
     List(Vec<Expr>),
     Vec(Vec<Expr>),
     Keyword(u64, String),
-    META(Vec<Expr>),
+    META(Box<Self>),
     LAMBDA(Vec<Expr>, Vec<Expr>),
 }
 
@@ -38,7 +38,7 @@ impl Expr {
             }),
             SExpr::List(l) => Self::List(sexpr_list_to_expr_list(l)),
             SExpr::Vec(v) => Self::Vec(sexpr_list_to_expr_list(v)),
-            SExpr::META(v) => Self::META(sexpr_list_to_expr_list(v)),
+            SExpr::META(v) => Self::META(Box::new(Self::from_sexpr(*v))),
             SExpr::LAMBDA(p, b) => {
                 Self::LAMBDA(sexpr_list_to_expr_list(p), sexpr_list_to_expr_list(b))
             }
@@ -52,7 +52,7 @@ impl Expr {
             Expr::Value(v) => SExpr::Value(Value::Owned(v)),
             Expr::List(l) => SExpr::List(expr_list_to_sexpr_list(l)),
             Expr::Vec(v) => SExpr::Vec(expr_list_to_sexpr_list(v)),
-            Expr::META(v) => SExpr::META(expr_list_to_sexpr_list(v)),
+            Expr::META(v) => SExpr::META(Box::new(v.to_sexpr())),
             Expr::LAMBDA(p, b) => {
                 SExpr::LAMBDA(expr_list_to_sexpr_list(p), expr_list_to_sexpr_list(b))
             }
