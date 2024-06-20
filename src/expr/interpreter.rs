@@ -8,17 +8,20 @@ use std::rc::Rc;
 
 use super::symbols::bindings::bind;
 use super::symbols::bindings::bind_by_name;
+
+pub const DEFAULT_GLOBAL_VALUE: SharedValue = SharedValue::NA;
+
 #[derive(Debug)]
 pub struct Environment<'a> {
     pub bindings: HashMap<u64, LinkedList<Rc<SExpr<'a>>>>,
-    pub global_val: SharedValue<'a>
+    pub global_val: &'a SharedValue<'a>
 }
 
 impl<'a> Environment<'a> {
     pub fn new() -> Self {
         Environment {
             bindings: HashMap::new(),
-            global_val: SharedValue::NA
+            global_val: &DEFAULT_GLOBAL_VALUE
         }
     }
     pub fn get_mut_bindings(&mut self) -> &mut HashMap<u64, LinkedList<Rc<SExpr<'a>>>> {
@@ -76,7 +79,7 @@ impl<'a> Interpreter<'a> {
                     .map(|rc| Rc::<SExpr<'_>>::into_inner(rc).unwrap())
             })
     }
-    pub fn set_global_val(&mut self, val: SharedValue<'a>) {
+    pub fn set_global_val(&mut self, val: &'a SharedValue<'a>) {
         self.env.global_val = val;
     }
 }
