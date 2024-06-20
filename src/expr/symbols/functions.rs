@@ -82,7 +82,7 @@ fn eval_shared_value<'a>(
             }
             if let Some(Some(SharedValue::Map(ref m))) = params.get(0).map(|expr| expr.shared_val())
             {
-                return Ok(SExpr::owned_value(m.get(str_key).owned()));
+                return Ok(SExpr::from_owned_value(m.get(str_key).owned()));
             } else {
                 return Err(format!(
                     "When use string value as function, \
@@ -102,10 +102,10 @@ fn eval_shared_value<'a>(
             match params.get(0).map(|expr| expr.shared_val()) {
                 Some(Some(SharedValue::Map(ref m))) => {
                     let val = m.get_by_key_id(**index).clone();
-                    return Ok(SExpr::owned_value(val.owned()));
+                    return Ok(SExpr::from_owned_value(val.owned()));
                 }
                 Some(Some(SharedValue::Array(ref arr))) => {
-                    return Ok(SExpr::owned_value(
+                    return Ok(SExpr::from_owned_value(
                         arr.get(**index as usize)
                             .cloned()
                             .unwrap_or(SharedValue::Null)
@@ -124,10 +124,10 @@ fn eval_shared_value<'a>(
             }
             match params.get(0).map(|v| v.shared_val()) {
                 Some(Some(SharedValue::String(str_key))) => {
-                    return Ok(SExpr::shared_value(m.get(str_key).clone()))
+                    return Ok(SExpr::from_shared_value(m.get(str_key).clone()))
                 }
                 Some(Some(SharedValue::U64(key_id))) => {
-                    return Ok(SExpr::shared_value(m.get_by_key_id(*key_id).clone()))
+                    return Ok(SExpr::from_shared_value(m.get_by_key_id(*key_id).clone()))
                 }
                 _ => {
                     return Err(format!(
@@ -147,7 +147,7 @@ fn eval_shared_value<'a>(
             }
             match params.get(0).map(|v| v.shared_val()) {
                 Some(Some(SharedValue::U64(key_id))) => {
-                    return Ok(SExpr::shared_value(
+                    return Ok(SExpr::from_shared_value(
                         array
                             .get(*key_id as usize)
                             .cloned()
@@ -181,7 +181,7 @@ fn eval_owned_value<'a>(ov: &OwnedValue, params: Vec<SExpr<'a>>) -> Result<SExpr
             }
             if let Some(Some(SharedValue::Map(ref m))) = params.get(0).map(|expr| expr.shared_val())
             {
-                return Ok(SExpr::owned_value(m.get(str_key).owned()));
+                return Ok(SExpr::from_owned_value(m.get(str_key).owned()));
             } else {
                 return Err(format!(
                     "When use string value as function, \
@@ -201,10 +201,10 @@ fn eval_owned_value<'a>(ov: &OwnedValue, params: Vec<SExpr<'a>>) -> Result<SExpr
             match params.get(0).map(|expr| expr.shared_val()) {
                 Some(Some(SharedValue::Map(ref m))) => {
                     let val = m.get_by_key_id(*index).clone();
-                    return Ok(SExpr::owned_value(val.owned()));
+                    return Ok(SExpr::from_owned_value(val.owned()));
                 }
                 Some(Some(SharedValue::Array(ref arr))) => {
-                    return Ok(SExpr::owned_value(
+                    return Ok(SExpr::from_owned_value(
                         arr.get(*index as usize)
                             .cloned()
                             .unwrap_or(SharedValue::Null)
@@ -223,10 +223,10 @@ fn eval_owned_value<'a>(ov: &OwnedValue, params: Vec<SExpr<'a>>) -> Result<SExpr
             }
             match params.get(0).map(|v| v.shared_val()) {
                 Some(Some(SharedValue::String(str_key))) => {
-                    return Ok(SExpr::owned_value(m.get(str_key).clone()))
+                    return Ok(SExpr::from_owned_value(m.get(str_key).clone()))
                 }
                 Some(Some(SharedValue::U64(key_id))) => {
-                    return Ok(SExpr::owned_value(m.get_by_key_id(*key_id).clone()))
+                    return Ok(SExpr::from_owned_value(m.get_by_key_id(*key_id).clone()))
                 }
                 _ => {
                     return Err(format!(
@@ -246,7 +246,7 @@ fn eval_owned_value<'a>(ov: &OwnedValue, params: Vec<SExpr<'a>>) -> Result<SExpr
             }
             match params.get(0).map(|v| v.shared_val()) {
                 Some(Some(SharedValue::U64(key_id))) => {
-                    return Ok(SExpr::owned_value(
+                    return Ok(SExpr::from_owned_value(
                         array
                             .get(*key_id as usize)
                             .cloned()

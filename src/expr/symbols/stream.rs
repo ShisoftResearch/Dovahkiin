@@ -13,7 +13,7 @@ pub fn to_array<'a>(expr: SExpr<'a>) -> Result<SExpr<'a>, String> {
                     return Err(format!("Data {:?} cannot be value", expr));
                 }
             }
-            return Ok(SExpr::owned_value(OwnedValue::Array(array)));
+            return Ok(SExpr::from_owned_value(OwnedValue::Array(array)));
         }
         SExpr::Value(Value::Shared(SharedValue::Array(_)))
         | SExpr::Value(Value::Owned(OwnedValue::Array(_))) => return Ok(expr),

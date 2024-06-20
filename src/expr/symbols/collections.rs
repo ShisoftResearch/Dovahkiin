@@ -24,7 +24,7 @@ pub fn size_(vals: &Vec<SExpr>) -> Result<u64, String> {
 }
 
 pub fn size(vals: Vec<SExpr>) -> Result<SExpr, String> {
-    Ok(SExpr::owned_value(OwnedValue::U64(size_(&vals)?)))
+    Ok(SExpr::from_owned_value(OwnedValue::U64(size_(&vals)?)))
 }
 
 pub fn concat(lists: Vec<SExpr>) -> Result<SExpr, String> {
@@ -103,7 +103,7 @@ pub fn hashmap(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
             }
         }
     }
-    return Ok(SExpr::owned_value(OwnedValue::Map(
+    return Ok(SExpr::from_owned_value(OwnedValue::Map(
         OwnedMap::from_hash_map(hashmap),
     )));
 }
@@ -136,7 +136,7 @@ pub fn merge<'a>(exprs: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
         }
     }
     field_names.dedup();
-    Ok(SExpr::owned_value(OwnedValue::Map(OwnedMap {
+    Ok(SExpr::from_owned_value(OwnedValue::Map(OwnedMap {
         map: value_map,
         fields: field_names,
     })))

@@ -10,7 +10,7 @@ pub fn lisp_integrated_plus_function() {
     let str_function = " (+ -1i32 1i32 15i32)";
     assert_eq!(
         lisp::eval_string(&mut interpreter, str_function).unwrap(),
-        SExpr::owned_value(OwnedValue::I32(15))
+        SExpr::from_owned_value(OwnedValue::I32(15))
     );
 }
 
@@ -20,7 +20,7 @@ pub fn lisp_integrated_binding() {
     let str_function = " (let [x 1u32] (+ 1u32 x))";
     assert_eq!(
         lisp::eval_string(&mut interpreter, str_function).unwrap(),
-        SExpr::owned_value(OwnedValue::U32(2))
+        SExpr::from_owned_value(OwnedValue::U32(2))
     );
 }
 
@@ -30,7 +30,7 @@ pub fn lisp_integrated_binding_2() {
     let str_function = " (let [x 1u32 y 2u32] (+ x y))";
     assert_eq!(
         lisp::eval_string(&mut interpreter, str_function).unwrap(),
-        SExpr::owned_value(OwnedValue::U32(3))
+        SExpr::from_owned_value(OwnedValue::U32(3))
     );
 }
 
@@ -40,7 +40,7 @@ pub fn lisp_integrated_binding_def() {
     let str_function = "(def x 1u32) (let [y 2u32] (+ x y))";
     assert_eq!(
         lisp::eval_string(&mut interpreter, str_function).unwrap(),
-        SExpr::owned_value(OwnedValue::U32(3))
+        SExpr::from_owned_value(OwnedValue::U32(3))
     );
 }
 
@@ -50,7 +50,7 @@ pub fn lisp_integrated_lambda() {
     let str_function = " ((lambda [x] (+ 1u32 x)) 5u32)";
     assert_eq!(
         lisp::eval_string(&mut interpreter, str_function).unwrap(),
-        SExpr::owned_value(OwnedValue::U32(6))
+        SExpr::from_owned_value(OwnedValue::U32(6))
     );
 }
 
@@ -60,7 +60,7 @@ pub fn lisp_integrated_lambda_2() {
     let str_function = " ((lambda [x y] (* x y)) 5u32 4u32)";
     assert_eq!(
         lisp::eval_string(&mut interpreter, str_function).unwrap(),
-        SExpr::owned_value(OwnedValue::U32(20))
+        SExpr::from_owned_value(OwnedValue::U32(20))
     );
 }
 
@@ -71,12 +71,12 @@ pub fn lisp_integrated_functional() {
     assert_eq!(
         lisp::eval_string(&mut interpreter, str_function).unwrap(),
         SExpr::Vec(vec![
-            SExpr::owned_value(OwnedValue::U32(2)),
-            SExpr::owned_value(OwnedValue::U32(3)),
-            SExpr::owned_value(OwnedValue::U32(4)),
-            SExpr::owned_value(OwnedValue::U32(5)),
-            SExpr::owned_value(OwnedValue::U32(6)),
-            SExpr::owned_value(OwnedValue::U32(7))
+            SExpr::from_owned_value(OwnedValue::U32(2)),
+            SExpr::from_owned_value(OwnedValue::U32(3)),
+            SExpr::from_owned_value(OwnedValue::U32(4)),
+            SExpr::from_owned_value(OwnedValue::U32(5)),
+            SExpr::from_owned_value(OwnedValue::U32(6)),
+            SExpr::from_owned_value(OwnedValue::U32(7))
         ])
     );
 }
@@ -88,12 +88,12 @@ pub fn lisp_integrated_functional_symbolic() {
     assert_eq!(
         lisp::eval_string(&mut interpreter, str_function).unwrap(),
         SExpr::Vec(vec![
-            SExpr::owned_value(OwnedValue::U32(2)),
-            SExpr::owned_value(OwnedValue::U32(3)),
-            SExpr::owned_value(OwnedValue::U32(4)),
-            SExpr::owned_value(OwnedValue::U32(5)),
-            SExpr::owned_value(OwnedValue::U32(6)),
-            SExpr::owned_value(OwnedValue::U32(7))
+            SExpr::from_owned_value(OwnedValue::U32(2)),
+            SExpr::from_owned_value(OwnedValue::U32(3)),
+            SExpr::from_owned_value(OwnedValue::U32(4)),
+            SExpr::from_owned_value(OwnedValue::U32(5)),
+            SExpr::from_owned_value(OwnedValue::U32(6)),
+            SExpr::from_owned_value(OwnedValue::U32(7))
         ])
     );
 }
@@ -106,12 +106,12 @@ pub fn lisp_integrated_functional_defunc() {
     assert_eq!(
         lisp::eval_string(&mut interpreter, str_function).unwrap(),
         SExpr::Vec(vec![
-            SExpr::owned_value(OwnedValue::U32(0)),
-            SExpr::owned_value(OwnedValue::U32(1)),
-            SExpr::owned_value(OwnedValue::U32(2)),
-            SExpr::owned_value(OwnedValue::U32(3)),
-            SExpr::owned_value(OwnedValue::U32(4)),
-            SExpr::owned_value(OwnedValue::U32(5))
+            SExpr::from_owned_value(OwnedValue::U32(0)),
+            SExpr::from_owned_value(OwnedValue::U32(1)),
+            SExpr::from_owned_value(OwnedValue::U32(2)),
+            SExpr::from_owned_value(OwnedValue::U32(3)),
+            SExpr::from_owned_value(OwnedValue::U32(4)),
+            SExpr::from_owned_value(OwnedValue::U32(5))
         ])
     );
 }
@@ -122,7 +122,7 @@ pub fn lisp_lexer_test_1() {
     let str_function = "(+(+ 1u32 2u32) 3u32)";
     assert_eq!(
         lisp::eval_string(&mut interpreter, str_function).unwrap(),
-        SExpr::owned_value(OwnedValue::U32(6))
+        SExpr::from_owned_value(OwnedValue::U32(6))
     );
 }
 
@@ -148,7 +148,7 @@ pub fn or() {
     let str_function = "(let [x 2u64] (or (= x 1u64) (= x 2u64)))";
     assert_eq!(
         lisp::eval_string(&mut interpreter, str_function).unwrap(),
-        SExpr::owned_value(OwnedValue::Bool(true))
+        SExpr::from_owned_value(OwnedValue::Bool(true))
     );
 }
 

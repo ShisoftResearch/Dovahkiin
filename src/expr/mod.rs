@@ -95,10 +95,10 @@ impl<'a> SExpr<'a> {
             _ => Ok(self),
         }
     }
-    pub fn owned_value(val: OwnedValue) -> Self {
+    pub fn from_owned_value(val: OwnedValue) -> Self {
         Self::Value(Value::Owned(val))
     }
-    pub fn shared_value(val: SharedValue<'a>) -> Self {
+    pub fn from_shared_value(val: SharedValue<'a>) -> Self {
         Self::Value(Value::Shared(val))
     }
     pub fn shared_val(&'a self) -> Option<SharedValue<'a>> {
@@ -149,7 +149,7 @@ impl ParserExpr for SExpr<'_> {
     }
 
     fn owned_val(val: OwnedValue) -> Self {
-        Self::owned_value(val)
+        Self::from_owned_value(val)
     }
 
     fn keyword(name: String) -> Self {

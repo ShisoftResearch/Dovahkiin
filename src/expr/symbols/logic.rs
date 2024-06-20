@@ -4,19 +4,19 @@ use super::*;
 pub fn or<'a>(exprs: Vec<SExpr<'a>>, env: &mut Envorinment<'a>) -> Result<SExpr<'a>, String> {
     for expr in exprs {
         if is_true(&expr.eval(env)?) {
-            return Ok(SExpr::owned_value(OwnedValue::Bool(true)));
+            return Ok(SExpr::from_owned_value(OwnedValue::Bool(true)));
         }
     }
-    return Ok(SExpr::owned_value(OwnedValue::Bool(false)));
+    return Ok(SExpr::from_owned_value(OwnedValue::Bool(false)));
 }
 
 pub fn and<'a>(exprs: Vec<SExpr<'a>>, env: &mut Envorinment<'a>) -> Result<SExpr<'a>, String> {
     for expr in exprs {
         if !is_true(&expr.eval(env)?) {
-            return Ok(SExpr::owned_value(OwnedValue::Bool(false)));
+            return Ok(SExpr::from_owned_value(OwnedValue::Bool(false)));
         }
     }
-    return Ok(SExpr::owned_value(OwnedValue::Bool(true)));
+    return Ok(SExpr::from_owned_value(OwnedValue::Bool(true)));
 }
 
 pub fn cond<'a>(exprs: Vec<SExpr<'a>>, env: &mut Envorinment<'a>) -> Result<SExpr<'a>, String> {

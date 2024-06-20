@@ -19,7 +19,7 @@ macro_rules! reduce {
                         ));
                     }
                 }
-                Ok(SExpr::owned_value(OwnedValue::$type(result)))
+                Ok(SExpr::from_owned_value(OwnedValue::$type(result)))
             } else {
                 Err(format!(
                     "Type not match on the first value, expect {} found {:?}",
@@ -123,14 +123,14 @@ pub fn divide(values: Vec<SExpr>) -> Result<SExpr, String> {
 
 pub fn inc(value: SExpr) -> Result<SExpr, String> {
     let value = match value.shared_val() {
-        Some(SharedValue::U8(v)) => SExpr::owned_value(OwnedValue::U8(v + 1)),
-        Some(SharedValue::U16(v)) => SExpr::owned_value(OwnedValue::U16(v + 1)),
-        Some(SharedValue::U32(v)) => SExpr::owned_value(OwnedValue::U32(v + 1)),
-        Some(SharedValue::U64(v)) => SExpr::owned_value(OwnedValue::U64(v + 1)),
-        Some(SharedValue::I8(v)) => SExpr::owned_value(OwnedValue::I8(v + 1)),
-        Some(SharedValue::I16(v)) => SExpr::owned_value(OwnedValue::I16(v + 1)),
-        Some(SharedValue::I32(v)) => SExpr::owned_value(OwnedValue::I32(v + 1)),
-        Some(SharedValue::I64(v)) => SExpr::owned_value(OwnedValue::I64(v + 1)),
+        Some(SharedValue::U8(v)) => SExpr::from_owned_value(OwnedValue::U8(v + 1)),
+        Some(SharedValue::U16(v)) => SExpr::from_owned_value(OwnedValue::U16(v + 1)),
+        Some(SharedValue::U32(v)) => SExpr::from_owned_value(OwnedValue::U32(v + 1)),
+        Some(SharedValue::U64(v)) => SExpr::from_owned_value(OwnedValue::U64(v + 1)),
+        Some(SharedValue::I8(v)) => SExpr::from_owned_value(OwnedValue::I8(v + 1)),
+        Some(SharedValue::I16(v)) => SExpr::from_owned_value(OwnedValue::I16(v + 1)),
+        Some(SharedValue::I32(v)) => SExpr::from_owned_value(OwnedValue::I32(v + 1)),
+        Some(SharedValue::I64(v)) => SExpr::from_owned_value(OwnedValue::I64(v + 1)),
         _ => return Err(format!("Type cannot be increased: {:?}", value)),
     };
     Ok(value)

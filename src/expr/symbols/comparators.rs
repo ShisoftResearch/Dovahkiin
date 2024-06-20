@@ -9,14 +9,14 @@ pub fn equals(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
         let expr = expr.shared_val();
         trace!("Comparing {:?} with {:?}", expr, last);
         if expr != last {
-            return Ok(SExpr::owned_value(OwnedValue::Bool(false)));
+            return Ok(SExpr::from_owned_value(OwnedValue::Bool(false)));
         }
     }
-    return Ok(SExpr::owned_value(OwnedValue::Bool(true)));
+    return Ok(SExpr::from_owned_value(OwnedValue::Bool(true)));
 }
 
 pub fn not_equals(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
-    return Ok(SExpr::owned_value(OwnedValue::Bool({
+    return Ok(SExpr::from_owned_value(OwnedValue::Bool({
         let l = exprs.pop();
         let r = exprs.pop();
         l.as_ref().map(|e| e.shared_val()) == r.as_ref().map(|e| e.shared_val())
@@ -33,7 +33,7 @@ macro_rules! reduce {
                         if $exp(last, n) {
                             last = n;
                         } else {
-                            return Ok(SExpr::owned_value(OwnedValue::Bool(false)));
+                            return Ok(SExpr::from_owned_value(OwnedValue::Bool(false)));
                         }
                     } else {
                         return Err(format!(
@@ -43,7 +43,7 @@ macro_rules! reduce {
                         ));
                     }
                 }
-                Ok(SExpr::owned_value(OwnedValue::Bool(true)))
+                Ok(SExpr::from_owned_value(OwnedValue::Bool(true)))
             } else {
                 Err(format!(
                     "Type not match on the first value, expect {} found {:?}",
