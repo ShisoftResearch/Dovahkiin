@@ -23,6 +23,12 @@ impl<'a> Environment<'a> {
             global_val: SharedValue::NA
         }
     }
+    pub fn from_global_val(global_val: SharedValue<'a>) -> Self {
+        Environment {
+            bindings: HashMap::new(),
+            global_val
+        }
+    }
     pub fn get_mut_bindings(&mut self) -> &mut HashMap<u64, LinkedList<Rc<SExpr<'a>>>> {
         &mut self.bindings
     }
@@ -53,6 +59,9 @@ impl<'a> Interpreter<'a> {
         Interpreter {
             env: Environment::new(),
         }
+    }
+    pub fn from_global_val(val: SharedValue<'a>) -> Self {
+        Interpreter { env: Environment::from_global_val(val) }
     }
     pub fn eval(&mut self, exprs: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
         do_eval(exprs, &mut self.env)
