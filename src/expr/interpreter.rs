@@ -10,23 +10,19 @@ use std::rc::Rc;
 use super::symbols::bindings::bind;
 use super::symbols::bindings::bind_by_name;
 
+pub const DEFAULT_GLOBAL_VAL: SharedValue = SharedValue::NA;
+
 #[derive(Debug)]
 pub struct Environment<'a> {
     pub bindings: HashMap<u64, LinkedList<Rc<SExpr<'a>>>>,
-    pub global_val: SharedValue<'a>
+    pub global_val: &'a SharedValue<'a>
 }
 
 impl<'a> Environment<'a> {
     pub fn new() -> Self {
         Environment {
             bindings: HashMap::new(),
-            global_val: SharedValue::NA
-        }
-    }
-    pub fn from_global_val(global_val: SharedValue<'a>) -> Self {
-        Environment {
-            bindings: HashMap::new(),
-            global_val
+            global_val: &DEFAULT_GLOBAL_VAL
         }
     }
     pub fn get_mut_bindings(&mut self) -> &mut HashMap<u64, LinkedList<Rc<SExpr<'a>>>> {
@@ -60,9 +56,6 @@ impl<'a> Interpreter<'a> {
             env: Environment::new(),
         }
     }
-    pub fn from_global_val(val: SharedValue<'a>) -> Self {
-        Interpreter { env: Environment::from_global_val(val) }
-    }
     pub fn eval(&mut self, exprs: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
         do_eval(exprs, &mut self.env)
     }
@@ -87,10 +80,10 @@ impl<'a> Interpreter<'a> {
                     .map(|rc| Rc::<SExpr<'_>>::into_inner(rc).unwrap())
             })
     }
-    pub fn set_global_val(&mut self, val: SharedValue<'a>) {
+    pub fn set_global_val(&mut self, val: &'a SharedValue<'a>) {
         self.env.global_val = val;
     }
-    pub fn unset_global_val(&mut self) -> SharedValue<'a> {
-        mem::replace(&mut self.env.global_val, SharedValue::NA)
+    pub fn unset_global_val(&mut self) -> &'a SharedValue<'a> {
+        mem::replace(&mut self.env.global_val, &DEFAULT_GLOBAL_VAL)
     }
 }

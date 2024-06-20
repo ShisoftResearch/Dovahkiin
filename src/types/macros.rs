@@ -406,9 +406,6 @@ macro_rules! define_types {
                     OwnedValue::NA => SharedValue::NA,
                 }
             }
-            pub unsafe fn unsafe_shared(&self) -> SharedValue<'static> {
-                std::mem::transmute(self.shared())
-            }
             #[allow(non_snake_case)]
             pub fn Map(&self) -> Option<&OwnedMap> {
                 match self {
