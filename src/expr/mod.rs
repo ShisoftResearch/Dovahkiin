@@ -2,7 +2,6 @@ use crate::parser::lisp::ParserExpr;
 use crate::types::referred::OwnedValueRef;
 use crate::types::{OwnedValue, SharedValue};
 use bifrost_hasher::hash_str;
-use interpreter::DEFAULT_GLOBAL_VALUE;
 use std::borrow::Borrow;
 use std::rc::Rc;
 
@@ -90,8 +89,8 @@ impl<'a> SExpr<'a> {
                     let bind_expr: &SExpr = binding.borrow();
                     Ok(bind_expr.clone())
                 } else {
-                    let global_val =  crate::types::Value::get_by_id(env.global_val, symbol_id);
-                    if global_val != &DEFAULT_GLOBAL_VALUE {
+                    let global_val =  crate::types::Value::get_by_id(&env.global_val, symbol_id);
+                    if global_val != &SharedValue::NA {
                         Ok(SExpr::from_shared_value(global_val.clone()))
                     } else {
                         Ok(self)
