@@ -4,7 +4,7 @@ use crate::expr::symbols::misc;
 use crate::expr::SExpr;
 use crate::types::SharedValue;
 use std::collections::{HashMap, LinkedList};
-use std::mem;
+use std::mem::{self, transmute};
 use std::rc::Rc;
 
 use super::symbols::bindings::bind;
@@ -82,6 +82,9 @@ impl<'a> Interpreter<'a> {
     }
     pub fn set_global_val(&mut self, val: &'a SharedValue<'a>) {
         self.env.global_val = val;
+    }
+    pub unsafe fn unsafe_set_global_val<'b, 'c>(&mut self, val: &'b SharedValue<'c>) {
+        self.env.global_val = mem::transmute(val);
     }
     pub fn unset_global_val(&mut self) -> &'a SharedValue<'a> {
         mem::replace(&mut self.env.global_val, &DEFAULT_GLOBAL_VAL)
