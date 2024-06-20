@@ -2,20 +2,23 @@ use bifrost_hasher::hash_str;
 
 use crate::expr::symbols::misc;
 use crate::expr::SExpr;
+use crate::types::SharedValue;
 use std::collections::{HashMap, LinkedList};
 use std::rc::Rc;
 
 use super::symbols::bindings::bind;
 use super::symbols::bindings::bind_by_name;
 #[derive(Debug)]
-pub struct Envorinment<'a> {
+pub struct Environment<'a> {
     pub bindings: HashMap<u64, LinkedList<Rc<SExpr<'a>>>>,
+    pub global_val: SharedValue<'a>
 }
 
-impl<'a> Envorinment<'a> {
+impl<'a> Environment<'a> {
     pub fn new() -> Self {
-        Envorinment {
+        Environment {
             bindings: HashMap::new(),
+            global_val: SharedValue::NA
         }
     }
     pub fn get_mut_bindings(&mut self) -> &mut HashMap<u64, LinkedList<Rc<SExpr<'a>>>> {
@@ -25,7 +28,7 @@ impl<'a> Envorinment<'a> {
 
 pub fn eval_all<'a>(
     exprs: Vec<SExpr<'a>>,
-    env: &mut Envorinment<'a>,
+    env: &mut Environment<'a>,
 ) -> Result<Vec<SExpr<'a>>, String> {
     let mut result = Vec::with_capacity(exprs.len());
     for expr in exprs {
@@ -34,19 +37,19 @@ pub fn eval_all<'a>(
     Ok(result)
 }
 
-pub fn do_eval<'a>(exprs: Vec<SExpr<'a>>, env: &mut Envorinment<'a>) -> Result<SExpr<'a>, String> {
+pub fn do_eval<'a>(exprs: Vec<SExpr<'a>>, env: &mut Environment<'a>) -> Result<SExpr<'a>, String> {
     misc::do_(exprs, env)
 }
 
 #[derive(Debug)]
 pub struct Interpreter<'a> {
-    env: Envorinment<'a>,
+    env: Environment<'a>,
 }
 
 impl<'a> Interpreter<'a> {
     pub fn new() -> Self {
         Interpreter {
-            env: Envorinment::new(),
+            env: Environment::new(),
         }
     }
     pub fn eval(&mut self, exprs: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
@@ -58,7 +61,7 @@ impl<'a> Interpreter<'a> {
     pub fn bind_by_id(&mut self, id: u64, expr: SExpr<'a>) {
         bind(&mut self.env, id, expr)
     }
-    pub fn get_env(&mut self) -> &mut Envorinment<'a> {
+    pub fn get_env(&mut self) -> &mut Environment<'a> {
         &mut self.env
     }
     pub fn clear(&mut self) {
@@ -72,5 +75,8 @@ impl<'a> Interpreter<'a> {
                 list.pop_front()
                     .map(|rc| Rc::<SExpr<'_>>::into_inner(rc).unwrap())
             })
+    }
+    pub fn set_global_val(&mut self, val: SharedValue<'a>) {
+        self.env.global_val = val;
     }
 }

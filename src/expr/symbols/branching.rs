@@ -1,7 +1,7 @@
 use super::utils::is_true;
 use super::*;
 
-pub fn if_<'a>(env: &mut Envorinment<'a>, exprs: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
+pub fn if_<'a>(env: &mut Environment<'a>, exprs: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
     let mut iter = exprs.into_iter();
     let tester = iter.next().unwrap();
     let then_expr = iter.next().unwrap();
@@ -15,7 +15,7 @@ pub fn if_<'a>(env: &mut Envorinment<'a>, exprs: Vec<SExpr<'a>>) -> Result<SExpr
     }
 }
 
-pub fn if_not<'a>(env: &mut Envorinment<'a>, exprs: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
+pub fn if_not<'a>(env: &mut Environment<'a>, exprs: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
     let mut iter = exprs.into_iter();
     let tester = iter.next().unwrap();
     let then_expr = iter.next().unwrap();
@@ -29,7 +29,7 @@ pub fn if_not<'a>(env: &mut Envorinment<'a>, exprs: Vec<SExpr<'a>>) -> Result<SE
     }
 }
 
-pub fn when<'a>(env: &mut Envorinment<'a>, exprs: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
+pub fn when<'a>(env: &mut Environment<'a>, exprs: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
     let mut iter = exprs.into_iter();
     let tester = iter.next().unwrap();
     let then_expr = iter.next().unwrap();
@@ -40,7 +40,7 @@ pub fn when<'a>(env: &mut Envorinment<'a>, exprs: Vec<SExpr<'a>>) -> Result<SExp
     }
 }
 
-pub fn when_not<'a>(env: &mut Envorinment<'a>, exprs: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
+pub fn when_not<'a>(env: &mut Environment<'a>, exprs: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
     let mut iter = exprs.into_iter();
     let tester = iter.next().unwrap();
     let then_expr = iter.next().unwrap();

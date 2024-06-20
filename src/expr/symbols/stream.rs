@@ -57,7 +57,7 @@ pub fn to_vec(expr: SExpr) -> Result<SExpr, String> {
 pub fn map<'a>(
     func: SExpr<'a>,
     data: SExpr<'a>,
-    env: &mut Envorinment<'a>,
+    env: &mut Environment<'a>,
 ) -> Result<SExpr<'a>, String> {
     match data {
         SExpr::Value(Value::Owned(OwnedValue::Array(_)))
@@ -78,7 +78,7 @@ pub fn map<'a>(
 pub fn filter<'a>(
     func: SExpr<'a>,
     data: SExpr<'a>,
-    env: &mut Envorinment<'a>,
+    env: &mut Environment<'a>,
 ) -> Result<SExpr<'a>, String> {
     match data {
         SExpr::Value(Value::Owned(OwnedValue::Array(_)))

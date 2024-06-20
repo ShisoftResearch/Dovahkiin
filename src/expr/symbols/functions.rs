@@ -1,4 +1,4 @@
-use crate::expr::interpreter::Envorinment;
+use crate::expr::interpreter::Environment;
 use crate::types::Map;
 
 use super::bindings::{bind, bind_by_name};
@@ -8,7 +8,7 @@ use super::*;
 pub fn eval_function<'a>(
     func_expr: &SExpr<'a>,
     params: Vec<SExpr<'a>>,
-    env: &mut Envorinment<'a>,
+    env: &mut Environment<'a>,
 ) -> Result<SExpr<'a>, String> {
     match func_expr {
         &SExpr::ISymbol(symbol_id, ref name) => {
@@ -268,7 +268,7 @@ fn eval_owned_value<'a>(ov: &OwnedValue, params: Vec<SExpr<'a>>) -> Result<SExpr
     }
 }
 
-pub fn defn<'a>(env: &mut Envorinment<'a>, exprs: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
+pub fn defn<'a>(env: &mut Environment<'a>, exprs: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
     let mut exprs = exprs.into_iter();
     let name = exprs.next().unwrap();
     let lambda = lambda_placeholder(exprs)?;

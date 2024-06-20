@@ -1,14 +1,14 @@
-use crate::expr::interpreter::Envorinment;
+use crate::expr::interpreter::Environment;
 
 use super::super::Value;
 use super::*;
 use std::collections::LinkedList;
 
-pub fn bind_by_name<'a, 'b>(env: &mut Envorinment<'a>, name: &'b str, val: SExpr<'a>) {
+pub fn bind_by_name<'a, 'b>(env: &mut Environment<'a>, name: &'b str, val: SExpr<'a>) {
     bind(env, hash_str(name), val)
 }
 
-pub fn bind<'a>(env: &mut Envorinment<'a>, id: u64, val: SExpr<'a>) {
+pub fn bind<'a>(env: &mut Environment<'a>, id: u64, val: SExpr<'a>) {
     let binding_map = &mut env.bindings;
     let bind_val = if let SExpr::Value(v) = val {
         SExpr::Value(Value::Ref(v.into_ref())) // Get to ref so cloning won't cost much
@@ -21,7 +21,7 @@ pub fn bind<'a>(env: &mut Envorinment<'a>, id: u64, val: SExpr<'a>) {
         .push_front(Rc::new(bind_val));
 }
 
-pub fn unbind<'a>(env: &mut Envorinment<'a>, id: u64) {
+pub fn unbind<'a>(env: &mut Environment<'a>, id: u64) {
     let binding_map = &mut env.bindings;
     binding_map
         .entry(id)
@@ -30,7 +30,7 @@ pub fn unbind<'a>(env: &mut Envorinment<'a>, id: u64) {
 }
 
 pub fn let_binding<'a>(
-    env: &mut Envorinment<'a>,
+    env: &mut Environment<'a>,
     exprs: Vec<SExpr<'a>>,
 ) -> Result<SExpr<'a>, String> {
     if exprs.len() < 2 {
@@ -80,7 +80,7 @@ pub fn let_binding<'a>(
     return Ok(body_result);
 }
 
-pub fn define<'a>(env: &mut Envorinment<'a>, exprs: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
+pub fn define<'a>(env: &mut Environment<'a>, exprs: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
     let mut exprs = exprs.into_iter();
     let name = exprs.next().unwrap();
     let val = exprs.next().unwrap().eval(env)?;

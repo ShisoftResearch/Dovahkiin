@@ -902,8 +902,9 @@ macro_rules! define_types {
             type Map: Map;
             type Out: Value;
 
-            fn get<V: FromValue<Self>>(&self) -> Option<V>;
+            fn into<V: FromValue<Self>>(&self) -> Option<V>;
             fn get_in_by_ids(&self, ids: &Vec<u64>) -> &Self::Out;
+            fn get_by_id(&self, id: u64) -> &Self::Out;
             fn feature(&self) -> [u8; 8];
             fn features(&self) -> Vec<[u8; 8]>;
             fn hash(&self) -> [u8; 8];
@@ -945,7 +946,7 @@ macro_rules! define_types {
             type Map = OwnedMap;
             type Out = Self;
 
-            fn get<V: FromValue<Self>>(&self) -> Option<V> {
+            fn into<V: FromValue<Self>>(&self) -> Option<V> {
                 V::get_from_value(self)
             }
 
@@ -985,6 +986,13 @@ macro_rules! define_types {
             fn get_in_by_ids(&self, ids: &Vec<u64>) -> &Self {
                 if let OwnedValue::Map(map) = &self {
                     map.get_in_by_ids(ids.iter())
+                } else {
+                    &OwnedValue::Null
+                }
+            }
+            fn get_by_id(&self, id: u64) -> &Self {
+                if let OwnedValue::Map(map) = &self {
+                    map.get_by_key_id(id)
                 } else {
                     &OwnedValue::Null
                 }
@@ -1040,7 +1048,7 @@ macro_rules! define_types {
             type Map = SharedMap<'a>;
             type Out = Self;
 
-            fn get<V: FromValue<Self>>(&self) -> Option<V> {
+            fn into<V: FromValue<Self>>(&self) -> Option<V> {
                 V::get_from_value(self)
             }
 
@@ -1080,6 +1088,13 @@ macro_rules! define_types {
             fn get_in_by_ids(&self, ids: &Vec<u64>) -> &Self {
                 if let SharedValue::Map(map) = &self {
                     map.get_in_by_ids(ids.iter())
+                } else {
+                    &SharedValue::Null
+                }
+            }
+            fn get_by_id(&self, id: u64) -> &Self {
+                if let SharedValue::Map(map) = &self {
+                    map.get_by_key_id(id)
                 } else {
                     &SharedValue::Null
                 }
@@ -1148,7 +1163,7 @@ macro_rules! define_types {
             type Map = OwnedMap;
             type Out = OwnedValue;
 
-            fn get<V: FromValue<Self>>(&self) -> Option<V> {
+            fn into<V: FromValue<Self>>(&self) -> Option<V> {
                 V::get_from_value(&*self)
             }
 
@@ -1188,6 +1203,13 @@ macro_rules! define_types {
             fn get_in_by_ids(&self, ids: &Vec<u64>) -> &Self::Out {
                 if let OwnedValue::Map(map) = &**self {
                     map.get_in_by_ids(ids.iter())
+                } else {
+                    &OwnedValue::Null
+                }
+            }
+            fn get_by_id(&self, id: u64) -> &Self::Out {
+                if let OwnedValue::Map(map) = &**self {
+                    map.get_by_key_id(id)
                 } else {
                     &OwnedValue::Null
                 }

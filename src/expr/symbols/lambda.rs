@@ -28,7 +28,7 @@ pub fn lambda_placeholder<'a>(
 pub fn eval_lambda<'a>(
     lambda_expr: Rc<SExpr<'a>>,
     params: Vec<SExpr<'a>>,
-    env: &mut Envorinment<'a>,
+    env: &mut Environment<'a>,
 ) -> Result<SExpr<'a>, String> {
     if let SExpr::LAMBDA(ref params_list, ref body) = &*lambda_expr {
         {

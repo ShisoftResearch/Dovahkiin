@@ -4,7 +4,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt::Debug;
 
-use super::interpreter::Envorinment;
+use super::interpreter::Environment;
 pub use super::*;
 
 mod arithmetic;
@@ -24,7 +24,7 @@ pub trait Symbol: Sync + Debug {
     fn eval<'a>(
         &self,
         exprs: Vec<SExpr<'a>>,
-        env: &mut Envorinment<'a>,
+        env: &mut Environment<'a>,
     ) -> Result<SExpr<'a>, String>;
     fn is_macro(&self) -> bool;
 }
@@ -60,7 +60,7 @@ macro_rules! defsymbols {
             #[derive(Debug)]
             pub struct $name;
             impl Symbol for $name {
-                fn eval<'a>(&self, exprs: Vec<SExpr<'a>>, env: &mut Envorinment<'a>) -> Result<SExpr<'a>, String> where Self: Sized {
+                fn eval<'a>(&self, exprs: Vec<SExpr<'a>>, env: &mut Environment<'a>) -> Result<SExpr<'a>, String> where Self: Sized {
                     $eval(exprs, env)
                 }
                 fn is_macro(&self) -> bool {

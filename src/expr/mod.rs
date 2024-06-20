@@ -5,7 +5,7 @@ use bifrost_hasher::hash_str;
 use std::borrow::Borrow;
 use std::rc::Rc;
 
-use self::interpreter::Envorinment;
+use self::interpreter::Environment;
 
 #[macro_use]
 pub mod symbols;
@@ -62,7 +62,7 @@ pub enum SExpr<'a> {
 }
 
 impl<'a> SExpr<'a> {
-    pub fn eval(self, env: &mut Envorinment<'a>) -> Result<SExpr<'a>, String> {
+    pub fn eval(self, env: &mut Environment<'a>) -> Result<SExpr<'a>, String> {
         match self {
             SExpr::List(exprs) => {
                 if exprs.len() == 0 {
@@ -89,7 +89,12 @@ impl<'a> SExpr<'a> {
                     let bind_expr: &SExpr = binding.borrow();
                     Ok(bind_expr.clone())
                 } else {
-                    Ok(self)
+                    let global_val =  crate::types::Value::get_by_id(&env.global_val, symbol_id);
+                    if global_val != &SharedValue::Null {
+                        Ok(SExpr::from_shared_value(global_val.clone()))
+                    } else {
+                        Ok(self)
+                    }
                 }
             }
             _ => Ok(self),
