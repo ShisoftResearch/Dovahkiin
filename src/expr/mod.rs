@@ -78,7 +78,7 @@ impl<'a> SExpr<'a> {
                     )?)
                 }
             }
-            SExpr::ISymbol(symbol_id, _) => {
+            SExpr::ISymbol(symbol_id, sym_name) => {
                 let env_bind_ref;
                 let bindings = env.get_mut_bindings();
                 env_bind_ref = if let Some(binding_list) = bindings.get(&symbol_id) {
@@ -89,13 +89,15 @@ impl<'a> SExpr<'a> {
                 if let Some(binding) = env_bind_ref {
                     let bind_expr: &SExpr = binding.borrow();
                     Ok(bind_expr.clone())
-                } else {
-                    let global_val =  crate::types::Value::get_by_id(env.global_val, symbol_id);
-                    if global_val != &DEFAULT_GLOBAL_VAL {
-                        Ok(SExpr::from_shared_value(global_val.clone()))
+                } else if env.global_val != &SharedValue::NA {
+                    let param =  crate::types::Value::get_by_id(env.global_val, symbol_id);
+                    if param != &SharedValue::Null {
+                        Ok(SExpr::from_shared_value(param.clone()))
                     } else {
-                        Ok(self)
+                        Ok(SExpr::ISymbol(symbol_id, sym_name))
                     }
+                } else {
+                    Ok(SExpr::ISymbol(symbol_id, sym_name))
                 }
             }
             _ => Ok(self),
