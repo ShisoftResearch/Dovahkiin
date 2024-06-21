@@ -89,15 +89,13 @@ impl<'a> SExpr<'a> {
                 if let Some(binding) = env_bind_ref {
                     let bind_expr: &SExpr = binding.borrow();
                     Ok(bind_expr.clone())
-                } else if env.global_val != &SharedValue::NA {
+                } else {
                     let param =  crate::types::Value::get_by_id(env.global_val, symbol_id);
                     if param != &SharedValue::Null {
                         Ok(SExpr::from_shared_value(param.clone()))
                     } else {
                         Ok(SExpr::ISymbol(symbol_id, sym_name))
                     }
-                } else {
-                    Ok(SExpr::ISymbol(symbol_id, sym_name))
                 }
             }
             _ => Ok(self),
