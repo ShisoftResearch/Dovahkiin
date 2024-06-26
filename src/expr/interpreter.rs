@@ -83,10 +83,23 @@ impl<'a> Interpreter<'a> {
     pub fn set_global_val(&mut self, val: &'a SharedValue<'a>) {
         self.env.global_val = val;
     }
-    pub unsafe fn unsafe_set_global_val<'b, 'c>(&mut self, val: &'b SharedValue<'c>) {
+    pub unsafe fn guarded_set_global_val<'b, 'c, 'r>(&'r mut self, val: &'b SharedValue<'c>) -> GlobalValGuard<'a, 'r> {
         self.env.global_val = mem::transmute(val);
+        GlobalValGuard {
+            inter: self
+        }
     }
     pub fn unset_global_val(&mut self) -> &'a SharedValue<'a> {
         mem::replace(&mut self.env.global_val, &DEFAULT_GLOBAL_VAL)
+    }
+}
+
+pub struct GlobalValGuard<'a, 'b> {
+    inter: & 'a mut Interpreter<'b>,
+}
+
+impl <'a, 'b> Drop for GlobalValGuard<'a, 'b> {
+    fn drop(&mut self) {
+        self.inter.unset_global_val();
     }
 }
