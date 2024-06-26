@@ -3,8 +3,10 @@ use bifrost_hasher::hash_str;
 use crate::expr::symbols::misc;
 use crate::expr::SExpr;
 use crate::types::SharedValue;
+use std::cell::RefMut;
 use std::collections::{HashMap, LinkedList};
 use std::mem::{self, transmute};
+use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
 
 use super::symbols::bindings::bind;
@@ -103,5 +105,19 @@ pub struct GlobalValGuard<'a, 'b> {
 impl <'a, 'b> Drop for GlobalValGuard<'a, 'b> {
     fn drop(&mut self) {
         self.inter.unset_global_val();
+    }
+}
+
+impl <'a, 'b> Deref for GlobalValGuard<'a, 'b> {
+    type Target = Interpreter<'b>;
+
+    fn deref(&self) -> &Self::Target {
+        self.inter
+    }
+}
+
+impl <'a, 'b> DerefMut for GlobalValGuard<'a, 'b> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        self.inter
     }
 }
