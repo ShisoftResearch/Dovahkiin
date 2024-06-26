@@ -85,7 +85,7 @@ impl<'a> Interpreter<'a> {
     pub fn set_global_val(&mut self, val: &'a SharedValue<'a>) {
         self.env.global_val = val;
     }
-    pub fn guarded_set_global_val<'b, 'c, 'r>(&'r mut self, val: &'b SharedValue<'c>) -> GlobalValGuard<'a, 'r> {
+    pub fn guarded_set_global_val<'b, 'c>(&'a mut self, val: &'b SharedValue<'c>) -> GlobalValGuard<'a> {
         self.env.global_val = unsafe {
             mem::transmute(val)
         };
@@ -98,25 +98,25 @@ impl<'a> Interpreter<'a> {
     }
 }
 
-pub struct GlobalValGuard<'a, 'b> {
-    inter: & 'a mut Interpreter<'b>,
+pub struct GlobalValGuard<'a> {
+    inter: & 'a mut Interpreter<'a>,
 }
 
-impl <'a, 'b> Drop for GlobalValGuard<'a, 'b> {
+impl <'a> Drop for GlobalValGuard<'a> {
     fn drop(&mut self) {
         self.inter.unset_global_val();
     }
 }
 
-impl <'a, 'b> Deref for GlobalValGuard<'a, 'b> {
-    type Target = Interpreter<'b>;
+impl <'a> Deref for GlobalValGuard<'a> {
+    type Target = Interpreter<'a>;
 
     fn deref(&self) -> &Self::Target {
         self.inter
     }
 }
 
-impl <'a, 'b> DerefMut for GlobalValGuard<'a, 'b> {
+impl <'a> DerefMut for GlobalValGuard<'a> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.inter
     }
