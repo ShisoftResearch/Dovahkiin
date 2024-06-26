@@ -885,6 +885,31 @@ macro_rules! define_types {
                     _ => None
                 }
             }
+            pub fn get_int(&self) -> Option<isize> {
+                match self {
+                    Self::I8(v) => Some(**v as _),
+                    Self::I16(v) => Some(**v as _),
+                    Self::I32(v) => Some(**v as _),
+                    Self::I64(v) => Some(**v as _),
+
+                    Self::U8(v) => Some(**v as _),
+                    Self::U16(v) => Some(**v as _),
+                    Self::U32(v) => Some(**v as _),
+                    Self::U64(v) => Some(**v as _),
+
+                    _ => None
+                }
+            }
+            pub fn get_uint(&self) -> Option<usize> {
+                match self {
+                    Self::U8(v) => Some(**v as _),
+                    Self::U16(v) => Some(**v as _),
+                    Self::U32(v) => Some(**v as _),
+                    Self::U64(v) => Some(**v as _),
+
+                    _ => None
+                }
+            }
         }
 
         impl <'a> Eq for SharedValue<'a> {

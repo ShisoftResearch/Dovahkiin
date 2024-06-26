@@ -2,7 +2,6 @@ use crate::parser::lisp::ParserExpr;
 use crate::types::referred::OwnedValueRef;
 use crate::types::{OwnedValue, SharedValue};
 use bifrost_hasher::hash_str;
-use interpreter::DEFAULT_GLOBAL_VAL;
 use std::borrow::Borrow;
 use std::rc::Rc;
 
