@@ -86,12 +86,15 @@ impl<'a> Interpreter<'a> {
         self.env.global_val = val;
     }
     pub fn guarded_set_global_val<'b, 'c>(&'a mut self, val: &'b SharedValue<'c>) -> GlobalValGuard<'a> {
-        self.env.global_val = unsafe {
-            mem::transmute(val)
-        };
+        unsafe {
+            self.unsafe_set_global_val(val);
+        }
         GlobalValGuard {
             inter: self
         }
+    }
+    pub unsafe fn unsafe_set_global_val<'b, 'c>(&mut self, val: &'b SharedValue<'c>) {
+        self.env.global_val = mem::transmute(val);
     }
     pub fn unset_global_val(&mut self) -> &'a SharedValue<'a> {
         mem::replace(&mut self.env.global_val, &DEFAULT_GLOBAL_VAL)
