@@ -3,9 +3,8 @@ use bifrost_hasher::hash_str;
 use crate::expr::symbols::misc;
 use crate::expr::SExpr;
 use crate::types::SharedValue;
-use std::cell::RefMut;
 use std::collections::{HashMap, LinkedList};
-use std::mem::{self, transmute};
+use std::mem;
 use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
 

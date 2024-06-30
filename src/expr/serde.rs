@@ -5,7 +5,7 @@ use crate::expr::Value;
 
 use super::{symbols::ParserExpr, SExpr};
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub enum Expr {
     NA,
     Symbol(u64, String),
