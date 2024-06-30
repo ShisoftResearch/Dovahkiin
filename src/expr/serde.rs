@@ -70,6 +70,10 @@ impl Expr {
     pub fn nothing() -> Self {
         Self::List(vec![])
     }
+
+    pub fn with_symbol_id_only<'a>(name: &'a str) -> Self {
+        Self::Symbol(hash_str(name), String::new())
+    }
 }
 
 impl ParserExpr for Expr {
