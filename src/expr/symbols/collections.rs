@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use crate::types::{Map, OwnedMap};
+use crate::types::{custom_types::map::GenericMap, Map, OwnedMap};
 
 use super::*;
 use ahash::{HashMap, HashMapExt};
@@ -111,17 +111,16 @@ pub fn map(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
 }
 
 pub fn merge<'a>(exprs: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
-    let mut value_map = BTreeMap::new();
+    let mut value_map = GenericMap::new();
     let mut field_names = Vec::new();
     for expr in exprs {
         if let SExpr::Value(val) = expr {
             match val {
                 Value::Shared(SharedValue::Map(m)) => {
-                    let map = m.map;
-                    let mut fields = m.fields;
-                    for (k, v) in map.into_iter() {
-                        // TODO: try not own it
-                        value_map.insert(k, v.owned());
+                    let map = &m.map;
+                    let mut fields = m.fields.clone();
+                    for (k, v) in map.iter() {
+                        value_map.insert(*k, v.owned());
                     }
                     field_names.append(&mut fields);
                 }

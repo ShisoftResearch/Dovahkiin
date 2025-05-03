@@ -1,5 +1,5 @@
 use super::super::*;
-use super::map::Map;
+use super::map::{GenericMap, Map};
 use ahash::{HashMap, HashMapExt};
 use bifrost_hasher::hash_str;
 use std::collections::BTreeMap;
@@ -8,7 +8,7 @@ use std::slice::Iter;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct SharedMap<'v> {
-    pub map: BTreeMap<u64, SharedValue<'v>>,
+    pub map: GenericMap<u64, SharedValue<'v>>,
     pub fields: Vec<String>,
 }
 impl<'v> Map for SharedMap<'v> {
@@ -16,14 +16,14 @@ impl<'v> Map for SharedMap<'v> {
 
     fn new() -> Self {
         Self {
-            map: BTreeMap::new(),
+            map: GenericMap::new(),
             fields: Vec::new(),
         }
     }
     fn from_pairs<P>(map: P) -> Self
     where P: IntoIterator<Item = (String, Self::Value)>
     {
-        let mut target_map: BTreeMap<_, SharedValue<'v>> = BTreeMap::new();
+        let mut target_map: GenericMap<u64, SharedValue<'v>> = GenericMap::new();
         let mut fields = Vec::new();
         for (key, value) in map {
             target_map.insert(key_hash(&key), value);
@@ -51,7 +51,7 @@ impl<'v> Map for SharedMap<'v> {
         self.map.get(&key).unwrap_or(&Self::Value::Null)
     }
     fn get_mut_by_key_id(&mut self, key: u64) -> &mut Self::Value {
-        self.map.entry(key).or_insert(Self::Value::Null)
+        self.map.get_or_insert(key, Self::Value::Null)
     }
     fn get<'a>(&self, key: &'a str) -> &Self::Value {
         self.get_by_key_id(key_hash(key))
@@ -145,17 +145,16 @@ impl<'v> Map for SharedMap<'v> {
     }
 
     fn into_string_map(self) -> HashMap<String, Self::Value> {
-        let mut id_map: HashMap<u64, String> = self
-            .fields
-            .into_iter()
-            .map(|field| (key_hash(&field), field))
-            .collect();
-        self.map
-            .into_iter()
-            .map(|(fid, value)| (id_map.remove(&fid), value))
-            .filter(|&(ref field, _)| field.is_some())
-            .map(|(field, value)| (field.unwrap(), value))
-            .collect()
+        let mut result = HashMap::new();
+        for (i, field_name) in self.fields.into_iter().enumerate() {
+            if i < self.map.len() {
+                let field_id = key_hash(&field_name);
+                if let Some(value) = self.map.get(&field_id) {
+                    result.insert(field_name, value.clone());
+                }
+            }
+        }
+        result
     }
 
     fn len(&self) -> usize {

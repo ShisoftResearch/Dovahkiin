@@ -20,3 +20,4 @@ bifrost_hasher = { git = "https://github.com/shisoft/bifrost", branch = "develop
 lazy_static = "*"
 log = "*"
 ahash = "0.8.11"
+smallvec = {version = "1.15.0", features = ["serde"]}

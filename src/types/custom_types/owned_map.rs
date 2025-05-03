@@ -1,6 +1,6 @@
 use crate::types::SharedMap;
 
-use super::map::Map;
+use super::map::{GenericMap, Map};
 use super::{super::*, shared_map::key_hash};
 use ahash::{HashMap, HashMapExt};
 use std::collections::BTreeMap;
@@ -10,7 +10,7 @@ use std::slice::Iter;
 
 #[derive(Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct OwnedMap {
-    pub map: BTreeMap<u64, OwnedValue>,
+    pub map: GenericMap<u64, OwnedValue>,
     pub fields: Vec<String>,
 }
 
@@ -19,14 +19,14 @@ impl Map for OwnedMap {
 
     fn new() -> Self {
         Self {
-            map: BTreeMap::new(),
+            map: GenericMap::new(),
             fields: Vec::new(),
         }
     }
     fn from_pairs<P>(map: P) -> Self
         where P: IntoIterator<Item = (String, Self::Value)>
     {
-        let mut target_map = BTreeMap::new();
+        let mut target_map = GenericMap::new();
         let mut fields = Vec::new();
         for (key, value) in map {
             if target_map.insert(key_hash(&key), value).is_none() {
@@ -49,8 +49,8 @@ impl Map for OwnedMap {
     fn get_by_key_id(&self, key: u64) -> &Self::Value {
         self.map.get(&key).unwrap_or(&NULL_OWNED_VALUE)
     }
-    fn get_mut_by_key_id(&mut self, key: u64) -> &mut Self::Value {
-        self.map.entry(key).or_insert(Self::Value::Null)
+    fn get_mut_by_key_id<'a>(&'a mut self, key: u64) -> &'a mut Self::Value {
+        self.map.get_or_insert(key, OwnedValue::Null)
     }
     fn get<'a>(&self, key: &'a str) -> &Self::Value {
         self.get_by_key_id(key_hash(key))
@@ -136,17 +136,16 @@ impl Map for OwnedMap {
         self.set_in_by_key_ids(Self::strs_to_ids(keys).iter(), value)
     }
     fn into_string_map(self) -> HashMap<String, Self::Value> {
-        let mut id_map: HashMap<u64, String> = self
-            .fields
-            .into_iter()
-            .map(|field| (key_hash(&field), field))
-            .collect();
-        self.map
-            .into_iter()
-            .map(|(fid, value)| (id_map.remove(&fid), value))
-            .filter(|&(ref field, _)| field.is_some())
-            .map(|(field, value)| (field.unwrap(), value))
-            .collect()
+        let mut result = HashMap::new();
+        for (i, field_name) in self.fields.into_iter().enumerate() {
+            if i < self.map.len() {
+                let field_id = key_hash(&field_name);
+                if let Some(value) = self.map.get(&field_id) {
+                    result.insert(field_name, value.clone());
+                }
+            }
+        }
+        result
     }
     fn len(&self) -> usize {
         self.map.len()
@@ -183,7 +182,9 @@ impl fmt::Debug for OwnedMap {
         write!(f, "( ")?;
         for name in &self.fields {
             let id = key_hash(name);
-            write!(f, "{}: {:?} ", name, self.map[&id])?;
+            if let Some(value) = self.map.get(&id) {
+                write!(f, "{}: {:?} ", name, value)?;
+            }
         }
         write!(f, ") ")
     }
