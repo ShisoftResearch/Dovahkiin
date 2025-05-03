@@ -54,14 +54,14 @@ impl<E: ParserExpr> Parser<E> {
     }
 
     fn parse_map<'a>(iter: &mut IntoIter<Token>) -> Result<E, String> {
-        let mut contents: HashMap<String, Value> = HashMap::with_capacity(4);
+        let mut contents: Vec<(String, Value)> = Vec::with_capacity(4);
         let mut visited = 0;
         let mut last_key = String::from("");
         while let Some(token) = iter.next() {
             match token {
                 Token::RightCurlyBracket => {
                     // return Ok(E::map(contents));
-                    let owned_map = OwnedMap::from_hash_map(contents);
+                    let owned_map = OwnedMap::from_pairs(contents.into_iter());
                     return Ok(E::owned_val(Value::Map(owned_map)));
                 }
                 _ => {
@@ -82,7 +82,7 @@ impl<E: ParserExpr> Parser<E> {
                         let key = mem::replace(&mut last_key, String::from(""));
                         let val = Self::parse_token(token, iter)?;
                         let owned_val = val.into_val()?;
-                        contents.insert(key, owned_val);
+                        contents.push((key, owned_val));
                     }
                     visited += 1;
                 }

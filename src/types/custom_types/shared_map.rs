@@ -2,12 +2,13 @@ use super::super::*;
 use super::map::Map;
 use ahash::{HashMap, HashMapExt};
 use bifrost_hasher::hash_str;
+use std::collections::BTreeMap;
 use std::iter::Iterator;
 use std::slice::Iter;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct SharedMap<'v> {
-    pub map: HashMap<u64, SharedValue<'v>>,
+    pub map: BTreeMap<u64, SharedValue<'v>>,
     pub fields: Vec<String>,
 }
 impl<'v> Map for SharedMap<'v> {
@@ -15,15 +16,18 @@ impl<'v> Map for SharedMap<'v> {
 
     fn new() -> Self {
         Self {
-            map: HashMap::with_capacity(8),
+            map: BTreeMap::new(),
             fields: Vec::new(),
         }
     }
-    fn from_hash_map(map: HashMap<String, Self::Value>) -> Self {
-        let mut target_map: HashMap<_, SharedValue<'v>> = HashMap::new();
-        let fields = map.keys().cloned().collect();
+    fn from_pairs<P>(map: P) -> Self
+    where P: IntoIterator<Item = (String, Self::Value)>
+    {
+        let mut target_map: BTreeMap<_, SharedValue<'v>> = BTreeMap::new();
+        let mut fields = Vec::new();
         for (key, value) in map {
             target_map.insert(key_hash(&key), value);
+            fields.push(key);
         }
         Self {
             map: target_map,

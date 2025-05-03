@@ -3,13 +3,14 @@ use crate::types::SharedMap;
 use super::map::Map;
 use super::{super::*, shared_map::key_hash};
 use ahash::{HashMap, HashMapExt};
+use std::collections::BTreeMap;
 use std::fmt;
 use std::iter::Iterator;
 use std::slice::Iter;
 
 #[derive(Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct OwnedMap {
-    pub map: HashMap<u64, OwnedValue>,
+    pub map: BTreeMap<u64, OwnedValue>,
     pub fields: Vec<String>,
 }
 
@@ -18,15 +19,19 @@ impl Map for OwnedMap {
 
     fn new() -> Self {
         Self {
-            map: HashMap::with_capacity(8),
+            map: BTreeMap::new(),
             fields: Vec::new(),
         }
     }
-    fn from_hash_map(map: HashMap<String, Self::Value>) -> Self {
-        let mut target_map = HashMap::new();
-        let fields = map.keys().cloned().collect();
+    fn from_pairs<P>(map: P) -> Self
+        where P: IntoIterator<Item = (String, Self::Value)>
+    {
+        let mut target_map = BTreeMap::new();
+        let mut fields = Vec::new();
         for (key, value) in map {
-            target_map.insert(key_hash(&key), value);
+            if target_map.insert(key_hash(&key), value).is_none() {
+                fields.push(key);
+            }
         }
         Self {
             map: target_map,

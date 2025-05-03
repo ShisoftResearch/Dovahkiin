@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use crate::types::{Map, OwnedMap};
 
 use super::*;
@@ -44,7 +46,7 @@ pub fn concat(lists: Vec<SExpr>) -> Result<SExpr, String> {
     return Ok(SExpr::Vec(result));
 }
 
-pub fn hashmap(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
+pub fn map(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
     if exprs.len() == 1 {
         match exprs.into_iter().next().unwrap() {
             SExpr::Vec(l) | SExpr::List(l) => exprs = l,
@@ -62,7 +64,7 @@ pub fn hashmap(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
         ));
     }
     let mut exprs = exprs.into_iter();
-    let mut hashmap = HashMap::with_capacity(8);
+    let mut pairs = Vec::with_capacity(8);
     while let (Some(k), Some(v)) = (exprs.next(), exprs.next()) {
         match (k, v) {
             (SExpr::Value(k_val), SExpr::Value(v)) => {
@@ -71,13 +73,13 @@ pub fn hashmap(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
                 match (k_str_opt, v) {
                     (Some(k_str), Value::Shared(v)) => {
                         // TODO: Try not own elements
-                        hashmap.insert(k_str.to_owned(), v.owned());
+                        pairs.push((k_str.to_owned(), v.owned()));
                     }
                     (Some(k_str), Value::Owned(v)) => {
-                        hashmap.insert(k_str.to_owned(), v);
+                        pairs.push((k_str.to_owned(), v));
                     }
                     (Some(k_str), Value::Ref(v)) => {
-                        hashmap.insert(k_str.to_owned(), (&*v).to_owned());
+                        pairs.push((k_str.to_owned(), (&*v).to_owned()));
                     }
                     (None, _) => {
                         return Err(format!("Only string key is allowed, got {:?}", k_val))
@@ -88,13 +90,13 @@ pub fn hashmap(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
                 match v {
                     Value::Shared(v) => {
                         // TODO: Try not own elements
-                        hashmap.insert(kw, v.owned());
+                        pairs.push((kw.to_owned(), v.owned()));
                     }
                     Value::Owned(v) => {
-                        hashmap.insert(kw, v);
+                        pairs.push((kw.to_owned(), v));
                     }
                     Value::Ref(v) => {
-                        hashmap.insert(kw, (&*v).to_owned());
+                        pairs.push((kw.to_owned(), (&*v).to_owned()));
                     }
                 }
             }
@@ -104,12 +106,12 @@ pub fn hashmap(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
         }
     }
     return Ok(SExpr::from_owned_value(OwnedValue::Map(
-        OwnedMap::from_hash_map(hashmap),
+        OwnedMap::from_pairs(pairs.into_iter()),
     )));
 }
 
 pub fn merge<'a>(exprs: Vec<SExpr<'a>>) -> Result<SExpr<'a>, String> {
-    let mut value_map = HashMap::new();
+    let mut value_map = BTreeMap::new();
     let mut field_names = Vec::new();
     for expr in exprs {
         if let SExpr::Value(val) = expr {

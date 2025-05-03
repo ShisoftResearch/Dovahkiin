@@ -261,8 +261,8 @@ defsymbols! {
     "size" => Size, false, |exprs, _env| {
         collections::size(exprs)
     };
-    "hash-map" => GenHashMap, false, |exprs, _env| {
-        collections::hashmap(exprs)
+    "into-map" => IntoMap, false, |exprs, _env| {
+        collections::map(exprs)
     };
     "merge" => MergeHashMap, false, |exprs, _env| {
         collections::merge(exprs)

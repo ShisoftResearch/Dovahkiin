@@ -3,7 +3,7 @@ use bifrost_hasher::hash_str;
 use crate::expr::symbols::misc;
 use crate::expr::SExpr;
 use crate::types::SharedValue;
-use std::collections::{HashMap, LinkedList};
+use std::collections::{BTreeMap, LinkedList};
 use std::mem;
 use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
@@ -15,18 +15,18 @@ pub const DEFAULT_GLOBAL_VAL: SharedValue = SharedValue::NA;
 
 #[derive(Debug)]
 pub struct Environment<'a> {
-    pub bindings: HashMap<u64, LinkedList<Rc<SExpr<'a>>>>,
+    pub bindings: BTreeMap<u64, LinkedList<Rc<SExpr<'a>>>>,
     pub global_val: &'a SharedValue<'a>
 }
 
 impl<'a> Environment<'a> {
     pub fn new() -> Self {
         Environment {
-            bindings: HashMap::new(),
+            bindings: BTreeMap::new(),
             global_val: &DEFAULT_GLOBAL_VAL
         }
     }
-    pub fn get_mut_bindings(&mut self) -> &mut HashMap<u64, LinkedList<Rc<SExpr<'a>>>> {
+    pub fn get_mut_bindings(&mut self) -> &mut BTreeMap<u64, LinkedList<Rc<SExpr<'a>>>> {
         &mut self.bindings
     }
 }

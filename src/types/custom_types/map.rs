@@ -5,7 +5,7 @@ use std::slice::Iter;
 pub trait Map {
     type Value: Value;
     fn new() -> Self;
-    fn from_hash_map(map: HashMap<String, Self::Value>) -> Self;
+    fn from_pairs<P: IntoIterator<Item = (String, Self::Value)>>(map: P) -> Self;
     fn insert<'a>(&mut self, key: &'a str, value: Self::Value) -> Option<Self::Value>;
     fn insert_key_id(&mut self, key: u64, value: Self::Value) -> Option<Self::Value>;
     fn get_by_key_id(&self, key: u64) -> &Self::Value;

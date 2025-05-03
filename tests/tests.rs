@@ -155,7 +155,7 @@ pub fn or() {
 #[test]
 pub fn keyword() {
     let mut interpreter = lisp::get_interpreter();
-    let str_exp = "(hash-map [:x 123u32, :y 456u64])";
+    let str_exp = "(into-map [:x 123u32, :y 456u64])";
     let map_expr = lisp::eval_string(&mut interpreter, str_exp).unwrap();
     let map_val = map_expr.shared_val().unwrap();
     let map = map_val.Map().unwrap();
