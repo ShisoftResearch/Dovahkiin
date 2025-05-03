@@ -48,7 +48,7 @@ pub struct SmallMap<K, V> {
     pairs: Vec<(K, V)>,
 }
 
-#[derive(Clone, Serialize, Deserialize, Eq, PartialEq, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub enum GenericMap<K: Ord, V> {
     Small(SmallMap<K, V>),
     Large(BTreeMap<K, V>),
@@ -275,3 +275,9 @@ impl<K: Ord, V> IndexMut<&K> for GenericMap<K, V> {
     }
 }
 
+impl<K: Ord, V: Eq> Eq for GenericMap<K, V> {}
+impl<K: Ord, V: Eq> PartialEq for GenericMap<K, V> {
+    fn eq(&self, other: &Self) -> bool {
+        self.iter().all(|(k, v)| other.get(k) == Some(v))
+    }
+}

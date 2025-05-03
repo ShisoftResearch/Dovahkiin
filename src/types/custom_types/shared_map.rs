@@ -6,7 +6,7 @@ use std::collections::BTreeMap;
 use std::iter::Iterator;
 use std::slice::Iter;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Clone)]
 pub struct SharedMap<'v> {
     pub map: GenericMap<u64, SharedValue<'v>>,
     pub fields: Vec<String>,
@@ -172,4 +172,11 @@ pub fn key_hash<'a>(key: &'a str) -> u64 {
 
 pub fn key_hashes(keys: &Vec<String>) -> Vec<u64> {
     keys.iter().map(|str| hash_str(str)).collect()
+}
+
+impl<'v> Eq for SharedMap<'v> {}
+impl<'v> PartialEq for SharedMap<'v> {
+    fn eq(&self, other: &Self) -> bool {
+        self.map == other.map
+    }
 }

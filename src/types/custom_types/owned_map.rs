@@ -8,7 +8,7 @@ use std::fmt;
 use std::iter::Iterator;
 use std::slice::Iter;
 
-#[derive(Clone, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct OwnedMap {
     pub map: GenericMap<u64, OwnedValue>,
     pub fields: Vec<String>,
@@ -187,6 +187,12 @@ impl fmt::Debug for OwnedMap {
             }
         }
         write!(f, ") ")
+    }
+}
+
+impl PartialEq for OwnedMap {
+    fn eq(&self, other: &Self) -> bool {
+        self.map == other.map
     }
 }
 
