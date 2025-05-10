@@ -2,7 +2,6 @@ use super::super::*;
 use super::map::{GenericMap, Map};
 use ahash::{HashMap, HashMapExt};
 use bifrost_hasher::hash_str;
-use std::collections::BTreeMap;
 use std::iter::Iterator;
 use std::slice::Iter;
 

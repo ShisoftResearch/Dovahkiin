@@ -1,9 +1,7 @@
 use crate::types::{key_hash, OwnedMap, SharedMap, Value};
 use ahash::HashMap;
 use serde::Serialize;
-use smallvec::SmallVec;
 use std::{collections::BTreeMap, slice::Iter};
-use std::borrow::Borrow;
 use std::iter::FromIterator;
 use std::ops::{Index, IndexMut};
 

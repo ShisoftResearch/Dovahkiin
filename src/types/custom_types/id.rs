@@ -61,6 +61,13 @@ impl Id {
             cursor.read_u64::<BigEndian>()?,
         ))
     }
+    pub fn into_option(self) -> Option<Id> {
+        if self.is_unit_id() {
+            None
+        } else {
+            Some(self)
+        }
+    }
 }
 
 impl Default for Id {
