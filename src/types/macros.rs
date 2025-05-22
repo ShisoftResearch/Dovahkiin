@@ -755,6 +755,15 @@ macro_rules! define_types {
                     }
                 }
             )*
+            pub fn copy_into_owned(&self) -> OwnedPrimArray {
+                match self {
+                    $(
+                        SharedPrimArray::$e(ref vec) => {
+                            OwnedPrimArray::$e(vec.iter().map(|v| (*v).to_owned().into()).collect())
+                        },
+                    )*
+                }
+            }
         }
 
         #[derive(Debug, PartialEq, Clone)]
