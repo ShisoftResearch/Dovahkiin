@@ -947,6 +947,7 @@ macro_rules! define_types {
             fn index_of(&self, index: usize) -> &Self::Out;
             fn base_size(&self) -> usize;
             fn prim_array_data_size(&self) -> Option<u8>;
+            fn is_prime_array(&self) -> bool;
             fn uni_array(&self) -> Option<Vec<&Self::Out>>;
             fn map(&self) -> Option<&Self::Map>;
             fn into_owned_value(self) -> OwnedValue;
@@ -1010,6 +1011,12 @@ macro_rules! define_types {
                 match self {
                     OwnedValue::PrimArray(arr) => Some(arr.data_size()),
                     _ => None,
+                }
+            }
+            fn is_prime_array(&self) -> bool {
+                match self {
+                    OwnedValue::PrimArray(_) => true,
+                    _ => false,
                 }
             }
             fn uni_array(&self) -> Option<Vec<&Self>> {
@@ -1115,6 +1122,12 @@ macro_rules! define_types {
                 match self {
                     SharedValue::PrimArray(arr) => Some(arr.data_size()),
                     _ => None,
+                }
+            }
+            fn is_prime_array(&self) -> bool {
+                match self {
+                    SharedValue::PrimArray(_) => true,
+                    _ => false,
                 }
             }
             fn uni_array(&self) -> Option<Vec<&Self>> {
@@ -1233,6 +1246,12 @@ macro_rules! define_types {
                 match &**self {
                     OwnedValue::PrimArray(ref arr) => Some(arr.data_size()),
                     _ => None,
+                }
+            }
+            fn is_prime_array(&self) -> bool {
+                match &**self {
+                    OwnedValue::PrimArray(_) => true,
+                    _ => false,
                 }
             }
             fn uni_array(&self) -> Option<Vec<&Self::Out>> {
