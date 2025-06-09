@@ -949,6 +949,7 @@ macro_rules! define_types {
             fn prim_array_data_size(&self) -> Option<u8>;
             fn uni_array(&self) -> Option<Vec<&Self::Out>>;
             fn map(&self) -> Option<&Self::Map>;
+            fn into_owned_value(self) -> OwnedValue;
         }
 
         pub trait FromValue<V> where Self: Sized {
@@ -1036,6 +1037,9 @@ macro_rules! define_types {
                     OwnedValue::Map(map) => Some(map),
                     _ => None
                 }
+            }
+            fn into_owned_value(self) -> OwnedValue {
+                self
             }
         }
 
@@ -1138,6 +1142,9 @@ macro_rules! define_types {
                     SharedValue::Map(map) => Some(map),
                     _ => None
                 }
+            }
+            fn into_owned_value(self) -> OwnedValue {
+                self.owned()
             }
         }
 
@@ -1253,6 +1260,9 @@ macro_rules! define_types {
                     OwnedValue::Map(map) => Some(map),
                     _ => None
                 }
+            }
+            fn into_owned_value(self) -> OwnedValue {
+                self.clone_referred()
             }
         }
 
