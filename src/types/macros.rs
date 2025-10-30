@@ -167,8 +167,11 @@ macro_rules! gen_variable_types_io {
                     }
                     pub fn read_slice<'a>(mut mem_ptr: usize, len: usize) -> (Slice<'a>, usize) {
                         let origin_ptr = mem_ptr;
+                        let align = type_align();
                         let res = (0..len)
                             .map(|_| {
+                                // Align pointer to required alignment before reading
+                                mem_ptr = (mem_ptr + align - 1) & !(align - 1);
                                 let current_ptr = mem_ptr;
                                 let v = read(current_ptr);
                                 // advance by encoded size to be robust to decoding issues
