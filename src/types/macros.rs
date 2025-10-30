@@ -167,12 +167,15 @@ macro_rules! gen_variable_types_io {
                     }
                     pub fn read_slice<'a>(mut mem_ptr: usize, len: usize) -> (Slice<'a>, usize) {
                         let origin_ptr = mem_ptr;
-                        let res = (0..len).map(|_| {
-                            let v = read(mem_ptr);
-                            mem_ptr += val_size(v);
-                            v
-                        })
-                        .collect::<Vec<_>>();
+                        let res = (0..len)
+                            .map(|_| {
+                                let current_ptr = mem_ptr;
+                                let v = read(current_ptr);
+                                // advance by encoded size to be robust to decoding issues
+                                mem_ptr += size_at(current_ptr);
+                                v
+                            })
+                            .collect::<Vec<_>>();
                         (res, mem_ptr - origin_ptr)
                     }
                     pub fn vec_to_read_ref<'a>(vec: &'a Vec<$t>) -> Slice<'a> {
@@ -593,7 +596,13 @@ macro_rules! define_types {
                         Some(OwnedPrimArray::$e(vals))
                      },
                  )*
-                 _ => None
+                 _ => {
+                     log::error!(
+                         "get_owned_prim_array_val: unsupported type {:?} (size={}, ptr={})",
+                         t, size, *mem_ptr
+                     );
+                     None
+                 }
              }
         }
         pub fn get_shared_prim_array_val<'v>(t: Type, len: usize, mem_ptr: &mut usize) -> Option<SharedPrimArray<'v>> {
@@ -605,7 +614,13 @@ macro_rules! define_types {
                        Some(SharedPrimArray::$e(slice))
                     },
                 )*
-                _ => None,
+                _ => {
+                    log::error!(
+                        "get_shared_prim_array_val: unsupported type {:?} (len={}, ptr={})",
+                        t, len, *mem_ptr
+                    );
+                    None
+                },
             }
        }
         pub fn set_val (t: Type, val: &OwnedValue, mut mem_ptr: usize) {

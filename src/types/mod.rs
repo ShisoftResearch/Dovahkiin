@@ -117,7 +117,16 @@ gen_variable_types_io!(
             let len = *u32_io::read(mem_ptr) as usize;
             let smem_ptr = mem_ptr + u32_io::type_size();
             let slice = unsafe { std::slice::from_raw_parts(smem_ptr as *const u8, len) };
-            std::str::from_utf8(slice).unwrap()
+            match std::str::from_utf8(slice) {
+                Ok(s) => s,
+                Err(e) => {
+                    log::error!(
+                        "string_io: invalid UTF-8 at ptr={} len={} err={:?}",
+                        smem_ptr, len, e
+                    );
+                    ""
+                }
+            }
         }
     },
     {
