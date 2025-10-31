@@ -297,7 +297,7 @@ fn test_large_string() {
 
 #[test]
 fn test_string_size_calculation() {
-    // Test that size_at returns correct size for strings
+    // Test that size_at returns correct size for strings (including padding)
     let size = 1024;
     let ptr = alloc_aligned(size, 16);
     
@@ -306,7 +306,10 @@ fn test_string_size_calculation() {
         write_string_at_offset(ptr, 0, test_str);
         
         let calculated_size = string_io::size_at(ptr as usize);
-        let expected_size = 4 + test_str.len(); // 4 bytes for length + string bytes
+        // Size should include padding to 4-byte boundary
+        let unpadded_size = 4 + test_str.len(); // 4 bytes for length + string bytes
+        let align = 4;
+        let expected_size = (unpadded_size + align - 1) & !(align - 1);
         
         assert_eq!(calculated_size, expected_size);
         
@@ -415,6 +418,79 @@ fn test_read_slice_with_varying_lengths() {
             let written = write_string_at_offset(ptr, offset, s);
             offset += written;
             // Align each string to 4 bytes
+            offset = (offset + 3) & !3;
+        }
+        
+        let (read_strings, _) = string_io::read_slice(ptr as usize, strings.len());
+        
+        for (i, read_str) in read_strings.iter().enumerate() {
+            assert_eq!(*read_str, strings[i]);
+        }
+        
+        dealloc_aligned(ptr, size, 16);
+    }
+}
+
+#[test]
+fn test_utf8_variable_length_array_misalignment() {
+    // Test the alignment bug fix with UTF-8 strings that would cause misalignment
+    // This test demonstrates the bug where strings with byte lengths not divisible by 4
+    // would cause the next read to be misaligned
+    let size = 4096;
+    let ptr = alloc_aligned(size, 16);
+    
+    unsafe {
+        // These strings have varying byte lengths that test alignment handling
+        let strings = vec![
+            String::from(""),                      // 0 bytes -> size_at=4 -> aligned
+            String::from("ಬಾ ಇಲ್ಲಿ ಸಂಭವಿಸ"),    // 41 bytes -> size_at=45 -> misaligned!
+            String::from("中文测试文本"),           // 18 bytes -> size_at=22 -> misaligned!
+            String::from("Hello"),                 // 5 bytes -> size_at=9 -> misaligned!
+            String::from("🦀🔥"),                  // 8 bytes -> size_at=12 -> aligned
+        ];
+        
+        let mut offset = 0;
+        for s in &strings {
+            let written = write_string_at_offset(ptr, offset, s);
+            offset += written;
+            // Align to 4 bytes for next string (simulating proper storage)
+            offset = (offset + 3) & !3;
+        }
+        
+        // This should NOT crash even with misaligned string sizes
+        let (read_strings, total_size) = string_io::read_slice(ptr as usize, strings.len());
+        
+        assert_eq!(read_strings.len(), strings.len());
+        for (i, read_str) in read_strings.iter().enumerate() {
+            assert_eq!(*read_str, strings[i], "Mismatch at index {}", i);
+        }
+        
+        // Verify that total_size accounts for alignment padding
+        assert_eq!(total_size, offset);
+        
+        dealloc_aligned(ptr, size, 16);
+    }
+}
+
+#[test]
+fn test_kannada_telugu_unicode_array() {
+    // Test with Kannada and Telugu scripts which have complex UTF-8 encoding
+    let size = 4096;
+    let ptr = alloc_aligned(size, 16);
+    
+    unsafe {
+        let strings = vec![
+            "ಕನ್ನಡ",           // Kannada
+            "తెలుగు",          // Telugu
+            "தமிழ்",           // Tamil
+            "हिन्दी",          // Hindi
+            "বাংলা",           // Bengali
+        ];
+        
+        let mut offset = 0;
+        for s in &strings {
+            let written = write_string_at_offset(ptr, offset, s);
+            offset += written;
             offset = (offset + 3) & !3;
         }
         

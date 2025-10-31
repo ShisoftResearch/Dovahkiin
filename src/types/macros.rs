@@ -176,6 +176,8 @@ macro_rules! gen_variable_types_io {
                                 let v = read(current_ptr);
                                 // advance by encoded size to be robust to decoding issues
                                 mem_ptr += size_at(current_ptr);
+                                // Re-align for next element to handle variable-length types
+                                mem_ptr = (mem_ptr + align - 1) & !(align - 1);
                                 v
                             })
                             .collect::<Vec<_>>();

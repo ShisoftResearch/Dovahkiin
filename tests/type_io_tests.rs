@@ -391,7 +391,10 @@ fn test_string_io_size_calculation() {
         std::ptr::copy_nonoverlapping(test_str.as_ptr(), str_ptr, test_str.len());
         
         let calculated_size = string_io::size_at(ptr as usize);
-        let expected_size = 4 + test_str.len();
+        // Size should include padding to 4-byte boundary
+        let unpadded_size = 4 + test_str.len();
+        let align = 4;
+        let expected_size = (unpadded_size + align - 1) & !(align - 1);
         assert_eq!(calculated_size, expected_size);
         
         dealloc_aligned(ptr, size, 8);

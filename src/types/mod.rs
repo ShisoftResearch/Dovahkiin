@@ -140,16 +140,31 @@ gen_variable_types_io!(
                     ptr::write(smem_ptr as *mut u8, *b);
                     smem_ptr += 1;
                 }
+                // Add padding to align to 4-byte boundary
+                let align = std::mem::align_of::<u32>();
+                let unpadded_size = len + u32_io::type_size();
+                let padded_size = (unpadded_size + align - 1) & !(align - 1);
+                let padding = padded_size - unpadded_size;
+                for _ in 0..padding {
+                    ptr::write(smem_ptr as *mut u8, 0);
+                    smem_ptr += 1;
+                }
             }
         }
     },
     {
         |mem_ptr| {
             let str_len = *u32_io::read(mem_ptr) as usize;
-            str_len + u32_io::type_size()
+            let unpadded_size = str_len + u32_io::type_size();
+            let align = std::mem::align_of::<u32>();
+            (unpadded_size + align - 1) & !(align - 1)
         }
     },
-    |val: &str| { val.as_bytes().len() + u32_io::type_size() },
+    |val: &str| {
+        let unpadded_size = val.as_bytes().len() + u32_io::type_size();
+        let align = std::mem::align_of::<u32>();
+        (unpadded_size + align - 1) & !(align - 1)
+    },
     |val: &str| {
         let bytes = val.as_bytes();
         let mut r = [0u8; 8];
@@ -185,11 +200,29 @@ gen_variable_types_io!(
                     ptr::write(smem_ptr as *mut u8, *b);
                     smem_ptr += 1;
                 }
+                // Add padding to align to 4-byte boundary
+                let align = std::mem::align_of::<u32>();
+                let unpadded_size = len + u32_io::type_size();
+                let padded_size = (unpadded_size + align - 1) & !(align - 1);
+                let padding = padded_size - unpadded_size;
+                for _ in 0..padding {
+                    ptr::write(smem_ptr as *mut u8, 0);
+                    smem_ptr += 1;
+                }
             }
         }
     },
-    |mem_ptr| { *u32_io::read(mem_ptr) as usize + u32_io::type_size() },
-    |val: &[u8]| { val.len() + u32_io::type_size() },
+    |mem_ptr| {
+        let len = *u32_io::read(mem_ptr) as usize;
+        let unpadded_size = len + u32_io::type_size();
+        let align = std::mem::align_of::<u32>();
+        (unpadded_size + align - 1) & !(align - 1)
+    },
+    |val: &[u8]| {
+        let unpadded_size = val.len() + u32_io::type_size();
+        let align = std::mem::align_of::<u32>();
+        (unpadded_size + align - 1) & !(align - 1)
+    },
     |val: &[u8]| {
         let mut r = [0u8; 8];
         for i in 0..::std::cmp::min(r.len(), val.len()) {
