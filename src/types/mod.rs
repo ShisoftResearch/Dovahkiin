@@ -120,11 +120,10 @@ gen_variable_types_io!(
             match std::str::from_utf8(slice) {
                 Ok(s) => s,
                 Err(e) => {
-                    log::error!(
+                    panic!(
                         "string_io: invalid UTF-8 at ptr={} len={} err={:?}",
                         smem_ptr, len, e
                     );
-                    ""
                 }
             }
         }
