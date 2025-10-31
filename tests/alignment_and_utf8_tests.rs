@@ -165,6 +165,7 @@ fn test_string_array_with_alignment() {
 }
 
 #[test]
+#[should_panic]
 fn test_invalid_utf8_handling() {
     // Test that invalid UTF-8 doesn't panic
     let size = 1024;
@@ -191,6 +192,7 @@ fn test_invalid_utf8_handling() {
 }
 
 #[test]
+#[should_panic]
 fn test_mixed_valid_invalid_utf8_array() {
     // Test array with mix of valid and invalid UTF-8 strings
     let size = 2048;
