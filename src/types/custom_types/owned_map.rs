@@ -3,7 +3,6 @@ use crate::types::SharedMap;
 use super::map::{GenericMap, Map};
 use super::{super::*, shared_map::key_hash};
 use ahash::{HashMap, HashMapExt};
-use std::collections::BTreeMap;
 use std::fmt;
 use std::iter::Iterator;
 use std::slice::Iter;
@@ -179,14 +178,19 @@ impl OwnedMap {
 
 impl fmt::Debug for OwnedMap {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "( ")?;
+        write!(f, "{{")?;
+        let mut first = true;
         for name in &self.fields {
             let id = key_hash(name);
             if let Some(value) = self.map.get(&id) {
-                write!(f, "{}: {:?} ", name, value)?;
+                if !first {
+                    write!(f, ", ")?;
+                }
+                write!(f, "{:?}: {:?}", name, value)?;
+                first = false;
             }
         }
-        write!(f, ") ")
+        write!(f, "}}")
     }
 }
 

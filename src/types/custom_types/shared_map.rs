@@ -2,10 +2,11 @@ use super::super::*;
 use super::map::{GenericMap, Map};
 use ahash::{HashMap, HashMapExt};
 use bifrost_hasher::hash_str;
+use std::fmt;
 use std::iter::Iterator;
 use std::slice::Iter;
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct SharedMap<'v> {
     pub map: GenericMap<u64, SharedValue<'v>>,
     pub fields: Vec<String>,
@@ -171,6 +172,24 @@ pub fn key_hash<'a>(key: &'a str) -> u64 {
 
 pub fn key_hashes(keys: &Vec<String>) -> Vec<u64> {
     keys.iter().map(|str| hash_str(str)).collect()
+}
+
+impl<'v> fmt::Debug for SharedMap<'v> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{{")?;
+        let mut first = true;
+        for name in &self.fields {
+            let id = key_hash(name);
+            if let Some(value) = self.map.get(&id) {
+                if !first {
+                    write!(f, ", ")?;
+                }
+                write!(f, "{:?}: {:?}", name, value)?;
+                first = false;
+            }
+        }
+        write!(f, "}}")
+    }
 }
 
 impl<'v> Eq for SharedMap<'v> {}

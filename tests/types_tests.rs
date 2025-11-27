@@ -217,6 +217,50 @@ fn test_owned_map_nested() {
 }
 
 #[test]
+fn test_owned_map_debug_output() {
+    let mut map = OwnedMap::new();
+    map.insert_value("name", OwnedValue::String("Alice".to_string()));
+    map.insert_value("age", OwnedValue::I32(30));
+    map.insert_value("active", OwnedValue::Bool(true));
+    
+    let debug_output = format!("{:?}", map);
+    
+    // Verify the debug output contains the map contents
+    assert!(debug_output.contains("name"));
+    assert!(debug_output.contains("Alice"));
+    assert!(debug_output.contains("age"));
+    assert!(debug_output.contains("30"));
+    assert!(debug_output.contains("active"));
+    assert!(debug_output.contains("true"));
+    assert!(debug_output.starts_with("{"));
+    assert!(debug_output.ends_with("}"));
+    
+    // Print it so we can see it in test output
+    println!("OwnedMap debug output: {}", debug_output);
+}
+
+#[test]
+fn test_shared_map_debug_output() {
+    let mut owned_map = OwnedMap::new();
+    owned_map.insert_value("x", OwnedValue::I32(10));
+    owned_map.insert_value("y", OwnedValue::I32(20));
+    
+    let shared_map = owned_map.shared();
+    let debug_output = format!("{:?}", shared_map);
+    
+    // Verify the debug output contains the map contents
+    assert!(debug_output.contains("x"));
+    assert!(debug_output.contains("10"));
+    assert!(debug_output.contains("y"));
+    assert!(debug_output.contains("20"));
+    assert!(debug_output.starts_with("{"));
+    assert!(debug_output.ends_with("}"));
+    
+    // Print it so we can see it in test output
+    println!("SharedMap debug output: {}", debug_output);
+}
+
+#[test]
 fn test_prim_array_sizes() {
     let u8_arr = OwnedPrimArray::U8(vec![1u8, 2, 3, 4]);
     let u32_arr = OwnedPrimArray::U32(vec![1u32, 2, 3, 4]);
