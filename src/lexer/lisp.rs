@@ -203,7 +203,7 @@ fn read_escaped_char(iter: &mut CharIter) -> Result<char, String> {
             'r' => return Ok('\r'),
             '\'' => return Ok('\''),
             '"' => return Ok('"'),
-            '\\' => return Ok('\''),
+            '\\' => return Ok('\\'),
             _ => return Err(format!("Unknown escape character '{}'", c)),
         }
     }
@@ -212,6 +212,7 @@ fn read_escaped_char(iter: &mut CharIter) -> Result<char, String> {
 
 fn read_string(iter: &mut CharIter) -> Result<Token, String> {
     let mut chars = Vec::new();
+    let mut terminated = false;
     while let Some(c) = iter.next() {
         match c {
             '\\' => {
@@ -219,12 +220,17 @@ fn read_string(iter: &mut CharIter) -> Result<Token, String> {
                 chars.push(read_escaped_char(iter)?);
             }
             '"' => {
+                iter.next();
+                terminated = true;
                 break;
             }
             _ => {
                 chars.push(c);
             }
         }
+    }
+    if !terminated {
+        return Err("Unexpected EOF, expect '\"'".to_string());
     }
     return Ok(Token::String(chars.into_iter().collect()));
 }
