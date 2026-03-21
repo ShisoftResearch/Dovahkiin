@@ -183,6 +183,22 @@ defsymbols! {
         check_num_params(2, &exprs)?;
         comparators::not_equals(exprs)
     };
+    "in" => In, false, |exprs, _env| {
+        check_params_not_least_than(2, &exprs)?;
+        comparators::in_(exprs)
+    };
+    "between" => Between, false, |exprs, _env| {
+        check_num_params(3, &exprs)?;
+        comparators::between(exprs)
+    };
+    "is-null" => IsNull, true, |exprs, env| {
+        check_num_params(1, &exprs)?;
+        logic::is_null(exprs, env)
+    };
+    "is-not-null" => IsNotNull, true, |exprs, env| {
+        check_num_params(1, &exprs)?;
+        logic::is_not_null(exprs, env)
+    };
     ">" => GreaterThan, false, |exprs, _env| {
         check_params_not_least_than(2, &exprs)?;
         comparators::gt(exprs)
@@ -275,6 +291,10 @@ defsymbols! {
     };
     "and" => And, true, |exprs, env| {
         logic::and(exprs, env)
+    };
+    "not" => Not, true, |exprs, env| {
+        check_num_params(1, &exprs)?;
+        logic::not(exprs, env)
     };
     "cond" => Conditional, true, |exprs, env| {
         logic::cond(exprs, env)

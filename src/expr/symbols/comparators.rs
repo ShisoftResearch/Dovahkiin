@@ -144,3 +144,58 @@ pub fn gte(values: Vec<SExpr>) -> Result<SExpr, String> {
         _ => Err(format!("Type cannot be compared: {:?}", values)),
     }
 }
+
+pub fn in_(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
+    let needle = exprs.remove(0);
+    let Some(needle) = needle.shared_val() else {
+        return Ok(SExpr::from_owned_value(OwnedValue::Bool(false)));
+    };
+
+    let matched = exprs
+        .into_iter()
+        .any(|expr| expr.shared_val().as_ref() == Some(&needle));
+    Ok(SExpr::from_owned_value(OwnedValue::Bool(matched)))
+}
+
+macro_rules! between_ {
+    ($type: ident, $value: ident, $lower: ident, $upper: ident) => {{
+        if let (
+            Some(SharedValue::$type(value)),
+            Some(SharedValue::$type(lower)),
+            Some(SharedValue::$type(upper)),
+        ) = ($value.shared_val(), $lower.shared_val(), $upper.shared_val())
+        {
+            Ok(SExpr::from_owned_value(OwnedValue::Bool(
+                lower <= value && value <= upper,
+            )))
+        } else {
+            Err(format!(
+                "Type not match, expect {} found {:?}, {:?}, {:?}",
+                stringify!($type),
+                $value,
+                $lower,
+                $upper
+            ))
+        }
+    }};
+}
+
+pub fn between(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
+    let value = exprs.remove(0);
+    let lower = exprs.remove(0);
+    let upper = exprs.remove(0);
+
+    match value.shared_val() {
+        Some(SharedValue::U8(_)) => between_!(U8, value, lower, upper),
+        Some(SharedValue::U16(_)) => between_!(U16, value, lower, upper),
+        Some(SharedValue::U32(_)) => between_!(U32, value, lower, upper),
+        Some(SharedValue::U64(_)) => between_!(U64, value, lower, upper),
+        Some(SharedValue::I8(_)) => between_!(I8, value, lower, upper),
+        Some(SharedValue::I16(_)) => between_!(I16, value, lower, upper),
+        Some(SharedValue::I32(_)) => between_!(I32, value, lower, upper),
+        Some(SharedValue::I64(_)) => between_!(I64, value, lower, upper),
+        Some(SharedValue::F32(_)) => between_!(F32, value, lower, upper),
+        Some(SharedValue::F64(_)) => between_!(F64, value, lower, upper),
+        _ => Err(format!("Type cannot be compared: {:?}", vec![value, lower, upper])),
+    }
+}
