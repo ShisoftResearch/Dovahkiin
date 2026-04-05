@@ -1,9 +1,9 @@
 use crate::types::{key_hash, OwnedMap, SharedMap, Value};
 use ahash::HashMap;
 use serde::Serialize;
-use std::{collections::BTreeMap, slice::Iter};
 use std::iter::FromIterator;
 use std::ops::{Index, IndexMut};
+use std::{collections::BTreeMap, slice::Iter};
 
 pub trait Map {
     type Value: Value;
@@ -71,14 +71,14 @@ impl<K: Ord, V> GenericMap<K, V> {
             GenericMap::Large(large) => large.get(key),
         }
     }
-    
+
     pub fn get_mut(&mut self, key: &K) -> Option<&mut V> {
         match self {
             GenericMap::Small(small) => small.get_mut(key),
             GenericMap::Large(large) => large.get_mut(key),
         }
     }
-    
+
     pub fn len(&self) -> usize {
         match self {
             GenericMap::Small(small) => small.len(),
@@ -99,7 +99,7 @@ impl<K: Ord, V> GenericMap<K, V> {
             GenericMap::Large(large) => large.remove(key),
         }
     }
-    
+
     pub fn iter<'a>(&'a self) -> Box<dyn Iterator<Item = (&'a K, &'a V)> + 'a> {
         match self {
             GenericMap::Small(small) => Box::new(small.pairs.iter().map(|(k, v)| (k, v))),
@@ -107,7 +107,7 @@ impl<K: Ord, V> GenericMap<K, V> {
         }
     }
 
-    pub fn into_iter(self) -> Box<dyn Iterator<Item = (K, V)>> 
+    pub fn into_iter(self) -> Box<dyn Iterator<Item = (K, V)>>
     where
         K: 'static,
         V: 'static,
@@ -134,19 +134,20 @@ impl<K: Ord, V> GenericMap<K, V> {
     }
 
     // Gets a mutable reference to the value corresponding to the key or inserts a default value
-    pub fn get_or_insert(&mut self, key: K, default: V) -> &mut V 
-    where K: Clone
+    pub fn get_or_insert(&mut self, key: K, default: V) -> &mut V
+    where
+        K: Clone,
     {
         self.check_upgrade();
         let has_key = match self {
             GenericMap::Small(small) => small.get(&key).is_some(),
             GenericMap::Large(large) => large.contains_key(&key),
         };
-        
+
         if !has_key {
             self.insert(key.clone(), default);
         }
-        
+
         match self {
             GenericMap::Small(small) => {
                 for (k, v) in &mut small.pairs {
@@ -159,23 +160,24 @@ impl<K: Ord, V> GenericMap<K, V> {
             GenericMap::Large(large) => large.get_mut(&key).unwrap(),
         }
     }
-    
-    // Gets a mutable reference to the value corresponding to the key or 
+
+    // Gets a mutable reference to the value corresponding to the key or
     // inserts a value computed from the default function
-    pub fn get_or_insert_with<F: FnOnce() -> V>(&mut self, key: K, default: F) -> &mut V 
-    where K: Clone
+    pub fn get_or_insert_with<F: FnOnce() -> V>(&mut self, key: K, default: F) -> &mut V
+    where
+        K: Clone,
     {
         self.check_upgrade();
         let has_key = match self {
             GenericMap::Small(small) => small.get(&key).is_some(),
             GenericMap::Large(large) => large.contains_key(&key),
         };
-        
+
         if !has_key {
             let value = default();
             self.insert(key.clone(), value);
         }
-        
+
         match self {
             GenericMap::Small(small) => {
                 for (k, v) in &mut small.pairs {
@@ -255,7 +257,7 @@ impl<K: Ord, V> FromIterator<(K, V)> for GenericMap<K, V> {
 
 impl<K: Ord, V> Index<&K> for GenericMap<K, V> {
     type Output = V;
-    
+
     fn index(&self, key: &K) -> &Self::Output {
         match self.get(key) {
             Some(val) => val,
