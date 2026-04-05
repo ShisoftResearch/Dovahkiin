@@ -215,6 +215,64 @@ defsymbols! {
         check_params_not_empty(&exprs)?;
         arithmetic::divide(exprs)
     };
+    "abs" => Abs, false, |mut exprs, _env| {
+        check_num_params(1, &exprs)?;
+        arithmetic::abs(exprs.pop().unwrap())
+    };
+    "sqrt" => Sqrt, false, |mut exprs, _env| {
+        check_num_params(1, &exprs)?;
+        arithmetic::sqrt(exprs.pop().unwrap())
+    };
+    "ln" => Ln, false, |mut exprs, _env| {
+        check_num_params(1, &exprs)?;
+        arithmetic::ln(exprs.pop().unwrap())
+    };
+    "log2" => Log2, false, |mut exprs, _env| {
+        check_num_params(1, &exprs)?;
+        arithmetic::log2(exprs.pop().unwrap())
+    };
+    "log10" => Log10, false, |mut exprs, _env| {
+        check_num_params(1, &exprs)?;
+        arithmetic::log10(exprs.pop().unwrap())
+    };
+    "exp" => Exp, false, |mut exprs, _env| {
+        check_num_params(1, &exprs)?;
+        arithmetic::exp(exprs.pop().unwrap())
+    };
+    "floor" => Floor, false, |mut exprs, _env| {
+        check_num_params(1, &exprs)?;
+        arithmetic::floor(exprs.pop().unwrap())
+    };
+    "ceil" => Ceil, false, |mut exprs, _env| {
+        check_num_params(1, &exprs)?;
+        arithmetic::ceil(exprs.pop().unwrap())
+    };
+    "round" => Round, false, |mut exprs, _env| {
+        check_num_params(1, &exprs)?;
+        arithmetic::round(exprs.pop().unwrap())
+    };
+    "pow" => Pow, false, |exprs, _env| {
+        check_num_params(2, &exprs)?;
+        let (base, exp) = split_pair(exprs);
+        arithmetic::pow(base, exp)
+    };
+    "min" => Min, false, |exprs, _env| {
+        check_num_params(2, &exprs)?;
+        let (lhs, rhs) = split_pair(exprs);
+        arithmetic::min(lhs, rhs)
+    };
+    "max" => Max, false, |exprs, _env| {
+        check_num_params(2, &exprs)?;
+        let (lhs, rhs) = split_pair(exprs);
+        arithmetic::max(lhs, rhs)
+    };
+    "clamp" => Clamp, false, |mut exprs, _env| {
+        check_num_params(3, &exprs)?;
+        let max = exprs.pop().unwrap();
+        let min = exprs.pop().unwrap();
+        let value = exprs.pop().unwrap();
+        arithmetic::clamp(value, min, max)
+    };
     "let" => Let, true, |exprs, env| {
         bindings::let_binding(env, exprs)
     };
