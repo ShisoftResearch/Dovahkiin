@@ -1,6 +1,6 @@
 use bifrost_hasher::hash_str;
 use bifrost_plugins::hash_ident;
-use std::cell::RefCell;
+use std::cell::UnsafeCell;
 use std::collections::HashMap;
 use std::fmt::Debug;
 
@@ -30,27 +30,38 @@ pub trait Symbol: Sync + Debug {
 }
 
 pub struct ISymbolMap {
-    pub map: RefCell<HashMap<u64, Box<dyn Symbol>>>,
+    map: UnsafeCell<HashMap<u64, Box<dyn Symbol>>>,
 }
 
+// SAFETY: Reads are lock-free and assume the symbol table is immutable after initialization.
+// Callers may mutate the table only through the documented unsafe APIs, which require exclusive
+// initialization-time access with no concurrent readers or writers.
 unsafe impl Sync for ISymbolMap {}
+
 impl ISymbolMap {
     pub fn new(map: HashMap<u64, Box<dyn Symbol>>) -> ISymbolMap {
         ISymbolMap {
-            map: RefCell::new(map),
+            map: UnsafeCell::new(map),
         }
     }
-    pub fn insert<'a, S>(&self, symbol_name: &'a str, symbol_impl: S) -> Result<(), ()>
+
+    pub fn get(&self, symbol_id: u64) -> Option<&dyn Symbol> {
+        // SAFETY: Readers only take a shared reference to the map. This is sound if and only if
+        // callers uphold the registry invariant that no unsafe mutation happens concurrently with
+        // reads, and that the registry is not mutated after initialization.
+        unsafe { (&*self.map.get()).get(&symbol_id).map(|symbol| symbol.as_ref()) }
+    }
+
+    /// # Safety
+    ///
+    /// The caller must guarantee there are no concurrent readers or writers of the symbol map.
+    /// This is intended for single-threaded initialization before the interpreter is used.
+    pub unsafe fn insert<'a, S>(&self, symbol_name: &'a str, symbol_impl: S)
     where
         S: Symbol + 'static,
     {
-        match self.map.try_borrow_mut() {
-            Ok(ref mut m) => {
-                m.insert(hash_str(symbol_name), Box::new(symbol_impl));
-                Ok(())
-            }
-            Err(_) => Err(()),
-        }
+        let map = unsafe { &mut *self.map.get() };
+        map.insert(hash_str(symbol_name), Box::new(symbol_impl));
     }
 }
 
@@ -97,11 +108,15 @@ macro_rules! defsymbols {
     };
 }
 
-pub fn new_symbol<'a, S>(symbol_name: &'a str, symbol_impl: S) -> Result<(), ()>
+/// # Safety
+///
+/// The caller must guarantee there are no concurrent readers or writers of the global symbol
+/// registry. This should only be used during interpreter initialization.
+pub unsafe fn new_symbol<'a, S>(symbol_name: &'a str, symbol_impl: S)
 where
     S: Symbol + 'static,
 {
-    ISYMBOL_MAP.insert(symbol_name, symbol_impl)
+    unsafe { ISYMBOL_MAP.insert(symbol_name, symbol_impl) }
 }
 
 fn check_num_params(num: usize, params: &Vec<SExpr>) -> Result<(), String> {
