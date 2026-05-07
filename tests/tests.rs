@@ -1,4 +1,4 @@
-use dovahkiin::expr::{SExpr, Value};
+use dovahkiin::expr::SExpr;
 use dovahkiin::integrated::lisp;
 use dovahkiin::types::{Map, OwnedValue, SharedValue};
 
@@ -190,4 +190,56 @@ pub fn map_vec() {
         }
         _ => panic!(),
     }
+}
+
+#[test]
+pub fn lisp_integrated_math_logarithms_and_exp() {
+    let mut interpreter = lisp::get_interpreter();
+
+    assert_eq!(
+        lisp::eval_string(&mut interpreter, "(ln 1.0f64)").unwrap(),
+        SExpr::from_owned_value(OwnedValue::F64(0.0))
+    );
+    assert_eq!(
+        lisp::eval_string(&mut interpreter, "(log2 8.0f64)").unwrap(),
+        SExpr::from_owned_value(OwnedValue::F64(3.0))
+    );
+    assert_eq!(
+        lisp::eval_string(&mut interpreter, "(log10 1000.0f64)").unwrap(),
+        SExpr::from_owned_value(OwnedValue::F64(3.0))
+    );
+    assert_eq!(
+        lisp::eval_string(&mut interpreter, "(round (exp 1.0f64))").unwrap(),
+        SExpr::from_owned_value(OwnedValue::F64(3.0))
+    );
+}
+
+#[test]
+pub fn lisp_integrated_math_helpers() {
+    let mut interpreter = lisp::get_interpreter();
+
+    assert_eq!(
+        lisp::eval_string(&mut interpreter, "(sqrt 9.0f64)").unwrap(),
+        SExpr::from_owned_value(OwnedValue::F64(3.0))
+    );
+    assert_eq!(
+        lisp::eval_string(&mut interpreter, "(pow 3.0f64 2.0f64)").unwrap(),
+        SExpr::from_owned_value(OwnedValue::F64(9.0))
+    );
+    assert_eq!(
+        lisp::eval_string(&mut interpreter, "(abs -5i32)").unwrap(),
+        SExpr::from_owned_value(OwnedValue::I32(5))
+    );
+    assert_eq!(
+        lisp::eval_string(&mut interpreter, "(min 3.0f64 2.0f64)").unwrap(),
+        SExpr::from_owned_value(OwnedValue::F64(2.0))
+    );
+    assert_eq!(
+        lisp::eval_string(&mut interpreter, "(max 3.0f64 2.0f64)").unwrap(),
+        SExpr::from_owned_value(OwnedValue::F64(3.0))
+    );
+    assert_eq!(
+        lisp::eval_string(&mut interpreter, "(clamp 9.0f64 1.0f64 8.0f64)").unwrap(),
+        SExpr::from_owned_value(OwnedValue::F64(8.0))
+    );
 }

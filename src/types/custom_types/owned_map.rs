@@ -23,7 +23,8 @@ impl Map for OwnedMap {
         }
     }
     fn from_pairs<P>(map: P) -> Self
-        where P: IntoIterator<Item = (String, Self::Value)>
+    where
+        P: IntoIterator<Item = (String, Self::Value)>,
     {
         let mut target_map = GenericMap::new();
         let mut fields = Vec::new();

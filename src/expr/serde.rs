@@ -106,7 +106,7 @@ impl ParserExpr for Expr {
             Expr::Keyword(_, s) => Ok(OwnedValue::String(s)),
             Expr::META(m) => Err(format!("Cannot have meta as value {:?}", m)),
             Expr::LAMBDA(i, o) => Err(format!("Cannot have lambda as value {:?} -> {:?}", i, o)),
-            Expr::NA => Ok(OwnedValue::NA)
+            Expr::NA => Ok(OwnedValue::NA),
         }
     }
 }

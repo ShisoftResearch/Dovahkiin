@@ -21,7 +21,8 @@ impl<'v> Map for SharedMap<'v> {
         }
     }
     fn from_pairs<P>(map: P) -> Self
-    where P: IntoIterator<Item = (String, Self::Value)>
+    where
+        P: IntoIterator<Item = (String, Self::Value)>,
     {
         let mut target_map: GenericMap<u64, SharedValue<'v>> = GenericMap::new();
         let mut fields = Vec::new();

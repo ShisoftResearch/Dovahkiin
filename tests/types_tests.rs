@@ -22,7 +22,7 @@ fn test_owned_value_basic_types() {
 fn test_owned_value_string() {
     let s = String::from("Hello, World!");
     let val = OwnedValue::String(s.clone());
-    
+
     if let OwnedValue::String(extracted) = val {
         assert_eq!(extracted, s);
     } else {
@@ -32,13 +32,9 @@ fn test_owned_value_string() {
 
 #[test]
 fn test_owned_value_array() {
-    let arr = vec![
-        OwnedValue::I32(1),
-        OwnedValue::I32(2),
-        OwnedValue::I32(3),
-    ];
+    let arr = vec![OwnedValue::I32(1), OwnedValue::I32(2), OwnedValue::I32(3)];
     let val = OwnedValue::Array(arr.clone());
-    
+
     if let OwnedValue::Array(extracted) = val {
         assert_eq!(extracted, arr);
     } else {
@@ -51,7 +47,7 @@ fn test_owned_value_prim_array() {
     let arr = vec![1u32, 2u32, 3u32, 4u32, 5u32];
     let prim_arr = OwnedPrimArray::U32(arr.clone());
     let val = OwnedValue::PrimArray(prim_arr);
-    
+
     if let OwnedValue::PrimArray(OwnedPrimArray::U32(extracted)) = val {
         assert_eq!(extracted, arr);
     } else {
@@ -64,9 +60,9 @@ fn test_owned_value_map() {
     let mut map = OwnedMap::new();
     map.insert_value("key1", OwnedValue::I32(42));
     map.insert_value("key2", OwnedValue::String("value".to_string()));
-    
+
     let val = OwnedValue::Map(map.clone());
-    
+
     if let OwnedValue::Map(extracted) = val {
         assert_eq!(extracted.get("key1").i32(), Some(&42));
         assert_eq!(extracted.get("key2").string(), Some(&"value".to_string()));
@@ -118,7 +114,10 @@ fn test_owned_value_get_int() {
     assert_eq!(OwnedValue::I64(-50000).get_int(), Some(-50000));
     assert_eq!(OwnedValue::U8(200).get_int(), Some(200));
     assert_eq!(OwnedValue::U16(50000).get_int(), Some(50000));
-    assert_eq!(OwnedValue::String("not a number".to_string()).get_int(), None);
+    assert_eq!(
+        OwnedValue::String("not a number".to_string()).get_int(),
+        None
+    );
 }
 
 #[test]
@@ -128,7 +127,10 @@ fn test_owned_value_get_uint() {
     assert_eq!(OwnedValue::U32(100000).get_uint(), Some(100000));
     assert_eq!(OwnedValue::U64(1000000).get_uint(), Some(1000000));
     assert_eq!(OwnedValue::I32(-5).get_uint(), None);
-    assert_eq!(OwnedValue::String("not a number".to_string()).get_uint(), None);
+    assert_eq!(
+        OwnedValue::String("not a number".to_string()).get_uint(),
+        None
+    );
 }
 
 #[test]
@@ -140,7 +142,11 @@ fn test_pos2d32() {
 
 #[test]
 fn test_pos3d32() {
-    let pos = Pos3d32 { x: 1.0, y: 2.0, z: 3.0 };
+    let pos = Pos3d32 {
+        x: 1.0,
+        y: 2.0,
+        z: 3.0,
+    };
     assert_eq!(pos.x, 1.0);
     assert_eq!(pos.y, 2.0);
     assert_eq!(pos.z, 3.0);
@@ -148,20 +154,32 @@ fn test_pos3d32() {
 
 #[test]
 fn test_id() {
-    let id1 = Id { higher: 123, lower: 456 };
-    let id2 = Id { higher: 123, lower: 456 };
-    let id3 = Id { higher: 789, lower: 101 };
-    
+    let id1 = Id {
+        higher: 123,
+        lower: 456,
+    };
+    let id2 = Id {
+        higher: 123,
+        lower: 456,
+    };
+    let id3 = Id {
+        higher: 789,
+        lower: 101,
+    };
+
     assert_eq!(id1, id2);
     assert_ne!(id1, id3);
 }
 
 #[test]
 fn test_id_serialization() {
-    let id = Id { higher: u64::MAX, lower: u64::MAX };
+    let id = Id {
+        higher: u64::MAX,
+        lower: u64::MAX,
+    };
     let bytes = id.to_binary();
     assert_eq!(bytes.len(), 16);
-    
+
     let mut cursor = std::io::Cursor::new(&bytes[..]);
     let deserialized = Id::from_binary(&mut cursor).unwrap();
     assert_eq!(id, deserialized);
@@ -184,18 +202,18 @@ fn test_small_bytes_type() {
 #[test]
 fn test_owned_map_operations() {
     let mut map = OwnedMap::new();
-    
+
     // Test insertion
     map.insert_value("key1", OwnedValue::I32(42));
     map.insert_value("key2", OwnedValue::String("hello".to_string()));
-    
+
     // Test retrieval
     assert_eq!(map.get("key1").i32(), Some(&42));
     assert_eq!(map.get("key2").string(), Some(&"hello".to_string()));
-    
+
     // Test non-existent key
     assert_eq!(map.get("nonexistent"), &OwnedValue::Null);
-    
+
     // Test existence by checking if value is not Null
     assert!(*map.get("key1") != OwnedValue::Null);
     assert!(*map.get("nonexistent") == OwnedValue::Null);
@@ -205,10 +223,10 @@ fn test_owned_map_operations() {
 fn test_owned_map_nested() {
     let mut inner_map = OwnedMap::new();
     inner_map.insert_value("inner_key", OwnedValue::I32(100));
-    
+
     let mut outer_map = OwnedMap::new();
     outer_map.insert_value("outer_key", OwnedValue::Map(inner_map));
-    
+
     if let OwnedValue::Map(inner) = outer_map.get("outer_key") {
         assert_eq!(inner.get("inner_key").i32(), Some(&100));
     } else {
@@ -222,9 +240,9 @@ fn test_owned_map_debug_output() {
     map.insert_value("name", OwnedValue::String("Alice".to_string()));
     map.insert_value("age", OwnedValue::I32(30));
     map.insert_value("active", OwnedValue::Bool(true));
-    
+
     let debug_output = format!("{:?}", map);
-    
+
     // Verify the debug output contains the map contents
     assert!(debug_output.contains("name"));
     assert!(debug_output.contains("Alice"));
@@ -234,7 +252,7 @@ fn test_owned_map_debug_output() {
     assert!(debug_output.contains("true"));
     assert!(debug_output.starts_with("{"));
     assert!(debug_output.ends_with("}"));
-    
+
     // Print it so we can see it in test output
     println!("OwnedMap debug output: {}", debug_output);
 }
@@ -244,10 +262,10 @@ fn test_shared_map_debug_output() {
     let mut owned_map = OwnedMap::new();
     owned_map.insert_value("x", OwnedValue::I32(10));
     owned_map.insert_value("y", OwnedValue::I32(20));
-    
+
     let shared_map = owned_map.shared();
     let debug_output = format!("{:?}", shared_map);
-    
+
     // Verify the debug output contains the map contents
     assert!(debug_output.contains("x"));
     assert!(debug_output.contains("10"));
@@ -255,7 +273,7 @@ fn test_shared_map_debug_output() {
     assert!(debug_output.contains("20"));
     assert!(debug_output.starts_with("{"));
     assert!(debug_output.ends_with("}"));
-    
+
     // Print it so we can see it in test output
     println!("SharedMap debug output: {}", debug_output);
 }
@@ -265,7 +283,7 @@ fn test_prim_array_sizes() {
     let u8_arr = OwnedPrimArray::U8(vec![1u8, 2, 3, 4]);
     let u32_arr = OwnedPrimArray::U32(vec![1u32, 2, 3, 4]);
     let u64_arr = OwnedPrimArray::U64(vec![1u64, 2, 3, 4]);
-    
+
     assert_eq!(u8_arr.len(), 4);
     assert_eq!(u32_arr.len(), 4);
     assert_eq!(u64_arr.len(), 4);
@@ -291,7 +309,7 @@ fn test_data_map_macro() {
         x: OwnedValue::I32(10),
         y: OwnedValue::String("test".to_string())
     };
-    
+
     assert_eq!(map.get("x").i32(), Some(&10));
     assert_eq!(map.get("y").string(), Some(&"test".to_string()));
 }
@@ -302,7 +320,7 @@ fn test_data_map_value_macro() {
         a: OwnedValue::Bool(true),
         b: OwnedValue::F64(3.14)
     };
-    
+
     if let OwnedValue::Map(map) = value {
         assert_eq!(map.get("a").bool(), Some(&true));
         assert_eq!(map.get("b").f64(), Some(&3.14));
@@ -326,7 +344,7 @@ fn test_owned_value_array_nested() {
         OwnedValue::Array(inner.clone()),
     ];
     let nested = OwnedValue::Array(outer);
-    
+
     if let OwnedValue::Array(outer_arr) = nested {
         assert_eq!(outer_arr.len(), 2);
         if let OwnedValue::Array(inner_arr) = &outer_arr[0] {
@@ -350,10 +368,20 @@ fn test_type_id_of() {
 fn test_all_primitive_types() {
     // Ensure all primitive types are distinct
     let types = vec![
-        Type::Bool, Type::Char, Type::I8, Type::I16, Type::I32, Type::I64,
-        Type::U8, Type::U16, Type::U32, Type::U64, Type::F32, Type::F64,
+        Type::Bool,
+        Type::Char,
+        Type::I8,
+        Type::I16,
+        Type::I32,
+        Type::I64,
+        Type::U8,
+        Type::U16,
+        Type::U32,
+        Type::U64,
+        Type::F32,
+        Type::F64,
     ];
-    
+
     for (i, t1) in types.iter().enumerate() {
         for (j, t2) in types.iter().enumerate() {
             if i != j {
@@ -386,12 +414,12 @@ fn test_empty_collections() {
     if let OwnedValue::Array(arr) = empty_arr {
         assert_eq!(arr.len(), 0);
     }
-    
+
     let empty_prim = OwnedValue::PrimArray(OwnedPrimArray::U32(vec![]));
     if let OwnedValue::PrimArray(OwnedPrimArray::U32(arr)) = empty_prim {
         assert_eq!(arr.len(), 0);
     }
-    
+
     let empty_map = OwnedValue::Map(OwnedMap::new());
     if let OwnedValue::Map(map) = empty_map {
         assert!(*map.get("any_key") == OwnedValue::Null);
@@ -403,6 +431,8 @@ fn test_empty_collections() {
 fn test_large_numbers() {
     assert_eq!(OwnedValue::I64(i64::MAX).get_int(), Some(i64::MAX as isize));
     assert_eq!(OwnedValue::I64(i64::MIN).get_int(), Some(i64::MIN as isize));
-    assert_eq!(OwnedValue::U64(u64::MAX).get_uint(), Some(u64::MAX as usize));
+    assert_eq!(
+        OwnedValue::U64(u64::MAX).get_uint(),
+        Some(u64::MAX as usize)
+    );
 }
-

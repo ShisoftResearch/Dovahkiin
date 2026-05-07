@@ -89,7 +89,7 @@ impl<'a> SExpr<'a> {
                     let bind_expr: &SExpr = binding.borrow();
                     Ok(bind_expr.clone())
                 } else {
-                    let param =  crate::types::Value::get_by_id(env.global_val, symbol_id);
+                    let param = crate::types::Value::get_by_id(env.global_val, symbol_id);
                     if param != &SharedValue::Null {
                         Ok(SExpr::from_shared_value(param.clone()))
                     } else {

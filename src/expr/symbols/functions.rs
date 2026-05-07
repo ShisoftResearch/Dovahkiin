@@ -23,8 +23,8 @@ pub fn eval_function<'a>(
                 return eval_lambda(env_bind, params, env);
             } else {
                 // internal functions
-                let symbols = ISYMBOL_MAP.map.borrow();
-                match symbols.get(&symbol_id) {
+                let symbol = ISYMBOL_MAP.get(symbol_id);
+                match symbol {
                     Some(symbol) => {
                         // if the symbol is not a macro, parameters will all be evaled here. Or passthrough those expressions.
                         let exprs = if symbol.is_macro() {

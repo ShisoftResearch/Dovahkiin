@@ -135,3 +135,172 @@ pub fn inc(value: SExpr) -> Result<SExpr, String> {
     };
     Ok(value)
 }
+
+macro_rules! unary_float_fn {
+    ($name: ident, $op32: expr, $op64: expr) => {
+        pub fn $name(value: SExpr) -> Result<SExpr, String> {
+            match value.shared_val() {
+                Some(SharedValue::F32(v)) => {
+                    Ok(SExpr::from_owned_value(OwnedValue::F32($op32(*v))))
+                }
+                Some(SharedValue::F64(v)) => {
+                    Ok(SExpr::from_owned_value(OwnedValue::F64($op64(*v))))
+                }
+                _ => Err(format!(
+                    "{} expects f32 or f64, found {:?}",
+                    stringify!($name),
+                    value
+                )),
+            }
+        }
+    };
+}
+
+pub fn abs(value: SExpr) -> Result<SExpr, String> {
+    match value.shared_val() {
+        Some(SharedValue::U8(v)) => Ok(SExpr::from_owned_value(OwnedValue::U8(*v))),
+        Some(SharedValue::U16(v)) => Ok(SExpr::from_owned_value(OwnedValue::U16(*v))),
+        Some(SharedValue::U32(v)) => Ok(SExpr::from_owned_value(OwnedValue::U32(*v))),
+        Some(SharedValue::U64(v)) => Ok(SExpr::from_owned_value(OwnedValue::U64(*v))),
+        Some(SharedValue::I8(v)) => Ok(SExpr::from_owned_value(OwnedValue::I8(v.abs()))),
+        Some(SharedValue::I16(v)) => Ok(SExpr::from_owned_value(OwnedValue::I16(v.abs()))),
+        Some(SharedValue::I32(v)) => Ok(SExpr::from_owned_value(OwnedValue::I32(v.abs()))),
+        Some(SharedValue::I64(v)) => Ok(SExpr::from_owned_value(OwnedValue::I64(v.abs()))),
+        Some(SharedValue::F32(v)) => Ok(SExpr::from_owned_value(OwnedValue::F32(v.abs()))),
+        Some(SharedValue::F64(v)) => Ok(SExpr::from_owned_value(OwnedValue::F64(v.abs()))),
+        _ => Err(format!("abs expects a numeric value, found {:?}", value)),
+    }
+}
+
+unary_float_fn!(sqrt, |v: f32| v.sqrt(), |v: f64| v.sqrt());
+unary_float_fn!(ln, |v: f32| v.ln(), |v: f64| v.ln());
+unary_float_fn!(log2, |v: f32| v.log2(), |v: f64| v.log2());
+unary_float_fn!(log10, |v: f32| v.log10(), |v: f64| v.log10());
+unary_float_fn!(exp, |v: f32| v.exp(), |v: f64| v.exp());
+unary_float_fn!(floor, |v: f32| v.floor(), |v: f64| v.floor());
+unary_float_fn!(ceil, |v: f32| v.ceil(), |v: f64| v.ceil());
+unary_float_fn!(round, |v: f32| v.round(), |v: f64| v.round());
+
+pub fn pow<'a>(base: SExpr<'a>, exp: SExpr<'a>) -> Result<SExpr<'a>, String> {
+    match (base.shared_val(), exp.shared_val()) {
+        (Some(SharedValue::F32(base)), Some(SharedValue::F32(exp))) => {
+            Ok(SExpr::from_owned_value(OwnedValue::F32(base.powf(*exp))))
+        }
+        (Some(SharedValue::F64(base)), Some(SharedValue::F64(exp))) => {
+            Ok(SExpr::from_owned_value(OwnedValue::F64(base.powf(*exp))))
+        }
+        (Some(SharedValue::F32(base)), Some(SharedValue::U32(exp))) => Ok(SExpr::from_owned_value(
+            OwnedValue::F32(base.powi(*exp as i32)),
+        )),
+        (Some(SharedValue::F64(base)), Some(SharedValue::U32(exp))) => Ok(SExpr::from_owned_value(
+            OwnedValue::F64(base.powi(*exp as i32)),
+        )),
+        _ => Err(format!(
+            "pow expects (f32|f64, f32|f64|u32), found ({:?}, {:?})",
+            base, exp
+        )),
+    }
+}
+
+macro_rules! binary_ord_fn {
+    ($name: ident, $cmp: tt) => {
+        pub fn $name<'a>(lhs: SExpr<'a>, rhs: SExpr<'a>) -> Result<SExpr<'a>, String> {
+            match (lhs.shared_val(), rhs.shared_val()) {
+                (Some(SharedValue::U8(lhs)), Some(SharedValue::U8(rhs))) => Ok(SExpr::from_owned_value(OwnedValue::U8(if lhs $cmp rhs { *lhs } else { *rhs }))),
+                (Some(SharedValue::U16(lhs)), Some(SharedValue::U16(rhs))) => Ok(SExpr::from_owned_value(OwnedValue::U16(if lhs $cmp rhs { *lhs } else { *rhs }))),
+                (Some(SharedValue::U32(lhs)), Some(SharedValue::U32(rhs))) => Ok(SExpr::from_owned_value(OwnedValue::U32(if lhs $cmp rhs { *lhs } else { *rhs }))),
+                (Some(SharedValue::U64(lhs)), Some(SharedValue::U64(rhs))) => Ok(SExpr::from_owned_value(OwnedValue::U64(if lhs $cmp rhs { *lhs } else { *rhs }))),
+                (Some(SharedValue::I8(lhs)), Some(SharedValue::I8(rhs))) => Ok(SExpr::from_owned_value(OwnedValue::I8(if lhs $cmp rhs { *lhs } else { *rhs }))),
+                (Some(SharedValue::I16(lhs)), Some(SharedValue::I16(rhs))) => Ok(SExpr::from_owned_value(OwnedValue::I16(if lhs $cmp rhs { *lhs } else { *rhs }))),
+                (Some(SharedValue::I32(lhs)), Some(SharedValue::I32(rhs))) => Ok(SExpr::from_owned_value(OwnedValue::I32(if lhs $cmp rhs { *lhs } else { *rhs }))),
+                (Some(SharedValue::I64(lhs)), Some(SharedValue::I64(rhs))) => Ok(SExpr::from_owned_value(OwnedValue::I64(if lhs $cmp rhs { *lhs } else { *rhs }))),
+                (Some(SharedValue::F32(lhs)), Some(SharedValue::F32(rhs))) => Ok(SExpr::from_owned_value(OwnedValue::F32(if lhs $cmp rhs { *lhs } else { *rhs }))),
+                (Some(SharedValue::F64(lhs)), Some(SharedValue::F64(rhs))) => Ok(SExpr::from_owned_value(OwnedValue::F64(if lhs $cmp rhs { *lhs } else { *rhs }))),
+                _ => Err(format!(
+                    "{} expects two numeric values of the same type, found ({:?}, {:?})",
+                    stringify!($name),
+                    lhs,
+                    rhs
+                )),
+            }
+        }
+    };
+}
+
+binary_ord_fn!(min, <=);
+binary_ord_fn!(max, >=);
+
+pub fn clamp<'a>(value: SExpr<'a>, min: SExpr<'a>, max: SExpr<'a>) -> Result<SExpr<'a>, String> {
+    match (value.shared_val(), min.shared_val(), max.shared_val()) {
+        (Some(SharedValue::U8(value)), Some(SharedValue::U8(min)), Some(SharedValue::U8(max))) => {
+            Ok(SExpr::from_owned_value(OwnedValue::U8(
+                (*value).clamp(*min, *max),
+            )))
+        }
+        (
+            Some(SharedValue::U16(value)),
+            Some(SharedValue::U16(min)),
+            Some(SharedValue::U16(max)),
+        ) => Ok(SExpr::from_owned_value(OwnedValue::U16(
+            (*value).clamp(*min, *max),
+        ))),
+        (
+            Some(SharedValue::U32(value)),
+            Some(SharedValue::U32(min)),
+            Some(SharedValue::U32(max)),
+        ) => Ok(SExpr::from_owned_value(OwnedValue::U32(
+            (*value).clamp(*min, *max),
+        ))),
+        (
+            Some(SharedValue::U64(value)),
+            Some(SharedValue::U64(min)),
+            Some(SharedValue::U64(max)),
+        ) => Ok(SExpr::from_owned_value(OwnedValue::U64(
+            (*value).clamp(*min, *max),
+        ))),
+        (Some(SharedValue::I8(value)), Some(SharedValue::I8(min)), Some(SharedValue::I8(max))) => {
+            Ok(SExpr::from_owned_value(OwnedValue::I8(
+                (*value).clamp(*min, *max),
+            )))
+        }
+        (
+            Some(SharedValue::I16(value)),
+            Some(SharedValue::I16(min)),
+            Some(SharedValue::I16(max)),
+        ) => Ok(SExpr::from_owned_value(OwnedValue::I16(
+            (*value).clamp(*min, *max),
+        ))),
+        (
+            Some(SharedValue::I32(value)),
+            Some(SharedValue::I32(min)),
+            Some(SharedValue::I32(max)),
+        ) => Ok(SExpr::from_owned_value(OwnedValue::I32(
+            (*value).clamp(*min, *max),
+        ))),
+        (
+            Some(SharedValue::I64(value)),
+            Some(SharedValue::I64(min)),
+            Some(SharedValue::I64(max)),
+        ) => Ok(SExpr::from_owned_value(OwnedValue::I64(
+            (*value).clamp(*min, *max),
+        ))),
+        (
+            Some(SharedValue::F32(value)),
+            Some(SharedValue::F32(min)),
+            Some(SharedValue::F32(max)),
+        ) => Ok(SExpr::from_owned_value(OwnedValue::F32(
+            (*value).clamp(*min, *max),
+        ))),
+        (
+            Some(SharedValue::F64(value)),
+            Some(SharedValue::F64(min)),
+            Some(SharedValue::F64(max)),
+        ) => Ok(SExpr::from_owned_value(OwnedValue::F64(
+            (*value).clamp(*min, *max),
+        ))),
+        _ => Err(format!(
+            "clamp expects three numeric values of the same type, found ({:?}, {:?}, {:?})",
+            value, min, max
+        )),
+    }
+}

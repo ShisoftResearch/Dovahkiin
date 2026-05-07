@@ -1,6 +1,6 @@
 use bifrost_hasher::hash_str;
 use bifrost_plugins::hash_ident;
-use std::cell::RefCell;
+use std::cell::UnsafeCell;
 use std::collections::HashMap;
 use std::fmt::Debug;
 
@@ -30,27 +30,42 @@ pub trait Symbol: Sync + Debug {
 }
 
 pub struct ISymbolMap {
-    pub map: RefCell<HashMap<u64, Box<dyn Symbol>>>,
+    map: UnsafeCell<HashMap<u64, Box<dyn Symbol>>>,
 }
 
+// SAFETY: Reads are lock-free and assume the symbol table is immutable after initialization.
+// Callers may mutate the table only through the documented unsafe APIs, which require exclusive
+// initialization-time access with no concurrent readers or writers.
 unsafe impl Sync for ISymbolMap {}
+
 impl ISymbolMap {
     pub fn new(map: HashMap<u64, Box<dyn Symbol>>) -> ISymbolMap {
         ISymbolMap {
-            map: RefCell::new(map),
+            map: UnsafeCell::new(map),
         }
     }
-    pub fn insert<'a, S>(&self, symbol_name: &'a str, symbol_impl: S) -> Result<(), ()>
+
+    pub fn get(&self, symbol_id: u64) -> Option<&dyn Symbol> {
+        // SAFETY: Readers only take a shared reference to the map. This is sound if and only if
+        // callers uphold the registry invariant that no unsafe mutation happens concurrently with
+        // reads, and that the registry is not mutated after initialization.
+        unsafe {
+            (&*self.map.get())
+                .get(&symbol_id)
+                .map(|symbol| symbol.as_ref())
+        }
+    }
+
+    /// # Safety
+    ///
+    /// The caller must guarantee there are no concurrent readers or writers of the symbol map.
+    /// This is intended for single-threaded initialization before the interpreter is used.
+    pub unsafe fn insert<'a, S>(&self, symbol_name: &'a str, symbol_impl: S)
     where
         S: Symbol + 'static,
     {
-        match self.map.try_borrow_mut() {
-            Ok(ref mut m) => {
-                m.insert(hash_str(symbol_name), Box::new(symbol_impl));
-                Ok(())
-            }
-            Err(_) => Err(()),
-        }
+        let map = unsafe { &mut *self.map.get() };
+        map.insert(hash_str(symbol_name), Box::new(symbol_impl));
     }
 }
 
@@ -97,11 +112,15 @@ macro_rules! defsymbols {
     };
 }
 
-pub fn new_symbol<'a, S>(symbol_name: &'a str, symbol_impl: S) -> Result<(), ()>
+/// # Safety
+///
+/// The caller must guarantee there are no concurrent readers or writers of the global symbol
+/// registry. This should only be used during interpreter initialization.
+pub unsafe fn new_symbol<'a, S>(symbol_name: &'a str, symbol_impl: S)
 where
     S: Symbol + 'static,
 {
-    ISYMBOL_MAP.insert(symbol_name, symbol_impl)
+    unsafe { ISYMBOL_MAP.insert(symbol_name, symbol_impl) }
 }
 
 fn check_num_params(num: usize, params: &Vec<SExpr>) -> Result<(), String> {
@@ -230,6 +249,64 @@ defsymbols! {
     "/" => Divide, false, |exprs, _env| {
         check_params_not_empty(&exprs)?;
         arithmetic::divide(exprs)
+    };
+    "abs" => Abs, false, |mut exprs, _env| {
+        check_num_params(1, &exprs)?;
+        arithmetic::abs(exprs.pop().unwrap())
+    };
+    "sqrt" => Sqrt, false, |mut exprs, _env| {
+        check_num_params(1, &exprs)?;
+        arithmetic::sqrt(exprs.pop().unwrap())
+    };
+    "ln" => Ln, false, |mut exprs, _env| {
+        check_num_params(1, &exprs)?;
+        arithmetic::ln(exprs.pop().unwrap())
+    };
+    "log2" => Log2, false, |mut exprs, _env| {
+        check_num_params(1, &exprs)?;
+        arithmetic::log2(exprs.pop().unwrap())
+    };
+    "log10" => Log10, false, |mut exprs, _env| {
+        check_num_params(1, &exprs)?;
+        arithmetic::log10(exprs.pop().unwrap())
+    };
+    "exp" => Exp, false, |mut exprs, _env| {
+        check_num_params(1, &exprs)?;
+        arithmetic::exp(exprs.pop().unwrap())
+    };
+    "floor" => Floor, false, |mut exprs, _env| {
+        check_num_params(1, &exprs)?;
+        arithmetic::floor(exprs.pop().unwrap())
+    };
+    "ceil" => Ceil, false, |mut exprs, _env| {
+        check_num_params(1, &exprs)?;
+        arithmetic::ceil(exprs.pop().unwrap())
+    };
+    "round" => Round, false, |mut exprs, _env| {
+        check_num_params(1, &exprs)?;
+        arithmetic::round(exprs.pop().unwrap())
+    };
+    "pow" => Pow, false, |exprs, _env| {
+        check_num_params(2, &exprs)?;
+        let (base, exp) = split_pair(exprs);
+        arithmetic::pow(base, exp)
+    };
+    "min" => Min, false, |exprs, _env| {
+        check_num_params(2, &exprs)?;
+        let (lhs, rhs) = split_pair(exprs);
+        arithmetic::min(lhs, rhs)
+    };
+    "max" => Max, false, |exprs, _env| {
+        check_num_params(2, &exprs)?;
+        let (lhs, rhs) = split_pair(exprs);
+        arithmetic::max(lhs, rhs)
+    };
+    "clamp" => Clamp, false, |mut exprs, _env| {
+        check_num_params(3, &exprs)?;
+        let max = exprs.pop().unwrap();
+        let min = exprs.pop().unwrap();
+        let value = exprs.pop().unwrap();
+        arithmetic::clamp(value, min, max)
     };
     "let" => Let, true, |exprs, env| {
         bindings::let_binding(env, exprs)
