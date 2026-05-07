@@ -49,7 +49,11 @@ impl ISymbolMap {
         // SAFETY: Readers only take a shared reference to the map. This is sound if and only if
         // callers uphold the registry invariant that no unsafe mutation happens concurrently with
         // reads, and that the registry is not mutated after initialization.
-        unsafe { (&*self.map.get()).get(&symbol_id).map(|symbol| symbol.as_ref()) }
+        unsafe {
+            (&*self.map.get())
+                .get(&symbol_id)
+                .map(|symbol| symbol.as_ref())
+        }
     }
 
     /// # Safety
