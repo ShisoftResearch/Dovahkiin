@@ -95,15 +95,11 @@ gen_compound_types_io! (
     {
         |id: &Id| {
             let big_end = big_end!(write_u64);
-            big_end(id.higher ^ id.lower)
+            big_end(id.bits())
         }
     }, {
         |val: &Id| {
-            use std::hash::Hasher;
-            let mut hasher = ahash::AHasher::default();
-            hasher.write(&u64_io::feature(&val.higher));
-            hasher.write(&u64_io::feature(&val.lower));
-            u64_io::feature(&hasher.finish())
+            u64_io::feature(&val.bits())
         }
     }
 );
