@@ -95,6 +95,16 @@ impl Id {
         self.0 & ID_SEQUENCE_MASK
     }
 
+    /// Composes an allocated-class id from a legacy `(partition, sub)`
+    /// pair: the partition folds into the locality bits and `sub` fills
+    /// the low 48 bits, so consecutive `sub` values yield consecutive
+    /// `bits()`. Intended for tests and migration shims; production ids
+    /// come from the allocator or the hashed class.
+    pub const fn from_parts(partition: u64, sub: u64) -> Id {
+        Id(((partition & ID_LOCALITY_MASK) << ID_LOCALITY_SHIFT)
+            | (sub & ((1 << ID_LOCALITY_SHIFT) - 1)))
+    }
+
     pub const fn unit_id() -> Id {
         Id(0)
     }
