@@ -105,6 +105,15 @@ impl Id {
             | (sub & ((1 << ID_LOCALITY_SHIFT) - 1)))
     }
 
+    /// Returns this id with its locality bits replaced. Preserves the
+    /// class tag and, for allocated ids, the unique `(origin, sequence)`
+    /// suffix. Placement-plan structures use this; stored cells never
+    /// change locality after creation.
+    pub const fn with_locality(&self, locality: u16) -> Id {
+        Id((self.0 & !(ID_LOCALITY_MASK << ID_LOCALITY_SHIFT))
+            | ((locality as u64 & ID_LOCALITY_MASK) << ID_LOCALITY_SHIFT))
+    }
+
     pub const fn unit_id() -> Id {
         Id(0)
     }
