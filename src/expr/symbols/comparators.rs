@@ -163,8 +163,11 @@ macro_rules! between_ {
             Some(SharedValue::$type(value)),
             Some(SharedValue::$type(lower)),
             Some(SharedValue::$type(upper)),
-        ) = ($value.shared_val(), $lower.shared_val(), $upper.shared_val())
-        {
+        ) = (
+            $value.shared_val(),
+            $lower.shared_val(),
+            $upper.shared_val(),
+        ) {
             Ok(SExpr::from_owned_value(OwnedValue::Bool(
                 lower <= value && value <= upper,
             )))
@@ -196,6 +199,9 @@ pub fn between(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
         Some(SharedValue::I64(_)) => between_!(I64, value, lower, upper),
         Some(SharedValue::F32(_)) => between_!(F32, value, lower, upper),
         Some(SharedValue::F64(_)) => between_!(F64, value, lower, upper),
-        _ => Err(format!("Type cannot be compared: {:?}", vec![value, lower, upper])),
+        _ => Err(format!(
+            "Type cannot be compared: {:?}",
+            vec![value, lower, upper]
+        )),
     }
 }

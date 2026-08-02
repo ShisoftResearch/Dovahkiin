@@ -25,7 +25,10 @@ pub fn not<'a>(mut exprs: Vec<SExpr<'a>>, env: &mut Environment<'a>) -> Result<S
     Ok(SExpr::from_owned_value(OwnedValue::Bool(!is_true(&value))))
 }
 
-pub fn is_null<'a>(mut exprs: Vec<SExpr<'a>>, env: &mut Environment<'a>) -> Result<SExpr<'a>, String> {
+pub fn is_null<'a>(
+    mut exprs: Vec<SExpr<'a>>,
+    env: &mut Environment<'a>,
+) -> Result<SExpr<'a>, String> {
     let expr = exprs.pop().unwrap();
     let is_null = match expr {
         SExpr::ISymbol(symbol_id, _) => matches!(
