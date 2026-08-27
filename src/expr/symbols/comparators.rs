@@ -5,14 +5,40 @@ use super::*;
 pub fn equals(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
     let last_expr = exprs.pop().unwrap();
     let last = last_expr.shared_val();
+    let last_num = last.as_ref().and_then(super::numeric::Num::from_shared);
     for expr in exprs {
         let expr = expr.shared_val();
         trace!("Comparing {:?} with {:?}", expr, last);
-        if expr != last {
+        // Numbers compare by value across widths: a u16 column equals the
+        // i64 literal `1`. Everything else keeps exact equality.
+        let equal = match (expr.as_ref().and_then(super::numeric::Num::from_shared), last_num) {
+            (Some(a), Some(b)) => a.equals(b),
+            _ => expr == last,
+        };
+        if !equal {
             return Ok(SExpr::from_owned_value(OwnedValue::Bool(false)));
         }
     }
     return Ok(SExpr::from_owned_value(OwnedValue::Bool(true)));
+}
+
+/// Ordered comparison chain over promoted numbers; `None` if any operand is
+/// not numeric so the exact-type path can take it.
+fn promoted_chain<'a>(
+    values: &[SExpr<'a>],
+    holds: impl Fn(std::cmp::Ordering) -> bool,
+) -> Option<Result<SExpr<'a>, String>> {
+    let nums = values
+        .iter()
+        .map(|v| v.shared_val().as_ref().and_then(super::numeric::Num::from_shared))
+        .collect::<Option<Vec<_>>>()?;
+    for pair in nums.windows(2) {
+        match pair[0].partial_cmp(pair[1]) {
+            Some(ordering) if holds(ordering) => {}
+            _ => return Some(Ok(SExpr::from_owned_value(OwnedValue::Bool(false)))),
+        }
+    }
+    Some(Ok(SExpr::from_owned_value(OwnedValue::Bool(true))))
 }
 
 pub fn not_equals(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
@@ -82,6 +108,14 @@ macro_rules! gte_ {
 }
 
 pub fn lt(values: Vec<SExpr>) -> Result<SExpr, String> {
+    {
+        let shared = values.iter().map(|v| v.shared_val()).collect::<Vec<_>>();
+        if super::numeric::needs_promotion(&shared) {
+            if let Some(result) = promoted_chain(&values, |o| o == std::cmp::Ordering::Less) {
+                return result;
+            }
+        }
+    }
     match values.get(0).unwrap().shared_val() {
         Some(SharedValue::U8(_)) => lt_!(U8, values),
         Some(SharedValue::U16(_)) => lt_!(U16, values),
@@ -98,6 +132,14 @@ pub fn lt(values: Vec<SExpr>) -> Result<SExpr, String> {
 }
 
 pub fn lte(values: Vec<SExpr>) -> Result<SExpr, String> {
+    {
+        let shared = values.iter().map(|v| v.shared_val()).collect::<Vec<_>>();
+        if super::numeric::needs_promotion(&shared) {
+            if let Some(result) = promoted_chain(&values, |o| o != std::cmp::Ordering::Greater) {
+                return result;
+            }
+        }
+    }
     match values.get(0).unwrap().shared_val() {
         Some(SharedValue::U8(_)) => lte_!(U8, values),
         Some(SharedValue::U16(_)) => lte_!(U16, values),
@@ -114,6 +156,14 @@ pub fn lte(values: Vec<SExpr>) -> Result<SExpr, String> {
 }
 
 pub fn gt(values: Vec<SExpr>) -> Result<SExpr, String> {
+    {
+        let shared = values.iter().map(|v| v.shared_val()).collect::<Vec<_>>();
+        if super::numeric::needs_promotion(&shared) {
+            if let Some(result) = promoted_chain(&values, |o| o == std::cmp::Ordering::Greater) {
+                return result;
+            }
+        }
+    }
     match values.get(0).unwrap().shared_val() {
         Some(SharedValue::U8(_)) => gt_!(U8, values),
         Some(SharedValue::U16(_)) => gt_!(U16, values),
@@ -130,6 +180,14 @@ pub fn gt(values: Vec<SExpr>) -> Result<SExpr, String> {
 }
 
 pub fn gte(values: Vec<SExpr>) -> Result<SExpr, String> {
+    {
+        let shared = values.iter().map(|v| v.shared_val()).collect::<Vec<_>>();
+        if super::numeric::needs_promotion(&shared) {
+            if let Some(result) = promoted_chain(&values, |o| o != std::cmp::Ordering::Less) {
+                return result;
+            }
+        }
+    }
     match values.get(0).unwrap().shared_val() {
         Some(SharedValue::U8(_)) => gte_!(U8, values),
         Some(SharedValue::U16(_)) => gte_!(U16, values),
