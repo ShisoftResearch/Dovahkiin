@@ -58,6 +58,14 @@ macro_rules! divide_ {
 }
 
 pub fn add(values: Vec<SExpr>) -> Result<SExpr, String> {
+    {
+        let shared = values.iter().map(|v| v.shared_val()).collect::<Vec<_>>();
+        if super::numeric::needs_promotion(&shared) {
+            if let Some(result) = super::numeric::fold(&shared, |a, b| a.checked_add(b), |a, b| a + b) {
+                return result.map(SExpr::from_owned_value);
+            }
+        }
+    }
     match values.get(0).unwrap().shared_val() {
         Some(SharedValue::U8(_)) => add_!(U8, values),
         Some(SharedValue::U16(_)) => add_!(U16, values),
@@ -74,6 +82,14 @@ pub fn add(values: Vec<SExpr>) -> Result<SExpr, String> {
 }
 
 pub fn subtract(values: Vec<SExpr>) -> Result<SExpr, String> {
+    {
+        let shared = values.iter().map(|v| v.shared_val()).collect::<Vec<_>>();
+        if super::numeric::needs_promotion(&shared) {
+            if let Some(result) = super::numeric::fold(&shared, |a, b| a.checked_sub(b), |a, b| a - b) {
+                return result.map(SExpr::from_owned_value);
+            }
+        }
+    }
     match values.get(0).unwrap().shared_val() {
         Some(SharedValue::U8(_)) => subtract_!(U8, values),
         Some(SharedValue::U16(_)) => subtract_!(U16, values),
@@ -90,6 +106,14 @@ pub fn subtract(values: Vec<SExpr>) -> Result<SExpr, String> {
 }
 
 pub fn multiply(values: Vec<SExpr>) -> Result<SExpr, String> {
+    {
+        let shared = values.iter().map(|v| v.shared_val()).collect::<Vec<_>>();
+        if super::numeric::needs_promotion(&shared) {
+            if let Some(result) = super::numeric::fold(&shared, |a, b| a.checked_mul(b), |a, b| a * b) {
+                return result.map(SExpr::from_owned_value);
+            }
+        }
+    }
     match values.get(0).unwrap().shared_val() {
         Some(SharedValue::U8(_)) => multiply_!(U8, values),
         Some(SharedValue::U16(_)) => multiply_!(U16, values),
@@ -106,6 +130,14 @@ pub fn multiply(values: Vec<SExpr>) -> Result<SExpr, String> {
 }
 
 pub fn divide(values: Vec<SExpr>) -> Result<SExpr, String> {
+    {
+        let shared = values.iter().map(|v| v.shared_val()).collect::<Vec<_>>();
+        if super::numeric::needs_promotion(&shared) {
+            if let Some(result) = super::numeric::fold(&shared, |a, b| if b == 0 { None } else { a.checked_div(b) }, |a, b| a / b) {
+                return result.map(SExpr::from_owned_value);
+            }
+        }
+    }
     match values.get(0).unwrap().shared_val() {
         Some(SharedValue::U8(_)) => divide_!(U8, values),
         Some(SharedValue::U16(_)) => divide_!(U16, values),

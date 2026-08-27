@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Token {
     LeftParentheses,
     RightParentheses,
@@ -94,6 +94,11 @@ fn read_number(first: char, iter: &mut CharIter) -> Result<Token, String> {
     let mut digit_chars = vec![first];
     let mut unit_chars = Vec::new();
     let mut is_float_number = false;
+    // Whether the loop stopped on a character that belongs to the NEXT token
+    // (a paren, whitespace) rather than on the last character of this one (a
+    // type-suffix digit). The outer tokenizer reads `iter.current()`, so a
+    // terminator must be left in place and a suffix char must be stepped past.
+    let mut stopped_at_terminator = false;
     while let Some(c) = iter.next() {
         match c {
             NUMBER_PATTERN!() => {
@@ -144,7 +149,13 @@ fn read_number(first: char, iter: &mut CharIter) -> Result<Token, String> {
             'u' | 'i' | 'f' => {
                 unit_chars.push(c);
             }
-            ' ' | '\t' | '\r' | '\n' | ',' => {
+            // The same terminators an identifier stops at. Parens and
+            // brackets were missing, so `(= x 1)` -- a number directly before
+            // the closing paren, the most ordinary literal there is -- failed
+            // to lex with "Unexpected token ')' for number". Callers had been
+            // padding parens with spaces before tokenizing to get around it.
+            ' ' | '\t' | '\r' | '\n' | ',' | '(' | ')' | '[' | ']' | '{' | '}' | '\'' => {
+                stopped_at_terminator = true;
                 break;
             }
             _ => return Err(format!("Unexpected token '{}' for number", c)),
@@ -152,8 +163,16 @@ fn read_number(first: char, iter: &mut CharIter) -> Result<Token, String> {
     }
     let digit_part: String = digit_chars.into_iter().collect();
     let unit_part: String = unit_chars.into_iter().collect();
-    iter.next();
+    // Step past the last suffix char only. Advancing unconditionally used to
+    // eat the terminator too -- harmless for a space, fatal for a `)`.
+    if !stopped_at_terminator {
+        iter.next();
+    }
+    // A literal without a suffix is the ordinary case, not an error: `1` is
+    // an i64 and `1.5` an f64, the widest of each family, so a value never
+    // narrows silently. Explicit suffixes still pick the exact type.
     if is_float_number {
+        let unit_part = if unit_part.is_empty() { "f64".to_string() } else { unit_part };
         if !FLOAT_NUM_TYPES.contains(&unit_part) {
             return Err(format!(
                 "Invalid float number '{}{}'",
@@ -162,6 +181,7 @@ fn read_number(first: char, iter: &mut CharIter) -> Result<Token, String> {
         }
         return Ok(Token::FloatNumber(digit_part, unit_part));
     } else {
+        let unit_part = if unit_part.is_empty() { "i64".to_string() } else { unit_part };
         if !INT_NUM_TYPES.contains(&unit_part) {
             return Err(format!(
                 "Invalid integer number '{}{}'",
@@ -325,4 +345,44 @@ pub fn tokenize_chars_iter(iter: &mut CharIter) -> Result<Vec<Token>, String> {
 pub fn tokenize_str<'a>(str: &'a str) -> Result<Vec<Token>, String> {
     let mut iter = CharIter::new(str.chars().collect());
     tokenize_chars_iter(&mut iter)
+}
+
+#[cfg(test)]
+mod number_terminator_tests {
+    use super::*;
+
+    fn toks(src: &str) -> Vec<Token> {
+        tokenize_str(src).unwrap()
+    }
+
+    #[test]
+    fn number_before_close_paren_lexes_and_keeps_the_paren() {
+        let t = toks("(= x 1)");
+        assert_eq!(t.len(), 5, "expected ( = x 1 ), got {:?}", t);
+        assert_eq!(t[3], Token::IntNumber("1".into(), "i64".into()));
+        assert_eq!(t[4], Token::RightParentheses);
+    }
+
+    #[test]
+    fn unsuffixed_literals_default_to_widest_types() {
+        assert_eq!(toks("1.5")[0], Token::FloatNumber("1.5".into(), "f64".into()));
+        assert_eq!(toks("-3")[0], Token::IntNumber("-3".into(), "i64".into()));
+    }
+
+    #[test]
+    fn explicit_suffixes_still_pick_the_type_and_do_not_eat_the_next_token() {
+        let t = toks("(f 7u16)");
+        assert_eq!(t[2], Token::IntNumber("7".into(), "u16".into()));
+        assert_eq!(t[3], Token::RightParentheses);
+        let t = toks("(f 2.5f32)");
+        assert_eq!(t[2], Token::FloatNumber("2.5".into(), "f32".into()));
+        assert_eq!(t[3], Token::RightParentheses);
+    }
+
+    #[test]
+    fn nested_and_bracketed_numbers() {
+        assert_eq!(toks("(+ 1 (* 2 3))").len(), 9);
+        assert_eq!(toks("[1 2]").len(), 4);
+        assert_eq!(toks("(a 1)(b 2)").len(), 8);
+    }
 }
