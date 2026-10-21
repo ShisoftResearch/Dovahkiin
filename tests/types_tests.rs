@@ -154,18 +154,9 @@ fn test_pos3d32() {
 
 #[test]
 fn test_id() {
-    let id1 = Id {
-        higher: 123,
-        lower: 456,
-    };
-    let id2 = Id {
-        higher: 123,
-        lower: 456,
-    };
-    let id3 = Id {
-        higher: 789,
-        lower: 101,
-    };
+    let id1 = Id::from_parts(123, 456);
+    let id2 = Id::from_parts(123, 456);
+    let id3 = Id::from_parts(789, 101);
 
     assert_eq!(id1, id2);
     assert_ne!(id1, id3);
@@ -173,12 +164,10 @@ fn test_id() {
 
 #[test]
 fn test_id_serialization() {
-    let id = Id {
-        higher: u64::MAX,
-        lower: u64::MAX,
-    };
+    let id = Id::from_bits(u64::MAX);
     let bytes = id.to_binary();
-    assert_eq!(bytes.len(), 16);
+    assert_eq!(bytes.len(), 8);
+    assert_eq!(bytes, [0xff; 8]);
 
     let mut cursor = std::io::Cursor::new(&bytes[..]);
     let deserialized = Id::from_binary(&mut cursor).unwrap();
