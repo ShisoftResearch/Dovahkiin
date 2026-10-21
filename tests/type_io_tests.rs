@@ -323,14 +323,12 @@ fn test_id_io() {
     let ptr = alloc_aligned(size, 8);
 
     unsafe {
-        let id = Id {
-            higher: 123456789,
-            lower: 987654321,
-        };
+        let id = Id::from_parts(12345, 987654321);
         id_io::write(&id, ptr as usize);
         let read_id = *id_io::read(ptr as usize);
-        assert_eq!(read_id.higher, id.higher);
-        assert_eq!(read_id.lower, id.lower);
+        assert_eq!(read_id, id);
+        assert_eq!(read_id.locality(), 12345);
+        assert_eq!(read_id.sequence(), 987654321);
 
         dealloc_aligned(ptr, size, 8);
     }
