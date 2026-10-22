@@ -425,3 +425,49 @@ fn test_large_numbers() {
         Some(u64::MAX as usize)
     );
 }
+
+#[test]
+fn f16_type_ids_unchanged_and_f16_is_next() {
+    // Existing ids must not move: an entry in the middle renumbers every later
+    // type and corrupts stored schemas.
+    assert_eq!(Type::Null.id(), 0);
+    assert_eq!(Type::Map.id(), 1);
+    assert_eq!(Type::Bool.id(), 2);
+    assert_eq!(Type::Char.id(), 3);
+    assert_eq!(Type::I8.id(), 4);
+    assert_eq!(Type::I16.id(), 5);
+    assert_eq!(Type::I32.id(), 6);
+    assert_eq!(Type::I64.id(), 7);
+    assert_eq!(Type::U8.id(), 8);
+    assert_eq!(Type::U16.id(), 9);
+    assert_eq!(Type::U32.id(), 10);
+    assert_eq!(Type::U64.id(), 11);
+    assert_eq!(Type::F32.id(), 12);
+    assert_eq!(Type::F64.id(), 13);
+    assert_eq!(Type::Pos2d32.id(), 14);
+    assert_eq!(Type::Pos2d64.id(), 15);
+    assert_eq!(Type::Pos3d32.id(), 16);
+    assert_eq!(Type::Pos3d64.id(), 17);
+    assert_eq!(Type::Id.id(), 18);
+    assert_eq!(Type::String.id(), 19);
+    assert_eq!(Type::Bytes.id(), 20);
+    assert_eq!(Type::SmallBytes.id(), 21);
+    assert_eq!(Type::F16.id(), 22);
+    assert_eq!(Type::NA.id(), 23);
+    assert_eq!(type_id_of(Type::F16), 22);
+    assert_eq!(Type::from_id(22), Type::F16);
+    assert_eq!(get_type_id("f16".to_string()), 22);
+    assert_eq!(get_type_id("half".to_string()), 22);
+    assert_eq!(get_type(Type::F16), "f16");
+}
+
+#[test]
+fn f16_owned_value_keeps_any_bit_pattern() {
+    // NaN and infinity are stored as f32 does: the type keeps any bit pattern.
+    let nan = half::f16::from_bits(0x7c01);
+    let inf = half::f16::from_bits(0x7c00);
+    assert_eq!(OwnedValue::F16(nan).base_type(), Type::F16);
+    assert_eq!(OwnedValue::F16(inf).base_type(), Type::F16);
+    assert_eq!(OwnedValue::F16(nan).base_size(), 2);
+    assert_eq!(OwnedValue::F16(inf).base_size(), 2);
+}

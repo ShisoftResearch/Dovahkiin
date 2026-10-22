@@ -29,7 +29,11 @@ gen_primitive_types_io!(
     u32:    u32_io        big_end!(write_u32);
     u64:    u64_io        big_end!(write_u64);
     f32:    f32_io        big_end!(write_f32);
-    f64:    f64_io        big_end!(write_f64)
+    f64:    f64_io        big_end!(write_f64);
+    half::f16: f16_io     |n: half::f16| {
+        let big_end = big_end!(write_u16);
+        big_end(n.to_bits())
+    }
 );
 
 gen_compound_types_io! (
@@ -300,7 +304,8 @@ define_types!(
     ["id"], Id                                     ,Id          ,  id_io, id         ;
     ["string", "str"], String                      ,String      ,  string_io, string     ;
     ["bytes"], Bytes                               ,Bytes       ,  bytes_io, bytes      ;
-    ["small_bytes"], SmallBytes                    ,SmallBytes  ,  small_bytes_io, small_bytes
+    ["small_bytes"], SmallBytes                    ,SmallBytes  ,  small_bytes_io, small_bytes;
+    ["f16", "half"], half::f16                     ,F16         ,  f16_io, f16
 );
 
 #[macro_export]
@@ -317,6 +322,80 @@ macro_rules! data_map_value {
     ($($k:ident: $v:expr),*) => {{
         $crate::types::OwnedValue::Map(data_map!($($k: $v),*))
      }};
+}
+
+/// Convert one f64 value to binary16 bits with a direct bit-level
+/// round-to-nearest-even. The logic is copied from Morpheus
+/// `src/linalg/fp16.rs` (`from_f64`); an f32 intermediate would double-round.
+/// NaN and infinity are errors. A finite value that rounds to infinity is an
+/// overflow error.
+pub fn f16_from_f64(value: f64) -> Result<half::f16, String> {
+    let bits = value.to_bits();
+    let sign = ((bits >> 63) as u16) << 15;
+    let exponent = ((bits >> 52) & 0x7ff) as i32;
+    let mantissa = bits & ((1u64 << 52) - 1);
+    if exponent == 0x7ff {
+        return Err(if mantissa == 0 {
+            "f16 input is infinite".to_string()
+        } else {
+            "f16 input is NaN".to_string()
+        });
+    }
+    if exponent == 0 {
+        // FP64 subnormal: magnitude below 2^-1022, rounds to signed zero.
+        return Ok(half::f16::from_bits(sign));
+    }
+    let unbiased = exponent - 1023;
+    let half_exponent = unbiased + 15;
+    if half_exponent >= 31 {
+        return Err(format!("f16 overflow: {} rounds to infinity", value));
+    }
+    if half_exponent <= 0 {
+        // Gradual underflow: value = 2^(unbiased + 24) * (1 + mantissa / 2^52).
+        let shift_exponent = unbiased + 24;
+        if shift_exponent < 0 {
+            if shift_exponent == -1 && mantissa != 0 {
+                // Above 2^-25: rounds to the smallest subnormal.
+                return Ok(half::f16::from_bits(sign | 1));
+            }
+            return Ok(half::f16::from_bits(sign));
+        }
+        let shift = 52 - shift_exponent;
+        let int_part = (1u64 << shift_exponent) + (mantissa >> shift);
+        let fraction = mantissa & ((1u64 << shift) - 1);
+        let round_bit = 1u64 << (shift - 1);
+        let lower = fraction & (round_bit - 1);
+        let rounded = if fraction & round_bit != 0 && (lower != 0 || int_part & 1 != 0) {
+            int_part + 1
+        } else {
+            int_part
+        };
+        if rounded >= 1024 {
+            // Carry into the smallest normal value.
+            return Ok(half::f16::from_bits(sign | (1 << 10)));
+        }
+        return Ok(half::f16::from_bits(sign | rounded as u16));
+    }
+    let half_mantissa = mantissa >> 42;
+    let round_bit = 1u64 << 41;
+    let lower = mantissa & (round_bit - 1);
+    let rounded = if mantissa & round_bit != 0 && (lower != 0 || half_mantissa & 1 != 0) {
+        half_mantissa + 1
+    } else {
+        half_mantissa
+    };
+    let mut half_exponent = half_exponent;
+    let mut half_mantissa = rounded;
+    if half_mantissa >= 1024 {
+        half_exponent += 1;
+        half_mantissa = 0;
+    }
+    if half_exponent >= 31 {
+        return Err(format!("f16 overflow: {} rounds to infinity", value));
+    }
+    Ok(half::f16::from_bits(
+        sign | ((half_exponent as u16) << 10) | half_mantissa as u16,
+    ))
 }
 
 pub fn type_id_of(t: Type) -> u32 {

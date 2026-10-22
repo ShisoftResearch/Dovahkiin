@@ -35,6 +35,7 @@ impl Num {
             SharedValue::I64(v) => Num::Int(**v as i128),
             SharedValue::F32(v) => Num::Float(**v as f64),
             SharedValue::F64(v) => Num::Float(**v),
+            SharedValue::F16(v) => Num::Float(v.to_f64()),
             _ => return None,
         })
     }

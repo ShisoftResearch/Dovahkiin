@@ -416,5 +416,9 @@ defsymbols! {
     "f64" => F64, false, |mut exprs, _env| {
         check_num_params(1, &exprs)?;
         num_types::f64(exprs.pop().unwrap())
+    };
+    "f16" => F16, false, |mut exprs, _env| {
+        check_num_params(1, &exprs)?;
+        num_types::f16(exprs.pop().unwrap())
     }
 }

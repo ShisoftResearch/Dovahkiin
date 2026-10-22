@@ -64,7 +64,7 @@ lazy_static! {
             .into_iter()
             .map(|str| str.to_string())
             .collect();
-    static ref FLOAT_NUM_TYPES: HashSet<String> = vec!["f32", "f64"]
+    static ref FLOAT_NUM_TYPES: HashSet<String> = vec!["f16", "f32", "f64"]
         .into_iter()
         .map(|str| str.to_string())
         .collect();
@@ -112,6 +112,7 @@ fn read_number(first: char, iter: &mut CharIter) -> Result<Token, String> {
                     (Some(&'i'), Some(&'1'), '6') | // i16
                     (Some(&'i'), Some(&'3'), '2') | // i32
                     (Some(&'i'), Some(&'6'), '4') | // i64
+                    (Some(&'f'), Some(&'1'), '6') | // f16
                     (Some(&'f'), Some(&'3'), '2') | // f32
                     (Some(&'f'), Some(&'6'), '4')   // f64
                     => {
@@ -125,6 +126,7 @@ fn read_number(first: char, iter: &mut CharIter) -> Result<Token, String> {
                     (Some(&'i'), None, '1') | // i16
                     (Some(&'i'), None, '3') | // i32
                     (Some(&'i'), None, '6') | // i64
+                    (Some(&'f'), None, '1') | // f16
                     (Some(&'f'), None, '3') | // f32
                     (Some(&'f'), None, '6')   // f64
                     => {
@@ -171,7 +173,9 @@ fn read_number(first: char, iter: &mut CharIter) -> Result<Token, String> {
     // A literal without a suffix is the ordinary case, not an error: `1` is
     // an i64 and `1.5` an f64, the widest of each family, so a value never
     // narrows silently. Explicit suffixes still pick the exact type.
-    if is_float_number {
+    // A float suffix makes the literal a float even without a decimal point:
+    // `1f16` is a float literal, not an integer with an unknown unit.
+    if is_float_number || FLOAT_NUM_TYPES.contains(&unit_part) {
         let unit_part = if unit_part.is_empty() { "f64".to_string() } else { unit_part };
         if !FLOAT_NUM_TYPES.contains(&unit_part) {
             return Err(format!(

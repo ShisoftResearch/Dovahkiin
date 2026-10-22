@@ -127,6 +127,7 @@ pub fn lt(values: Vec<SExpr>) -> Result<SExpr, String> {
         Some(SharedValue::I64(_)) => lt_!(I64, values),
         Some(SharedValue::F32(_)) => lt_!(F32, values),
         Some(SharedValue::F64(_)) => lt_!(F64, values),
+        Some(SharedValue::F16(_)) => lt_!(F16, values),
         _ => Err(format!("Type cannot be compared: {:?}", values)),
     }
 }
@@ -151,6 +152,7 @@ pub fn lte(values: Vec<SExpr>) -> Result<SExpr, String> {
         Some(SharedValue::I64(_)) => lte_!(I64, values),
         Some(SharedValue::F32(_)) => lte_!(F32, values),
         Some(SharedValue::F64(_)) => lte_!(F64, values),
+        Some(SharedValue::F16(_)) => lte_!(F16, values),
         _ => Err(format!("Type cannot be compared: {:?}", values)),
     }
 }
@@ -175,6 +177,7 @@ pub fn gt(values: Vec<SExpr>) -> Result<SExpr, String> {
         Some(SharedValue::I64(_)) => gt_!(I64, values),
         Some(SharedValue::F32(_)) => gt_!(F32, values),
         Some(SharedValue::F64(_)) => gt_!(F64, values),
+        Some(SharedValue::F16(_)) => gt_!(F16, values),
         _ => Err(format!("Type cannot be compared: {:?}", values)),
     }
 }
@@ -199,6 +202,7 @@ pub fn gte(values: Vec<SExpr>) -> Result<SExpr, String> {
         Some(SharedValue::I64(_)) => gte_!(I64, values),
         Some(SharedValue::F32(_)) => gte_!(F32, values),
         Some(SharedValue::F64(_)) => gte_!(F64, values),
+        Some(SharedValue::F16(_)) => gte_!(F16, values),
         _ => Err(format!("Type cannot be compared: {:?}", values)),
     }
 }
@@ -257,6 +261,7 @@ pub fn between(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
         Some(SharedValue::I64(_)) => between_!(I64, value, lower, upper),
         Some(SharedValue::F32(_)) => between_!(F32, value, lower, upper),
         Some(SharedValue::F64(_)) => between_!(F64, value, lower, upper),
+        Some(SharedValue::F16(_)) => between_!(F16, value, lower, upper),
         _ => Err(format!(
             "Type cannot be compared: {:?}",
             vec![value, lower, upper]

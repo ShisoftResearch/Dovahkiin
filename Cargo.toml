@@ -21,3 +21,4 @@ lazy_static = "*"
 log = "*"
 ahash = "0.8.11"
 smallvec = {version = "1.15.0", features = ["serde"]}
+half = { version = "2", features = ["serde"] }

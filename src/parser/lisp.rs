@@ -1,6 +1,6 @@
 use ahash::{HashMap, HashMapExt};
 
-use crate::types::{Map, OwnedValue as Value};
+use crate::types::{f16_from_f64, Map, OwnedValue as Value};
 use crate::{lexer::lisp::Token, types::OwnedMap};
 use std::{marker::PhantomData, mem, vec::IntoIter};
 
@@ -121,6 +121,21 @@ impl<E: ParserExpr> Parser<E> {
     }
 
     fn parse_float<'a>(num_str: String, unit: String) -> Result<E, String> {
+        if unit == "f16" {
+            let value = num_str.parse::<f64>().map_err(|e| {
+                format!(
+                    "Cannot parse float {} with unit {}, reason: {:?}",
+                    num_str, unit, e
+                )
+            })?;
+            let f16 = f16_from_f64(value).map_err(|e| {
+                format!(
+                    "Cannot parse float {} with unit {}, reason: {}",
+                    num_str, unit, e
+                )
+            })?;
+            return Ok(E::owned_val(Value::F16(f16)));
+        }
         match unit.as_ref() {
             "f32" => num_str.parse::<f32>().map(Value::F32),
             "f64" => num_str.parse::<f64>().map(Value::F64),

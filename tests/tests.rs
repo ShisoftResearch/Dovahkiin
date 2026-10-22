@@ -243,3 +243,80 @@ pub fn lisp_integrated_math_helpers() {
         SExpr::from_owned_value(OwnedValue::F64(8.0))
     );
 }
+
+#[test]
+fn f16_parser_literals() {
+    let mut interpreter = lisp::get_interpreter();
+    let mut ev = |src: &str| lisp::eval_string(&mut interpreter, src).unwrap();
+
+    assert_eq!(
+        ev("1f16"),
+        SExpr::from_owned_value(OwnedValue::F16(half::f16::from_bits(0x3c00)))
+    );
+    assert_eq!(
+        ev("2.5f16"),
+        SExpr::from_owned_value(OwnedValue::F16(half::f16::from_bits(0x4100)))
+    );
+    assert_eq!(
+        ev("65504f16"),
+        SExpr::from_owned_value(OwnedValue::F16(half::f16::from_bits(0x7bff)))
+    );
+    assert_eq!(
+        ev("0.0000000596f16"),
+        SExpr::from_owned_value(OwnedValue::F16(half::f16::from_bits(0x0001)))
+    );
+    assert!(
+        lisp::eval_string(&mut interpreter, "65520f16").is_err(),
+        "65520f16 must overflow"
+    );
+}
+
+#[test]
+fn f16_arithmetic_widens_to_f32() {
+    let mut interpreter = lisp::get_interpreter();
+    let mut ev = |src: &str| lisp::eval_string(&mut interpreter, src).unwrap();
+
+    assert_eq!(
+        ev("(+ 1f16 2f16)"),
+        SExpr::from_owned_value(OwnedValue::F32(3.0))
+    );
+    assert_eq!(
+        ev("(* 2f16 3f16)"),
+        SExpr::from_owned_value(OwnedValue::F32(6.0))
+    );
+    assert_eq!(
+        ev("(abs -1f16)"),
+        SExpr::from_owned_value(OwnedValue::F32(1.0))
+    );
+    assert_eq!(
+        ev("(min 3f16 2f16)"),
+        SExpr::from_owned_value(OwnedValue::F32(2.0))
+    );
+}
+
+#[test]
+fn f16_comparisons_and_casts() {
+    let mut interpreter = lisp::get_interpreter();
+    let mut ev = |src: &str| lisp::eval_string(&mut interpreter, src).unwrap();
+
+    assert_eq!(
+        ev("(< 1f16 2f16)"),
+        SExpr::from_owned_value(OwnedValue::Bool(true))
+    );
+    assert_eq!(
+        ev("(= 1f16 1.0)"),
+        SExpr::from_owned_value(OwnedValue::Bool(true))
+    );
+    assert_eq!(
+        ev("(f16 1.5)"),
+        SExpr::from_owned_value(OwnedValue::F16(half::f16::from_bits(0x3e00)))
+    );
+    assert_eq!(
+        ev("(f32 1f16)"),
+        SExpr::from_owned_value(OwnedValue::F32(1.0))
+    );
+    assert_eq!(
+        ev("(f64 1f16)"),
+        SExpr::from_owned_value(OwnedValue::F64(1.0))
+    );
+}
