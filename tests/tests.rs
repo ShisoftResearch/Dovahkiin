@@ -243,3 +243,122 @@ pub fn lisp_integrated_math_helpers() {
         SExpr::from_owned_value(OwnedValue::F64(8.0))
     );
 }
+
+#[test]
+fn f16_parser_literals() {
+    let mut interpreter = lisp::get_interpreter();
+    let mut ev = |src: &str| lisp::eval_string(&mut interpreter, src).unwrap();
+
+    assert_eq!(
+        ev("1f16"),
+        SExpr::from_owned_value(OwnedValue::F16(half::f16::from_bits(0x3c00)))
+    );
+    assert_eq!(
+        ev("2.5f16"),
+        SExpr::from_owned_value(OwnedValue::F16(half::f16::from_bits(0x4100)))
+    );
+    assert_eq!(
+        ev("65504f16"),
+        SExpr::from_owned_value(OwnedValue::F16(half::f16::from_bits(0x7bff)))
+    );
+    assert_eq!(
+        ev("0.0000000596f16"),
+        SExpr::from_owned_value(OwnedValue::F16(half::f16::from_bits(0x0001)))
+    );
+    assert!(
+        lisp::eval_string(&mut interpreter, "65520f16").is_err(),
+        "65520f16 must overflow"
+    );
+}
+
+#[test]
+fn f16_arithmetic_widens_to_f32() {
+    let mut interpreter = lisp::get_interpreter();
+    let mut ev = |src: &str| lisp::eval_string(&mut interpreter, src).unwrap();
+
+    assert_eq!(
+        ev("(+ 1f16 2f16)"),
+        SExpr::from_owned_value(OwnedValue::F32(3.0))
+    );
+    assert_eq!(
+        ev("(* 2f16 3f16)"),
+        SExpr::from_owned_value(OwnedValue::F32(6.0))
+    );
+    assert_eq!(
+        ev("(abs -1f16)"),
+        SExpr::from_owned_value(OwnedValue::F32(1.0))
+    );
+    assert_eq!(
+        ev("(min 3f16 2f16)"),
+        SExpr::from_owned_value(OwnedValue::F32(2.0))
+    );
+}
+
+#[test]
+fn f16_comparisons_and_casts() {
+    let mut interpreter = lisp::get_interpreter();
+    let mut ev = |src: &str| lisp::eval_string(&mut interpreter, src).unwrap();
+
+    assert_eq!(
+        ev("(< 1f16 2f16)"),
+        SExpr::from_owned_value(OwnedValue::Bool(true))
+    );
+    assert_eq!(
+        ev("(= 1f16 1.0)"),
+        SExpr::from_owned_value(OwnedValue::Bool(true))
+    );
+    assert_eq!(
+        ev("(f16 1.5)"),
+        SExpr::from_owned_value(OwnedValue::F16(half::f16::from_bits(0x3e00)))
+    );
+    assert_eq!(
+        ev("(f32 1f16)"),
+        SExpr::from_owned_value(OwnedValue::F32(1.0))
+    );
+    assert_eq!(
+        ev("(f64 1f16)"),
+        SExpr::from_owned_value(OwnedValue::F64(1.0))
+    );
+}
+
+#[test]
+fn f16_clamp_rejects_invalid_bounds() {
+    let mut interpreter = lisp::get_interpreter();
+    interpreter.bind(
+        "nan",
+        SExpr::from_owned_value(OwnedValue::F16(half::f16::NAN)),
+    );
+    for source in [
+        "(clamp 1f16 2f16 0f16)",
+        "(clamp 1f16 nan 2f16)",
+        "(clamp 1f16 0f16 nan)",
+    ] {
+        assert!(lisp::eval_string(&mut interpreter, source).is_err());
+    }
+    assert_eq!(
+        lisp::eval_string(&mut interpreter, "(clamp 3f16 0f16 2f16)").unwrap(),
+        SExpr::from_owned_value(OwnedValue::F32(2.0))
+    );
+}
+
+#[test]
+fn f16_literals_round_directly_and_reject_nonfinite() {
+    use dovahkiin::lexer::lisp::Token;
+    use dovahkiin::parser::lisp::SExprParser;
+    let mut interpreter = lisp::get_interpreter();
+    for (source, bits) in [
+        ("1.00048828125f16", 0x3c00),
+        ("1.00146484375f16", 0x3c02),
+        ("1.000488282181322574615478515625f16", 0x3c01),
+    ] {
+        assert_eq!(
+            lisp::eval_string(&mut interpreter, source).unwrap(),
+            SExpr::from_owned_value(OwnedValue::F16(half::f16::from_bits(bits)))
+        );
+    }
+    assert!(lisp::eval_string(&mut interpreter, "-65520f16").is_err());
+    // Feed the numeric token directly because the lexer treats NaN as a symbol.
+    assert!(
+        SExprParser::parse_to_expr(vec![Token::FloatNumber("NaN".into(), "f16".into())]).is_err()
+    );
+}

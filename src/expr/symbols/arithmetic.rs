@@ -57,11 +57,29 @@ macro_rules! divide_ {
     }};
 }
 
+/// f16 arithmetic widens every operand to f32 exactly and returns f32.
+macro_rules! widen_f16 {
+    ($values: ident) => {{
+        let mut widened: Vec<SExpr> = Vec::with_capacity($values.len());
+        for v in $values.iter() {
+            match v.shared_val() {
+                Some(SharedValue::F16(n)) => {
+                    widened.push(SExpr::from_owned_value(OwnedValue::F32(n.to_f32())))
+                }
+                other => return Err(format!("Type not match, expect f16 found {:?}", other)),
+            }
+        }
+        widened
+    }};
+}
+
 pub fn add(values: Vec<SExpr>) -> Result<SExpr, String> {
     {
         let shared = values.iter().map(|v| v.shared_val()).collect::<Vec<_>>();
         if super::numeric::needs_promotion(&shared) {
-            if let Some(result) = super::numeric::fold(&shared, |a, b| a.checked_add(b), |a, b| a + b) {
+            if let Some(result) =
+                super::numeric::fold(&shared, |a, b| a.checked_add(b), |a, b| a + b)
+            {
                 return result.map(SExpr::from_owned_value);
             }
         }
@@ -77,6 +95,10 @@ pub fn add(values: Vec<SExpr>) -> Result<SExpr, String> {
         Some(SharedValue::I64(_)) => add_!(I64, values),
         Some(SharedValue::F32(_)) => add_!(F32, values),
         Some(SharedValue::F64(_)) => add_!(F64, values),
+        Some(SharedValue::F16(_)) => {
+            let widened = widen_f16!(values);
+            add_!(F32, widened)
+        }
         _ => Err(format!("Type cannot be added {:?}", values)),
     }
 }
@@ -85,7 +107,9 @@ pub fn subtract(values: Vec<SExpr>) -> Result<SExpr, String> {
     {
         let shared = values.iter().map(|v| v.shared_val()).collect::<Vec<_>>();
         if super::numeric::needs_promotion(&shared) {
-            if let Some(result) = super::numeric::fold(&shared, |a, b| a.checked_sub(b), |a, b| a - b) {
+            if let Some(result) =
+                super::numeric::fold(&shared, |a, b| a.checked_sub(b), |a, b| a - b)
+            {
                 return result.map(SExpr::from_owned_value);
             }
         }
@@ -101,6 +125,10 @@ pub fn subtract(values: Vec<SExpr>) -> Result<SExpr, String> {
         Some(SharedValue::I64(_)) => subtract_!(I64, values),
         Some(SharedValue::F32(_)) => subtract_!(F32, values),
         Some(SharedValue::F64(_)) => subtract_!(F64, values),
+        Some(SharedValue::F16(_)) => {
+            let widened = widen_f16!(values);
+            subtract_!(F32, widened)
+        }
         _ => Err(format!("Type cannot be subtracted: {:?}", values)),
     }
 }
@@ -109,7 +137,9 @@ pub fn multiply(values: Vec<SExpr>) -> Result<SExpr, String> {
     {
         let shared = values.iter().map(|v| v.shared_val()).collect::<Vec<_>>();
         if super::numeric::needs_promotion(&shared) {
-            if let Some(result) = super::numeric::fold(&shared, |a, b| a.checked_mul(b), |a, b| a * b) {
+            if let Some(result) =
+                super::numeric::fold(&shared, |a, b| a.checked_mul(b), |a, b| a * b)
+            {
                 return result.map(SExpr::from_owned_value);
             }
         }
@@ -125,6 +155,10 @@ pub fn multiply(values: Vec<SExpr>) -> Result<SExpr, String> {
         Some(SharedValue::I64(_)) => multiply_!(I64, values),
         Some(SharedValue::F32(_)) => multiply_!(F32, values),
         Some(SharedValue::F64(_)) => multiply_!(F64, values),
+        Some(SharedValue::F16(_)) => {
+            let widened = widen_f16!(values);
+            multiply_!(F32, widened)
+        }
         _ => Err(format!("Type cannot be multiplied: {:?}", values)),
     }
 }
@@ -133,7 +167,11 @@ pub fn divide(values: Vec<SExpr>) -> Result<SExpr, String> {
     {
         let shared = values.iter().map(|v| v.shared_val()).collect::<Vec<_>>();
         if super::numeric::needs_promotion(&shared) {
-            if let Some(result) = super::numeric::fold(&shared, |a, b| if b == 0 { None } else { a.checked_div(b) }, |a, b| a / b) {
+            if let Some(result) = super::numeric::fold(
+                &shared,
+                |a, b| if b == 0 { None } else { a.checked_div(b) },
+                |a, b| a / b,
+            ) {
                 return result.map(SExpr::from_owned_value);
             }
         }
@@ -149,6 +187,10 @@ pub fn divide(values: Vec<SExpr>) -> Result<SExpr, String> {
         Some(SharedValue::I64(_)) => divide_!(I64, values),
         Some(SharedValue::F32(_)) => divide_!(F32, values),
         Some(SharedValue::F64(_)) => divide_!(F64, values),
+        Some(SharedValue::F16(_)) => {
+            let widened = widen_f16!(values);
+            divide_!(F32, widened)
+        }
         _ => Err(format!("Type cannot be divided: {:?}", values)),
     }
 }
@@ -178,6 +220,9 @@ macro_rules! unary_float_fn {
                 Some(SharedValue::F64(v)) => {
                     Ok(SExpr::from_owned_value(OwnedValue::F64($op64(*v))))
                 }
+                Some(SharedValue::F16(v)) => {
+                    Ok(SExpr::from_owned_value(OwnedValue::F32($op32(v.to_f32()))))
+                }
                 _ => Err(format!(
                     "{} expects f32 or f64, found {:?}",
                     stringify!($name),
@@ -200,6 +245,7 @@ pub fn abs(value: SExpr) -> Result<SExpr, String> {
         Some(SharedValue::I64(v)) => Ok(SExpr::from_owned_value(OwnedValue::I64(v.abs()))),
         Some(SharedValue::F32(v)) => Ok(SExpr::from_owned_value(OwnedValue::F32(v.abs()))),
         Some(SharedValue::F64(v)) => Ok(SExpr::from_owned_value(OwnedValue::F64(v.abs()))),
+        Some(SharedValue::F16(v)) => Ok(SExpr::from_owned_value(OwnedValue::F32(v.to_f32().abs()))),
         _ => Err(format!("abs expects a numeric value, found {:?}", value)),
     }
 }
@@ -227,6 +273,12 @@ pub fn pow<'a>(base: SExpr<'a>, exp: SExpr<'a>) -> Result<SExpr<'a>, String> {
         (Some(SharedValue::F64(base)), Some(SharedValue::U32(exp))) => Ok(SExpr::from_owned_value(
             OwnedValue::F64(base.powi(*exp as i32)),
         )),
+        (Some(SharedValue::F16(base)), Some(SharedValue::F16(exp))) => Ok(SExpr::from_owned_value(
+            OwnedValue::F32(base.to_f32().powf(exp.to_f32())),
+        )),
+        (Some(SharedValue::F16(base)), Some(SharedValue::U32(exp))) => Ok(SExpr::from_owned_value(
+            OwnedValue::F32(base.to_f32().powi(*exp as i32)),
+        )),
         _ => Err(format!(
             "pow expects (f32|f64, f32|f64|u32), found ({:?}, {:?})",
             base, exp
@@ -248,6 +300,7 @@ macro_rules! binary_ord_fn {
                 (Some(SharedValue::I64(lhs)), Some(SharedValue::I64(rhs))) => Ok(SExpr::from_owned_value(OwnedValue::I64(if lhs $cmp rhs { *lhs } else { *rhs }))),
                 (Some(SharedValue::F32(lhs)), Some(SharedValue::F32(rhs))) => Ok(SExpr::from_owned_value(OwnedValue::F32(if lhs $cmp rhs { *lhs } else { *rhs }))),
                 (Some(SharedValue::F64(lhs)), Some(SharedValue::F64(rhs))) => Ok(SExpr::from_owned_value(OwnedValue::F64(if lhs $cmp rhs { *lhs } else { *rhs }))),
+                (Some(SharedValue::F16(lhs)), Some(SharedValue::F16(rhs))) => Ok(SExpr::from_owned_value(OwnedValue::F32(if lhs $cmp rhs { lhs.to_f32() } else { rhs.to_f32() }))),
                 _ => Err(format!(
                     "{} expects two numeric values of the same type, found ({:?}, {:?})",
                     stringify!($name),
@@ -330,6 +383,18 @@ pub fn clamp<'a>(value: SExpr<'a>, min: SExpr<'a>, max: SExpr<'a>) -> Result<SEx
         ) => Ok(SExpr::from_owned_value(OwnedValue::F64(
             (*value).clamp(*min, *max),
         ))),
+        (
+            Some(SharedValue::F16(value)),
+            Some(SharedValue::F16(min)),
+            Some(SharedValue::F16(max)),
+        ) => {
+            if min.is_nan() || max.is_nan() || min > max {
+                return Err("clamp requires ordered, non-NaN bounds".to_string());
+            }
+            Ok(SExpr::from_owned_value(OwnedValue::F32(
+                value.to_f32().clamp(min.to_f32(), max.to_f32()),
+            )))
+        }
         _ => Err(format!(
             "clamp expects three numeric values of the same type, found ({:?}, {:?}, {:?})",
             value, min, max

@@ -1,4 +1,5 @@
 use dovahkiin::types::*;
+use half::f16;
 use std::alloc::{alloc, dealloc, Layout};
 
 /// Helper to allocate aligned memory for testing
@@ -761,4 +762,51 @@ fn test_boundary_values_all_types() {
 
         dealloc_aligned(ptr, size, 8);
     }
+}
+
+// ============================================================================
+// f16 IO Tests
+// ============================================================================
+
+#[test]
+fn f16_io_round_trip_all_bit_patterns() {
+    let size = 65536 * f16_io::type_size();
+    let ptr = alloc_aligned(size, f16_io::type_align());
+
+    unsafe {
+        for bits in 0u16..=u16::MAX {
+            let val = f16::from_bits(bits);
+            let offset = bits as usize * f16_io::type_size();
+            f16_io::write(&val, ptr as usize + offset);
+            let read_val = *f16_io::read(ptr as usize + offset);
+            assert_eq!(read_val.to_bits(), bits, "bits {} did not round trip", bits);
+        }
+
+        dealloc_aligned(ptr, size, f16_io::type_align());
+    }
+}
+
+#[test]
+fn f16_io_feature_is_big_endian() {
+    // Known vectors: 1.0 = 0x3c00, -1.0 = 0xbc00, 0.5 = 0x3800, 65504 = 0x7bff.
+    let vectors = [
+        (f16::from_bits(0x3c00), [0x3c, 0x00]),
+        (f16::from_bits(0xbc00), [0xbc, 0x00]),
+        (f16::from_bits(0x3800), [0x38, 0x00]),
+        (f16::from_bits(0x7bff), [0x7b, 0xff]),
+    ];
+    for (val, expected) in vectors {
+        let feature = f16_io::feature(&val);
+        assert_eq!(feature[0], expected[0], "high byte of {:04x}", val.to_bits());
+        assert_eq!(feature[1], expected[1], "low byte of {:04x}", val.to_bits());
+        assert_eq!(feature[2..], [0u8; 6], "padding of {:04x}", val.to_bits());
+    }
+}
+
+#[test]
+fn f16_io_type_size_is_two_bytes() {
+    assert_eq!(f16_io::type_size(), 2);
+    assert_eq!(f16_io::type_align(), 2);
+    assert_eq!(get_size(Type::F16, 0), 2);
+    assert_eq!(size_of_type(Type::F16), 2);
 }
