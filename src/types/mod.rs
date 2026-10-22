@@ -305,6 +305,7 @@ define_types!(
     ["string", "str"], String                      ,String      ,  string_io, string     ;
     ["bytes"], Bytes                               ,Bytes       ,  bytes_io, bytes      ;
     ["small_bytes"], SmallBytes                    ,SmallBytes  ,  small_bytes_io, small_bytes;
+    @tail
     ["f16", "half"], half::f16                     ,F16         ,  f16_io, f16
 );
 

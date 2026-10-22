@@ -252,20 +252,27 @@ macro_rules! get_from_val_fn {
 
 macro_rules! define_types {
     (
-        $(
-            [ $( $name:expr ),* ], $t:ty, $e:ident, $io:ident, $fn: ident
-         );*
-    ) => (
-
+        $( [ $( $name:expr ),* ], $t:ty, $e:ident, $io:ident, $fn:ident );*;
+        @tail
+        $( [ $( $tail_name:expr ),* ], $tail_t:ty, $tail_e:ident, $tail_io:ident, $tail_fn:ident );*
+    ) => {
         #[derive(Copy, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
         pub enum Type {
             Null,
-            Map, // No matter which id we pick for 'Map' because w/r planners will ignore it when sub_fields is not 'None',
-            $(
-                $e,
-            )*
-            NA
+            Map,
+            $( $e, )*
+            NA,
+            $( $tail_e, )*
         }
+
+        define_types!(@impl
+            $( [ $( $name ),* ], $t, $e, $io, $fn; )*
+            $( [ $( $tail_name ),* ], $tail_t, $tail_e, $tail_io, $tail_fn );*
+        );
+    };
+    (@impl
+        $( [ $( $name:expr ),* ], $t:ty, $e:ident, $io:ident, $fn:ident );*
+    ) => (
 
         impl Type {
             pub const fn id(self) -> u8  {

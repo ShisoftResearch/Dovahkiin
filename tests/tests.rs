@@ -320,3 +320,45 @@ fn f16_comparisons_and_casts() {
         SExpr::from_owned_value(OwnedValue::F64(1.0))
     );
 }
+
+#[test]
+fn f16_clamp_rejects_invalid_bounds() {
+    let mut interpreter = lisp::get_interpreter();
+    interpreter.bind(
+        "nan",
+        SExpr::from_owned_value(OwnedValue::F16(half::f16::NAN)),
+    );
+    for source in [
+        "(clamp 1f16 2f16 0f16)",
+        "(clamp 1f16 nan 2f16)",
+        "(clamp 1f16 0f16 nan)",
+    ] {
+        assert!(lisp::eval_string(&mut interpreter, source).is_err());
+    }
+    assert_eq!(
+        lisp::eval_string(&mut interpreter, "(clamp 3f16 0f16 2f16)").unwrap(),
+        SExpr::from_owned_value(OwnedValue::F32(2.0))
+    );
+}
+
+#[test]
+fn f16_literals_round_directly_and_reject_nonfinite() {
+    use dovahkiin::lexer::lisp::Token;
+    use dovahkiin::parser::lisp::SExprParser;
+    let mut interpreter = lisp::get_interpreter();
+    for (source, bits) in [
+        ("1.00048828125f16", 0x3c00),
+        ("1.00146484375f16", 0x3c02),
+        ("1.000488282181322574615478515625f16", 0x3c01),
+    ] {
+        assert_eq!(
+            lisp::eval_string(&mut interpreter, source).unwrap(),
+            SExpr::from_owned_value(OwnedValue::F16(half::f16::from_bits(bits)))
+        );
+    }
+    assert!(lisp::eval_string(&mut interpreter, "-65520f16").is_err());
+    // Feed the numeric token directly because the lexer treats NaN as a symbol.
+    assert!(
+        SExprParser::parse_to_expr(vec![Token::FloatNumber("NaN".into(), "f16".into())]).is_err()
+    );
+}
