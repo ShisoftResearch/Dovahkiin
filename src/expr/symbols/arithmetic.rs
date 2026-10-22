@@ -315,86 +315,99 @@ macro_rules! binary_ord_fn {
 binary_ord_fn!(min, <=);
 binary_ord_fn!(max, >=);
 
+/// Clamp after a check of the bounds. The bounds come from the expression, and
+/// `Ord::clamp` and `f32::clamp` panic when `min > max` or a bound is NaN.
+fn checked_clamp<T: PartialOrd + Copy>(value: T, min: T, max: T) -> Result<T, String> {
+    // `!(min <= max)` is also true when a bound is NaN.
+    if !(min <= max) {
+        return Err("clamp requires ordered, non-NaN bounds".to_string());
+    }
+    Ok(if value < min {
+        min
+    } else if value > max {
+        max
+    } else {
+        value
+    })
+}
+
 pub fn clamp<'a>(value: SExpr<'a>, min: SExpr<'a>, max: SExpr<'a>) -> Result<SExpr<'a>, String> {
     match (value.shared_val(), min.shared_val(), max.shared_val()) {
         (Some(SharedValue::U8(value)), Some(SharedValue::U8(min)), Some(SharedValue::U8(max))) => {
-            Ok(SExpr::from_owned_value(OwnedValue::U8(
-                (*value).clamp(*min, *max),
-            )))
+            Ok(SExpr::from_owned_value(OwnedValue::U8(checked_clamp(
+                *value, *min, *max,
+            )?)))
         }
         (
             Some(SharedValue::U16(value)),
             Some(SharedValue::U16(min)),
             Some(SharedValue::U16(max)),
-        ) => Ok(SExpr::from_owned_value(OwnedValue::U16(
-            (*value).clamp(*min, *max),
-        ))),
+        ) => Ok(SExpr::from_owned_value(OwnedValue::U16(checked_clamp(
+            *value, *min, *max,
+        )?))),
         (
             Some(SharedValue::U32(value)),
             Some(SharedValue::U32(min)),
             Some(SharedValue::U32(max)),
-        ) => Ok(SExpr::from_owned_value(OwnedValue::U32(
-            (*value).clamp(*min, *max),
-        ))),
+        ) => Ok(SExpr::from_owned_value(OwnedValue::U32(checked_clamp(
+            *value, *min, *max,
+        )?))),
         (
             Some(SharedValue::U64(value)),
             Some(SharedValue::U64(min)),
             Some(SharedValue::U64(max)),
-        ) => Ok(SExpr::from_owned_value(OwnedValue::U64(
-            (*value).clamp(*min, *max),
-        ))),
+        ) => Ok(SExpr::from_owned_value(OwnedValue::U64(checked_clamp(
+            *value, *min, *max,
+        )?))),
         (Some(SharedValue::I8(value)), Some(SharedValue::I8(min)), Some(SharedValue::I8(max))) => {
-            Ok(SExpr::from_owned_value(OwnedValue::I8(
-                (*value).clamp(*min, *max),
-            )))
+            Ok(SExpr::from_owned_value(OwnedValue::I8(checked_clamp(
+                *value, *min, *max,
+            )?)))
         }
         (
             Some(SharedValue::I16(value)),
             Some(SharedValue::I16(min)),
             Some(SharedValue::I16(max)),
-        ) => Ok(SExpr::from_owned_value(OwnedValue::I16(
-            (*value).clamp(*min, *max),
-        ))),
+        ) => Ok(SExpr::from_owned_value(OwnedValue::I16(checked_clamp(
+            *value, *min, *max,
+        )?))),
         (
             Some(SharedValue::I32(value)),
             Some(SharedValue::I32(min)),
             Some(SharedValue::I32(max)),
-        ) => Ok(SExpr::from_owned_value(OwnedValue::I32(
-            (*value).clamp(*min, *max),
-        ))),
+        ) => Ok(SExpr::from_owned_value(OwnedValue::I32(checked_clamp(
+            *value, *min, *max,
+        )?))),
         (
             Some(SharedValue::I64(value)),
             Some(SharedValue::I64(min)),
             Some(SharedValue::I64(max)),
-        ) => Ok(SExpr::from_owned_value(OwnedValue::I64(
-            (*value).clamp(*min, *max),
-        ))),
+        ) => Ok(SExpr::from_owned_value(OwnedValue::I64(checked_clamp(
+            *value, *min, *max,
+        )?))),
         (
             Some(SharedValue::F32(value)),
             Some(SharedValue::F32(min)),
             Some(SharedValue::F32(max)),
-        ) => Ok(SExpr::from_owned_value(OwnedValue::F32(
-            (*value).clamp(*min, *max),
-        ))),
+        ) => Ok(SExpr::from_owned_value(OwnedValue::F32(checked_clamp(
+            *value, *min, *max,
+        )?))),
         (
             Some(SharedValue::F64(value)),
             Some(SharedValue::F64(min)),
             Some(SharedValue::F64(max)),
-        ) => Ok(SExpr::from_owned_value(OwnedValue::F64(
-            (*value).clamp(*min, *max),
-        ))),
+        ) => Ok(SExpr::from_owned_value(OwnedValue::F64(checked_clamp(
+            *value, *min, *max,
+        )?))),
         (
             Some(SharedValue::F16(value)),
             Some(SharedValue::F16(min)),
             Some(SharedValue::F16(max)),
-        ) => {
-            if min.is_nan() || max.is_nan() || min > max {
-                return Err("clamp requires ordered, non-NaN bounds".to_string());
-            }
-            Ok(SExpr::from_owned_value(OwnedValue::F32(
-                value.to_f32().clamp(min.to_f32(), max.to_f32()),
-            )))
-        }
+        ) => Ok(SExpr::from_owned_value(OwnedValue::F32(checked_clamp(
+            value.to_f32(),
+            min.to_f32(),
+            max.to_f32(),
+        )?))),
         _ => Err(format!(
             "clamp expects three numeric values of the same type, found ({:?}, {:?}, {:?})",
             value, min, max
