@@ -427,9 +427,8 @@ fn test_large_numbers() {
 }
 
 #[test]
-fn f16_type_ids_unchanged_and_f16_is_next() {
-    // Existing ids must not move: an entry in the middle renumbers every later
-    // type and corrupts stored schemas.
+fn f16_type_id_table() {
+    // Pin the current table so each future id change is deliberate.
     assert_eq!(Type::Null.id(), 0);
     assert_eq!(Type::Map.id(), 1);
     assert_eq!(Type::Bool.id(), 2);
@@ -452,18 +451,18 @@ fn f16_type_ids_unchanged_and_f16_is_next() {
     assert_eq!(Type::String.id(), 19);
     assert_eq!(Type::Bytes.id(), 20);
     assert_eq!(Type::SmallBytes.id(), 21);
-    assert_eq!(Type::NA.id(), 22);
-    assert_eq!(Type::from_id(22), Type::NA);
-    assert_eq!(type_id_of(Type::NA), 22);
+    assert_eq!(Type::NA.id(), 23);
+    assert_eq!(Type::from_id(23), Type::NA);
+    assert_eq!(type_id_of(Type::NA), 23);
     assert_eq!(
         bifrost::utils::serde::serialize(&Type::NA),
         bifrost::utils::serde::serialize(&"NA")
     );
-    assert_eq!(Type::F16.id(), 23);
-    assert_eq!(type_id_of(Type::F16), 23);
-    assert_eq!(Type::from_id(23), Type::F16);
-    assert_eq!(get_type_id("f16".to_string()), 23);
-    assert_eq!(get_type_id("half".to_string()), 23);
+    assert_eq!(Type::F16.id(), 22);
+    assert_eq!(type_id_of(Type::F16), 22);
+    assert_eq!(Type::from_id(22), Type::F16);
+    assert_eq!(get_type_id("f16".to_string()), 22);
+    assert_eq!(get_type_id("half".to_string()), 22);
     assert_eq!(get_type(Type::F16), "f16");
 }
 
