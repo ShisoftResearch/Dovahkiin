@@ -341,6 +341,50 @@ fn f16_clamp_rejects_invalid_bounds() {
     );
 }
 
+/// Unordered bounds are an error for every type. Before the check, the
+/// integer and f32/f64 arms called `clamp` of std, which panics on them.
+#[test]
+fn clamp_rejects_invalid_bounds_for_every_type() {
+    let mut interpreter = lisp::get_interpreter();
+    interpreter.bind("nan32", SExpr::from_owned_value(OwnedValue::F32(f32::NAN)));
+    interpreter.bind("nan64", SExpr::from_owned_value(OwnedValue::F64(f64::NAN)));
+    for source in [
+        "(clamp 5u8 9u8 1u8)",
+        "(clamp 5u16 9u16 1u16)",
+        "(clamp 5u32 9u32 1u32)",
+        "(clamp 5u64 9u64 1u64)",
+        "(clamp 5i8 9i8 1i8)",
+        "(clamp 5i16 9i16 1i16)",
+        "(clamp 5i32 9i32 1i32)",
+        "(clamp 5i64 9i64 1i64)",
+        "(clamp 5.0f32 9.0f32 1.0f32)",
+        "(clamp 5.0f64 9.0f64 1.0f64)",
+        "(clamp 5.0f32 nan32 9.0f32)",
+        "(clamp 5.0f64 1.0f64 nan64)",
+    ] {
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            lisp::eval_string(&mut interpreter, source)
+        }));
+        assert!(
+            matches!(result, Ok(Err(_))),
+            "{} must return an error, not a value or a panic",
+            source
+        );
+    }
+    assert_eq!(
+        lisp::eval_string(&mut interpreter, "(clamp 0i32 1i32 8i32)").unwrap(),
+        SExpr::from_owned_value(OwnedValue::I32(1))
+    );
+    assert_eq!(
+        lisp::eval_string(&mut interpreter, "(clamp 9i64 1i64 9i64)").unwrap(),
+        SExpr::from_owned_value(OwnedValue::I64(9))
+    );
+    assert_eq!(
+        lisp::eval_string(&mut interpreter, "(clamp 3.0f32 1.0f32 1.0f32)").unwrap(),
+        SExpr::from_owned_value(OwnedValue::F32(1.0))
+    );
+}
+
 #[test]
 fn f16_literals_round_directly_and_reject_nonfinite() {
     use dovahkiin::lexer::lisp::Token;
