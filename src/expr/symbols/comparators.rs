@@ -2,20 +2,23 @@ use log::trace;
 
 use super::*;
 
+fn values_equal(left: &Option<SharedValue<'_>>, right: &Option<SharedValue<'_>>) -> bool {
+    match (
+        left.as_ref().and_then(super::numeric::Num::from_shared),
+        right.as_ref().and_then(super::numeric::Num::from_shared),
+    ) {
+        (Some(a), Some(b)) => a.equals(b),
+        _ => left == right,
+    }
+}
+
 pub fn equals(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
     let last_expr = exprs.pop().unwrap();
     let last = last_expr.shared_val();
-    let last_num = last.as_ref().and_then(super::numeric::Num::from_shared);
     for expr in exprs {
         let expr = expr.shared_val();
         trace!("Comparing {:?} with {:?}", expr, last);
-        // Numbers compare by value across widths: a u16 column equals the
-        // i64 literal `1`. Everything else keeps exact equality.
-        let equal = match (expr.as_ref().and_then(super::numeric::Num::from_shared), last_num) {
-            (Some(a), Some(b)) => a.equals(b),
-            _ => expr == last,
-        };
-        if !equal {
+        if !values_equal(&expr, &last) {
             return Ok(SExpr::from_owned_value(OwnedValue::Bool(false)));
         }
     }
@@ -30,7 +33,11 @@ fn promoted_chain<'a>(
 ) -> Option<Result<SExpr<'a>, String>> {
     let nums = values
         .iter()
-        .map(|v| v.shared_val().as_ref().and_then(super::numeric::Num::from_shared))
+        .map(|v| {
+            v.shared_val()
+                .as_ref()
+                .and_then(super::numeric::Num::from_shared)
+        })
         .collect::<Option<Vec<_>>>()?;
     for pair in nums.windows(2) {
         match pair[0].partial_cmp(pair[1]) {
@@ -41,12 +48,12 @@ fn promoted_chain<'a>(
     Some(Ok(SExpr::from_owned_value(OwnedValue::Bool(true))))
 }
 
-pub fn not_equals(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
-    return Ok(SExpr::from_owned_value(OwnedValue::Bool({
-        let l = exprs.pop();
-        let r = exprs.pop();
-        l.as_ref().map(|e| e.shared_val()) == r.as_ref().map(|e| e.shared_val())
-    })));
+/// True unless all operands are equal, as in Clojure's `not=`.
+pub fn not_equals(exprs: Vec<SExpr>) -> Result<SExpr, String> {
+    let equal = equals(exprs)?;
+    Ok(SExpr::from_owned_value(OwnedValue::Bool(
+        !super::utils::is_true(&equal),
+    )))
 }
 
 macro_rules! reduce {
@@ -213,9 +220,10 @@ pub fn in_(mut exprs: Vec<SExpr>) -> Result<SExpr, String> {
         return Ok(SExpr::from_owned_value(OwnedValue::Bool(false)));
     };
 
+    let needle = Some(needle);
     let matched = exprs
         .into_iter()
-        .any(|expr| expr.shared_val().as_ref() == Some(&needle));
+        .any(|expr| values_equal(&expr.shared_val(), &needle));
     Ok(SExpr::from_owned_value(OwnedValue::Bool(matched)))
 }
 

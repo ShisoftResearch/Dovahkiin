@@ -200,7 +200,7 @@ defsymbols! {
         comparators::equals(exprs)
     };
     "!=" => NotEquals, false, |exprs, _env| {
-        check_num_params(2, &exprs)?;
+        check_params_not_least_than(2, &exprs)?;
         comparators::not_equals(exprs)
     };
     "in" => In, false, |exprs, _env| {
