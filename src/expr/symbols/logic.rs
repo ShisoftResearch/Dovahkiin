@@ -29,13 +29,13 @@ pub fn is_null<'a>(
     mut exprs: Vec<SExpr<'a>>,
     env: &mut Environment<'a>,
 ) -> Result<SExpr<'a>, String> {
-    let expr = exprs.pop().unwrap();
+    let expr = exprs.pop().unwrap().eval(env)?;
     let is_null = match expr {
         SExpr::ISymbol(symbol_id, _) => matches!(
             crate::types::Value::get_by_id(env.global_val, symbol_id),
             SharedValue::Null
         ),
-        other => matches!(other.eval(env)?.shared_val(), Some(SharedValue::Null)),
+        other => matches!(other.shared_val(), Some(SharedValue::Null)),
     };
     Ok(SExpr::from_owned_value(OwnedValue::Bool(is_null)))
 }
@@ -44,13 +44,13 @@ pub fn is_not_null<'a>(
     mut exprs: Vec<SExpr<'a>>,
     env: &mut Environment<'a>,
 ) -> Result<SExpr<'a>, String> {
-    let expr = exprs.pop().unwrap();
+    let expr = exprs.pop().unwrap().eval(env)?;
     let is_not_null = match expr {
         SExpr::ISymbol(symbol_id, _) => !matches!(
             crate::types::Value::get_by_id(env.global_val, symbol_id),
             SharedValue::Null
         ),
-        other => !matches!(other.eval(env)?.shared_val(), Some(SharedValue::Null)),
+        other => !matches!(other.shared_val(), Some(SharedValue::Null)),
     };
     Ok(SExpr::from_owned_value(OwnedValue::Bool(is_not_null)))
 }

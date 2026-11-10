@@ -450,3 +450,52 @@ fn parsed_expressions_use_the_registered_symbols() {
         assert_eq!(eval_bool(&format!("(!= {args})"), &[]), !equal, "{args}");
     }
 }
+
+#[test]
+fn null_checks_respect_local_bindings() {
+    let mut failures = Vec::new();
+    for (value, _) in value_pairs() {
+        let is_null = matches!(value, OwnedValue::Null);
+        let bindings = [("a", value)];
+        for (source, expected) in [("(is-null a)", is_null), ("(is-not-null a)", !is_null)] {
+            if eval_bool(source, &bindings) != expected {
+                failures.push(format!("{source}: {bindings:?}: expected {expected}"));
+            }
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    assert!(eval_bool("(let [a 1] (is-not-null a))", &[]));
+    assert!(eval_bool("(let [a ()] (is-null a))", &[]));
+}
+
+#[test]
+fn comparison_and_null_checks_use_shared_global_fields() {
+    for (a, b) in value_pairs() {
+        let is_null = matches!(a, OwnedValue::Null);
+        let global = OwnedValue::Map(OwnedMap::from_pairs(
+            vec![("a".into(), a), ("b".into(), b)].into_iter(),
+        ));
+        let shared = global.shared();
+        let mut interpreter = lisp::get_interpreter();
+        interpreter.set_global_val(&shared);
+        // A null field stays unresolved during evaluation, like a missing field.
+        for (source, expected) in [
+            ("(= a a)", true),
+            ("(!= a a)", false),
+            ("(!= a b)", true),
+            ("(not (= a b))", true),
+            ("(is-null a)", is_null),
+            ("(is-not-null a)", !is_null),
+            ("(is-null missing)", true),
+            ("(is-not-null missing)", false),
+        ] {
+            assert_eq!(
+                lisp::eval_string(&mut interpreter, source)
+                    .unwrap()
+                    .owned_val(),
+                Some(OwnedValue::Bool(expected)),
+                "{source}: {global:?}",
+            );
+        }
+    }
+}
